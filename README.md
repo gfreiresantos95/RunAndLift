@@ -49,7 +49,27 @@ Rodar um teste específico:
 .\gradlew.bat testDebugUnitTest --tests "*.ExampleUnitTest.addition_isCorrect"
 ```
 
-O acesso ao projeto Firebase (arquivo `google-services.json`) não faz parte do repositório e deve ser obtido com o mantenedor.
+### Firebase
+
+O `google-services.json` **não está no repositório** — o projeto é público e o arquivo carrega
+`project_id` e API key (o porquê está no [ADR-0004](docs/adr/0004-configuracao-do-firebase.md)).
+Sem ele o build continua funcionando, apenas sem Firebase, e emite um aviso.
+
+Para habilitar:
+
+1. No [console do Firebase](https://console.firebase.google.com), abra o projeto (ou crie um).
+2. Registre um app Android com o pacote `com.gabrielfreire.runandlift`.
+3. Baixe o `google-services.json` e salve em `app/google-services.json`.
+4. No console, habilite os produtos que a Fase 1 usa: **Firestore**, **Authentication**
+   (e-mail/senha e Google), **Crashlytics**, **Analytics**, **Remote Config** e **Performance**.
+
+Ao criar o Firestore, três escolhas são **permanentes**: edição **Standard**, ID do banco
+`(default)` e local `southamerica-east1`. O porquê está no
+[ADR-0005](docs/adr/0005-firestore-edicao-e-banco-padrao.md).
+
+Em builds de debug, a coleta de Crashlytics, Analytics e Performance fica desligada, e a
+instrumentação do Performance nem roda — dados de desenvolvimento contaminariam o crash-free rate,
+o funil e a medição de tempo de tela.
 
 ### Qualidade de código
 

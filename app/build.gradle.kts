@@ -3,6 +3,25 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// O plugin google-services aborta o build quando não encontra o google-services.json, e esse
+// arquivo não vai para o Git (repositório público — ver .gitignore). Aplicar condicionalmente
+// mantém o build verde em clone novo e no CI; quando o arquivo aparece, o Firebase liga sozinho.
+//
+// O aviso é deliberadamente barulhento: build silenciosamente sem Firebase é pior que build que
+// falha, porque o problema só aparece em runtime.
+val firebaseConfigured = file("google-services.json").exists()
+
+if (firebaseConfigured) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+    apply(plugin = libs.plugins.firebase.perf.get().pluginId)
+} else {
+    logger.warn(
+        "AVISO: app/google-services.json não encontrado — Firebase desligado neste build. " +
+            "Baixe o arquivo no console do Firebase — ver seção Firebase do README.",
+    )
+}
+
 android {
     namespace = "com.gabrielfreire.runandlift"
     compileSdk {
@@ -25,6 +44,17 @@ android {
                 enable = false
             }
         }
+        debug {
+            // O plugin de Performance instrumenta bytecode em tempo de build, e isso pesa em todo
+            // ciclo de desenvolvimento. Em debug a coleta já está desligada pelo manifesto, então
+            // instrumentar não serviria para nada. Guardado pelo `if` porque a extensão só existe
+            // quando o plugin foi aplicado — ou seja, quando há google-services.json.
+            if (firebaseConfigured) {
+                configure<com.google.firebase.perf.plugin.FirebasePerfExtension> {
+                    setInstrumentationEnabled(false)
+                }
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -41,6 +71,7 @@ dependencies {
     implementation(project(":data"))
 
     implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.firebase.bom))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
@@ -48,6 +79,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Firebase de escopo do app: observabilidade e flags. Firestore e Auth ficam em :data, que é
+    // quem fala com o backend.
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.config)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.perf)
 
     lintChecks(libs.compose.lint.checks)
 

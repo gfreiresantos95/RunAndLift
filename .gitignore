@@ -18,5 +18,15 @@ local.properties
 .externalNativeBuild
 .cxx
 
+# Firebase e assinatura — nunca vão para o Git, porque o repositório é público.
+# O google-services.json carrega project_id e API key; enquanto o App Check (E0-07) não existir,
+# expor isso permite consumir a cota gratuita do Firestore, de que depende todo o modelo de
+# capacidade do projeto. Como obtê-lo: README, seção Firebase.
+google-services.json
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+
 # SO
 .DS_Store

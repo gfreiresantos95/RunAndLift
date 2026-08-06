@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sobreposição aplicada só a builds de debug.
+
+    Desliga a coleta de Crashlytics, Analytics e Performance durante o desenvolvimento. O motivo é
+    de medição, não de privacidade: crash provocado em teste, evento disparado em emulador e tempo
+    de tela medido sob debugger contaminam justamente os números que o projeto pretende usar como
+    sinal — crash-free rate (E13-01, critério de saída em 99,5%), funil de ativação (E13-02) e
+    tempo de abertura da tela de treino (E13-12).
+
+    Para depurar a própria integração, mude o valor para true temporariamente, ou rode uma build
+    de release. Note que a instrumentação do Performance também está desligada em debug, no
+    build.gradle.kts — então medir em debug exige reverter os dois lugares.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_performance_collection_enabled"
+            android:value="false" />
+    </application>
+
+</manifest>
