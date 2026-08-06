@@ -70,6 +70,10 @@ Room schemas are exported to `data/schemas/` and committed — migrations (E0-13
 
 `google-services.json` is gitignored (public repo — see `docs/adr/0004`). The `google-services` and `crashlytics` plugins are therefore applied **conditionally** in `app/build.gradle.kts`: present file → Firebase on; absent → loud warning and a build that still succeeds. Never make that unconditional without also solving CI, which builds without the file. Firestore and Auth belong to `:data`; Crashlytics, Analytics, Remote Config and Performance to `:app`. Debug builds disable Crashlytics/Analytics collection via `app/src/debug/AndroidManifest.xml` so development noise stays out of the crash-free rate and the funnel.
 
+## Firestore Security Rules
+
+`firestore/firestore.rules`, deny-by-default. Tests run against the emulator: `cd firestore && npm test` (needs `java` on PATH; CI has its own job). **Link documents must use the id `{trainerId}_{studentId}`** — rules can't query, only `get()` by exact path, so that format is what makes "trainer only reads students with an active link" expressible at all. Every `get()`/`exists()` in a rule costs a document read, so keep them off hot paths; see `docs/adr/0007`.
+
 ## Decision records
 
 `docs/adr/` holds the decisions whose rationale the code can't carry — currently the quality-tooling stack and the JDK 21 pin. Before changing build tooling, versions, or theming fundamentals, check whether an ADR already covers it; if a decision gets reversed, add a new ADR rather than editing the old one.

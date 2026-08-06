@@ -1,0 +1,14 @@
+{
+  "name": "runandlift-firestore-rules",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Testes das Security Rules do Firestore contra o emulador (backlog E0-06).",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project runandlift-rules-test \"node --test\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.1",
+    "firebase-tools": "15.26.0"
+  }
+}

@@ -4,7 +4,9 @@
 !.idea/codeStyles/
 !.idea/inspectionProfiles/
 !.idea/compiler.xml
-!.idea/androidProjectSystem.xml
+# Atenção à caixa: o arquivo em disco é AndroidProjectSystem.xml. Em Windows a diferença passa
+# batida, mas em Linux e macOS a exceção com caixa errada não casa e o arquivo some do repositório.
+!.idea/AndroidProjectSystem.xml
 !.idea/vcs.xml
 !.idea/runConfigurations.xml
 
@@ -30,6 +32,14 @@ google-services.json
 *.keystore
 keystore.properties
 secrets.properties
+
+# Node e Firebase CLI — usados só pelos testes das Security Rules (firestore/)
+node_modules/
+# Cache local do CLI, criado no primeiro `firebase deploy`.
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # SO
 .DS_Store

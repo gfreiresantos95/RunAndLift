@@ -30,3 +30,5 @@ se pensou na época é justamente o que se quer preservar.
 | [0004](0004-configuracao-do-firebase.md) | Configuração do Firebase | Aceito |
 | [0005](0005-firestore-edicao-e-banco-padrao.md) | Firestore em edição Standard, banco `(default)` | Aceito |
 | [0006](0006-repositorio-cache-first-e-estrategia-de-teste.md) | Repositório cache-first e estratégia de teste | Aceito |
+| [0007](0007-security-rules-e-id-de-vinculo-deterministico.md) | Security Rules e id de vínculo determinístico | Aceito |
+| [0008](0008-zero-anuncio.md) | Zero anúncio, sempre | Aceito |

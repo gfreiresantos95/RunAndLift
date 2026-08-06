@@ -43,7 +43,41 @@ jobs:
           name: relatorios-qualidade
           path: |
             app/build/reports/detekt/
+            core/build/reports/detekt/
+            data/build/reports/detekt/
             app/build/reports/lint-results-*.html
             app/build/reports/tests/
+            data/build/reports/tests/
           if-no-files-found: ignore
           retention-days: 14
+
+  # Job separado do build Android: as Security Rules não dependem do APK, e rodar em paralelo dá
+  # retorno mais rápido. O emulador do Firestore é um processo Java, daí o setup de JDK aqui também.
+  firestore-rules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: firestore/package-lock.json
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # `npm ci` e não `npm install`: respeita o package-lock.json e falha se ele divergir.
+      - name: Instalar dependências
+        working-directory: firestore
+        run: npm ci
+
+      - name: Testar Security Rules no emulador
+        working-directory: firestore
+        run: npm test

@@ -1,0 +1,197 @@
+rules_version = '2';
+
+// Security Rules do Firestore — backlog E0-06.
+//
+// Princípio: negar por padrão. Toda coleção declara explicitamente quem lê e quem escreve, e o que
+// não estiver aqui é recusado. A regra central do produto é a última linha do item no backlog:
+// "Treinador só lê alunos com link.status == active".
+//
+// CONVENÇÃO OBRIGATÓRIA — id do vínculo é determinístico: links/{trainerId}_{studentId}.
+// Regras não podem fazer consulta, só `get()` por caminho exato. Sem esse formato de id não há
+// como uma regra descobrir se existe vínculo entre duas pessoas, e a regra central acima seria
+// impossível de escrever.
+//
+// CUSTO: cada `get()` ou `exists()` aqui conta como leitura de documento na cota. O orçamento de
+// §2.3 não previa isso. Por esse motivo as verificações de vínculo estão apenas onde são
+// indispensáveis, e o caminho quente do produto — o aluno lendo o próprio treino — não faz
+// nenhuma: resolve tudo comparando request.auth.uid com campo do próprio documento.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- auxiliares ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function linkId(trainerId, studentId) {
+      return trainerId + '_' + studentId;
+    }
+
+    function linkPath(trainerId, studentId) {
+      return /databases/$(database)/documents/links/$(linkId(trainerId, studentId));
+    }
+
+    function linkData(trainerId, studentId) {
+      return get(linkPath(trainerId, studentId)).data;
+    }
+
+    // Custa 1 leitura. Usar só onde não houver alternativa.
+    function hasActiveLink(trainerId, studentId) {
+      return isSignedIn()
+        && exists(linkPath(trainerId, studentId))
+        && linkData(trainerId, studentId).status == 'active';
+    }
+
+    // Vínculo encerrado não devolve acesso a dado novo, mas o treinador mantém o histórico do
+    // período — exigência de responsabilidade técnica (§10.2 do relatório, E12-11).
+    function hasOrHadLink(trainerId, studentId) {
+      return isSignedIn() && exists(linkPath(trainerId, studentId));
+    }
+
+    function isTrainerOf(studentId) {
+      return hasActiveLink(request.auth.uid, studentId);
+    }
+
+    // ---------- identidade ----------
+
+    // Dado de identidade é do titular e de mais ninguém. O treinador enxerga nome e foto do aluno
+    // por studentSummaries, que é feito para isso e custa 1 leitura no lugar de N.
+    match /users/{uid} {
+      allow read, write: if isSelf(uid);
+    }
+
+    match /students/{uid} {
+      allow read: if isSelf(uid) || isTrainerOf(uid);
+      // Anamnese e restrições são dado de saúde: só o titular escreve.
+      allow write: if isSelf(uid);
+    }
+
+    match /trainerProfiles/{uid} {
+      // Perfil público só quando o treinador optou pela vitrine (E3-02, consentimento LGPD).
+      allow read: if isSelf(uid)
+        || hasOrHadLink(uid, request.auth.uid)
+        || (isSignedIn() && resource.data.showcase.enabled == true);
+      allow write: if isSelf(uid);
+    }
+
+    // ---------- vínculo ----------
+
+    match /links/{id} {
+      allow read: if isSelf(resource.data.trainerId) || isSelf(resource.data.studentId);
+
+      // Caminho A: o treinador convida, e o vínculo nasce em 'invited'.
+      // Caminho B: o aluno solicita pela vitrine, e nasce em 'requested'.
+      // Qualquer outro estado inicial burlaria a confirmação da contraparte.
+      allow create: if id == linkId(request.resource.data.trainerId, request.resource.data.studentId)
+        && (
+          (isSelf(request.resource.data.trainerId) && request.resource.data.status == 'invited')
+          || (isSelf(request.resource.data.studentId) && request.resource.data.status == 'requested')
+        );
+
+      // Quem confirma é sempre a contraparte de quem propôs. As demais transições são dos dois.
+      allow update: if (isSelf(resource.data.trainerId) || isSelf(resource.data.studentId))
+        && request.resource.data.trainerId == resource.data.trainerId
+        && request.resource.data.studentId == resource.data.studentId
+        && (
+          (resource.data.status == 'invited' && request.resource.data.status in ['active', 'ended']
+            && isSelf(resource.data.studentId))
+          || (resource.data.status == 'requested' && request.resource.data.status in ['active', 'ended']
+            && isSelf(resource.data.trainerId))
+          || (resource.data.status == 'active' && request.resource.data.status in ['paused', 'ended'])
+          || (resource.data.status == 'paused' && request.resource.data.status in ['active', 'ended'])
+        );
+
+      // Encerrar é mudar status para 'ended'. Apagar destruiria o histórico que os dois lados têm
+      // direito de manter (§4 do backlog, D9).
+      allow delete: if false;
+    }
+
+    match /inviteCodes/{code} {
+      // O código é o próprio segredo: quem o digitou já o recebeu do treinador. Ler exige conhecer
+      // o caminho exato, e enumerar 6 caracteres é o que o App Check (E0-07) vai barrar.
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSelf(request.resource.data.trainerId)
+        || isSelf(resource.data.trainerId);
+    }
+
+    // ---------- catálogo ----------
+
+    match /exercises/{exerciseId} {
+      // Catálogo global é leitura para qualquer autenticado; customizado, só do dono.
+      allow read: if isSignedIn() && (resource.data.ownerId == null || isSelf(resource.data.ownerId));
+      // Cliente nunca escreve no catálogo global — ele é publicado por fora do app.
+      allow create: if isSelf(request.resource.data.ownerId);
+      allow update, delete: if isSelf(resource.data.ownerId);
+    }
+
+    // ---------- prescrição ----------
+
+    match /programs/{programId} {
+      allow read: if isSelf(resource.data.trainerId);
+      allow create: if isSelf(request.resource.data.trainerId);
+      allow update, delete: if isSelf(resource.data.trainerId);
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isSelf(resource.data.trainerId) || isSelf(resource.data.studentId);
+      allow create: if isSelf(request.resource.data.trainerId)
+        && hasActiveLink(request.resource.data.trainerId, request.resource.data.studentId);
+      allow update, delete: if isSelf(resource.data.trainerId);
+    }
+
+    // ---------- execução ----------
+
+    match /sessions/{sessionId} {
+      allow read: if isSelf(resource.data.studentId) || isSelf(resource.data.trainerId);
+
+      // O aluno registra o próprio treino. Sem `get()` no caminho quente: a checagem é contra o
+      // campo do próprio documento, e é isso que mantém o registro de série barato (E6-02).
+      allow create: if isSelf(request.resource.data.studentId);
+
+      // O treinador ajusta a prescrição, mas nunca o que foi executado — é a exceção do E0-05,
+      // aqui aplicada no servidor e não só no cliente.
+      allow update: if isSelf(resource.data.studentId)
+        || (isSelf(resource.data.trainerId)
+            && request.resource.data.exercises == resource.data.exercises);
+
+      allow delete: if false;
+    }
+
+    // ---------- agregados de aderência ----------
+
+    match /studentSummaries/{studentId} {
+      // É o documento que o painel do treinador lê, 1 por aluno em vez de varredura (§2.4, regra 1).
+      allow read: if isSelf(studentId) || isTrainerOf(studentId);
+      allow write: if isSelf(studentId);
+    }
+
+    match /trainerDashboards/{trainerId} {
+      // Carteira inteira em 1 leitura, e só o dono enxerga.
+      allow read, write: if isSelf(trainerId);
+    }
+
+    // ---------- trilha de responsabilidade técnica ----------
+
+    match /auditLogs/{logId} {
+      // Imutável por definição: log que pode ser alterado não serve de trilha (E12-11,
+      // Res. CONFEF 542/2024). Leitura é pelo backoffice, fora das regras do cliente.
+      allow read: if false;
+      allow create: if isSelf(request.resource.data.actorId);
+      allow update, delete: if false;
+    }
+
+    // ---------- padrão ----------
+
+    // Coleção não declarada acima é negada. Vale inclusive para as que ainda vão existir: o
+    // esquecimento vira erro de permissão no desenvolvimento, não vazamento em produção.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

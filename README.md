@@ -71,6 +71,24 @@ Em builds de debug, a coleta de Crashlytics, Analytics e Performance fica deslig
 instrumentação do Performance nem roda — dados de desenvolvimento contaminariam o crash-free rate,
 o funil e a medição de tempo de tela.
 
+### Alerta de regressão de crash-free rate
+
+O SDK já reporta em builds de release. O **alerta** é configuração de console, feita uma vez em
+**Crashlytics › ⋮ › Configurações de alertas**:
+
+| Alerta | Ligar? | Observação |
+|---|---|---|
+| **Velocity alerts** | Sim | Avisa quando um problema novo passa a afetar uma fatia relevante das sessões. É o que pega regressão cedo |
+| **Regression alerts** | Sim | Avisa quando um problema fechado volta a ocorrer |
+| **New issue alerts** | Sim, no piloto | Com poucos usuários o volume é baixo. Reavaliar no beta fechado, quando pode virar ruído |
+
+Destino: e-mail do mantenedor. O número que importa é o **crash-free rate acima de 99,5%** — é
+critério de saída do primeiro marco, e a razão de a coleta em debug estar desligada.
+
+O `assembleRelease` hoje sai com R8 desligado, então as stack traces já vêm legíveis. Quando o R8
+for ligado, o upload do arquivo de mapeamento passa a ser necessário para o relatório continuar
+inteligível.
+
 ### Qualidade de código
 
 Ative o hook de pré-commit uma vez, logo após clonar — ele formata e analisa antes de deixar o
@@ -95,6 +113,22 @@ Não há baseline do detekt: a contagem de violações é zero e deve continuar 
 As regras de formatação ficam no `.editorconfig`, que é lido tanto pela IDE quanto pelo build —
 não há chave duplicada em `build.gradle.kts`. As regras de complexidade ficam em
 `config/detekt/detekt.yml`, e as exceções do Android Lint e do compose-lints em `app/lint.xml`.
+
+### Security Rules do Firestore
+
+As regras vivem em `firestore/firestore.rules` e negam por padrão. Os testes rodam contra o
+emulador:
+
+```bash
+cd firestore
+npm ci
+npm test
+```
+
+O emulador é um processo Java — se `java` não estiver no PATH, ele não sobe. O CI roda esses
+testes em job próprio, em paralelo ao build Android.
+
+Para publicar as regras no projeto real: `npx firebase deploy --only firestore:rules`.
 
 ### Proteção da branch main
 
@@ -217,7 +251,9 @@ O vínculo entre treinador e aluno vive em `links`, uma coleção de topo (consu
 - **Versões de dependência só no catálogo** (`gradle/libs.versions.toml`), referenciadas como `libs.*`. Repositórios são declarados apenas em `settings.gradle.kts` (`FAIL_ON_PROJECT_REPOS`).
 - **Configuration cache está ligado** — build logic precisa ser compatível.
 - **Acessibilidade não é opcional:** alvos de toque ≥ 48 dp e contraste mínimo AA.
-- **Sem anúncios**, em nenhuma tela, em nenhuma versão.
+- **Sem anúncios**, em nenhuma tela, em nenhuma versão — nem SDK de rede de anúncios desativado
+  atrás de flag. Decisão registrada em [`docs/adr/0008`](docs/adr/0008-zero-anuncio.md), com as
+  alternativas descartadas e o único cenário que justifica reabrir.
 
 Orientações para agentes de IA que trabalham neste repositório estão em [`CLAUDE.md`](CLAUDE.md).
 
