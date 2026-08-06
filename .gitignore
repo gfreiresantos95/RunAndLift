@@ -1,15 +1,22 @@
+# IDE — ignora tudo em .idea, exceto o que é compartilhável
+.idea/*
+!.idea/.gitignore
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+!.idea/compiler.xml
+!.idea/androidProjectSystem.xml
+!.idea/vcs.xml
+!.idea/runConfigurations.xml
+
+# Android / Gradle
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
+.gradle/
+local.properties
 /build
+*/build/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# SO
+.DS_Store
