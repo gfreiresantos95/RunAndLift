@@ -1,0 +1,57 @@
+version: 2
+
+# Dependabot em vez de Renovate: é nativo do GitHub, não exige instalar App, e entende
+# gradle/libs.versions.toml. Renovate só compensaria com regras de auto-merge e agendamento fino,
+# que um projeto de um dev não precisa.
+#
+# Os grupos existem para evitar o modo padrão — um PR por artefato — que com este catálogo daria
+# mais de dez PRs por rodada e viraria ruído ignorado. Cada grupo abre no máximo um PR por semana.
+#
+# Quem valida os PRs é o CI (.github/workflows/ci.yml), que roda em pull_request para main. O
+# Dependabot não constrói nada: ele só propõe a mudança de versão.
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      # AGP e Kotlin andam juntos na prática: o plugin do Compose segue a versão do Kotlin, e
+      # subir um sem o outro costuma quebrar a compilação.
+      build-toolchain:
+        patterns:
+          - "com.android.*"
+          - "org.jetbrains.kotlin*"
+      # A BOM fixa todos os artefatos do Compose; separá-los em PRs distintos não faria sentido.
+      compose:
+        patterns:
+          - "androidx.compose*"
+      androidx:
+        patterns:
+          - "androidx.*"
+        exclude-patterns:
+          - "androidx.compose*"
+      # Ferramentas de qualidade: quebram o CI, nunca o app. Podem subir juntas e sem cerimônia.
+      quality-tools:
+        patterns:
+          - "io.gitlab.arturbosch.detekt*"
+          - "com.diffplug.spotless*"
+          - "com.slack.lint.compose*"
+
+  # As actions do workflow também são dependência, e ficam desatualizadas em silêncio.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns:
+          - "*"

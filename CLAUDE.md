@@ -45,7 +45,13 @@ Write new code inside these limits instead of discovering them at commit time: *
 
 Rule exceptions live in `config/detekt/detekt.yml` with the reason in a comment — mostly Compose frictions (`@Composable` PascalCase, unused private `@Preview`, colour tokens as magic numbers).
 
+Compose-specific checks come from `compose-lint-checks` (Slack), wired through `lintChecks` and run by `./gradlew lint`. Its exceptions live in `app/lint.xml`, scoped by path rather than disabled globally — a rule that gets in the way inside `ui/theme/` is usually still right in screen code.
+
 ktlint settings live in `.editorconfig` and nowhere else. Note the plumbing: Spotless hands ktlint an in-memory string, so ktlint can't discover `.editorconfig` on disk and `setEditorConfigPath` doesn't help either. `editorConfigProperties()` in `build.gradle.kts` therefore parses the `[*]` and `[*.{kt,kts}]` sections and feeds them to `editorConfigOverride`, which is the only channel ktlint honours. Don't add ktlint keys directly to that map — put them in `.editorconfig` so the IDE and the build stay on one source.
+
+## Decision records
+
+`docs/adr/` holds the decisions whose rationale the code can't carry — currently the quality-tooling stack and the JDK 21 pin. Before changing build tooling, versions, or theming fundamentals, check whether an ADR already covers it; if a decision gets reversed, add a new ADR rather than editing the old one.
 
 ## Design system (`ui/theme/`)
 

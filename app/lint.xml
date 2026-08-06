@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Exceções do Android Lint, incluindo as regras do compose-lints (Slack).
+
+    A regra aqui é escopo, não desligamento global: uma regra que atrapalha no design system
+    normalmente continua correta no código de tela. Suprimir por caminho preserva isso.
+-->
+<lint>
+
+    <!--
+        ComposeCompositionLocalUsage desaconselha criar CompositionLocal porque vira dependência
+        implícita. Está certa para código de funcionalidade — mas estender o tema é justamente o
+        caso sancionado, e é o que o próprio Material 3 faz (LocalContentColor e afins).
+        LocalExtendedColorScheme existe para carregar os papéis de cor que o Material não tem.
+
+        Fora de ui/theme a regra continua ativa: CompositionLocal novo em tela é sinal de que
+        alguma coisa deveria ter sido passada por parâmetro.
+    -->
+    <issue id="ComposeCompositionLocalUsage">
+        <ignore path="src/main/java/com/gabrielfreire/runandlift/ui/theme/**" />
+    </issue>
+
+</lint>

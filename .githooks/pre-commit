@@ -10,12 +10,39 @@
 
 set -e
 
-# O Gradle precisa de uma JVM para subir. Em ambiente gráfico (IDE, cliente de Git) o PATH
-# costuma ser mais pobre que o do terminal, e a mensagem padrão do Gradle não ajuda muito.
+# O Gradle precisa de uma JVM só para subir o launcher — qualquer JDK recente serve. A versão do
+# daemon é decidida por gradle/gradle-daemon-jvm.properties, que provisiona a 21 sozinho.
+#
+# Quando não houver JAVA_HOME nem `java` no PATH, procuramos a JDK que acompanha o Android Studio,
+# que em um projeto Android é presença praticamente garantida. Isso evita exigir configuração de
+# ambiente antes do primeiro commit, e cobre o caso do commit feito pela interface da IDE ou por
+# cliente gráfico de Git, onde o PATH costuma ser mais pobre que o do terminal.
+find_bundled_jdk() {
+    for candidate in \
+        "$HOME/AppData/Local/Programs/Android Studio/jbr" \
+        "/c/Program Files/Android/Android Studio/jbr" \
+        "/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
+        "/opt/android-studio/jbr" \
+        "$HOME/android-studio/jbr"
+    do
+        if [ -x "$candidate/bin/java" ] || [ -x "$candidate/bin/java.exe" ]; then
+            printf '%s' "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
 if [ -z "$JAVA_HOME" ] && ! command -v java >/dev/null 2>&1; then
-    echo "pre-commit: nenhuma JVM encontrada (JAVA_HOME vazio e 'java' fora do PATH)."
-    echo "            Aponte JAVA_HOME para uma JDK 21 e tente de novo."
-    exit 1
+    if JAVA_HOME=$(find_bundled_jdk); then
+        export JAVA_HOME
+        echo "pre-commit: usando a JDK do Android Studio ($JAVA_HOME)."
+    else
+        echo "pre-commit: nenhuma JVM encontrada (JAVA_HOME vazio, 'java' fora do PATH e nenhuma"
+        echo "            JDK do Android Studio nos caminhos conhecidos)."
+        echo "            Defina JAVA_HOME apontando para qualquer JDK recente e tente de novo."
+        exit 1
+    fi
 fi
 
 echo "pre-commit: formatando (spotlessApply) e analisando (detekt)..."

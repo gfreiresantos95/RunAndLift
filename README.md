@@ -74,7 +74,25 @@ Não há baseline do detekt: a contagem de violações é zero e deve continuar 
 
 As regras de formatação ficam no `.editorconfig`, que é lido tanto pela IDE quanto pelo build —
 não há chave duplicada em `build.gradle.kts`. As regras de complexidade ficam em
-`config/detekt/detekt.yml`.
+`config/detekt/detekt.yml`, e as exceções do Android Lint e do compose-lints em `app/lint.xml`.
+
+### Proteção da branch main
+
+O CI só vira garantia se não puder ser contornado. Isso não é configurável por código — faça uma
+vez, em **Settings › Rules › Rulesets › New branch ruleset**:
+
+1. Target branches: `main`.
+2. Marque **Require a pull request before merging** (com 0 aprovações, se você trabalha sozinho).
+3. Marque **Require status checks to pass** e selecione o check `verify` do workflow CI. Ele só
+   aparece na lista depois que o workflow tiver rodado ao menos uma vez.
+4. Marque **Block force pushes**.
+5. Deixe **Do not allow bypassing the above settings** desmarcado se quiser poder destravar você
+   mesmo em emergência — marcado, nem você passa por cima.
+
+### Atualização de dependências
+
+`.github/dependabot.yml` abre PRs semanais agrupados (toolchain, Compose, androidx, ferramentas de
+qualidade) e mensais para as actions. Quem valida é o CI. Nada é mesclado automaticamente.
 
 ---
 
