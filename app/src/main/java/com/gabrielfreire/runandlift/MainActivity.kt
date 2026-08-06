@@ -7,6 +7,7 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,24 +23,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.lifecycleScope
-import com.gabrielfreire.runandlift.ui.theme.ColorRole
-import com.gabrielfreire.runandlift.ui.theme.Dimens
-import com.gabrielfreire.runandlift.ui.theme.RunAndLiftTheme
-import com.gabrielfreire.runandlift.ui.theme.extendedColors
-import kotlinx.coroutines.launch
+import com.gabrielfreire.runandlift.core.designsystem.ColorRole
+import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
+import com.gabrielfreire.runandlift.core.designsystem.extendedColors
 
 /** Duração do fade da splash. Curto o suficiente para não parecer lentidão de abertura. */
 private const val SPLASH_EXIT_DURATION_MS = 250L
 
 class MainActivity : ComponentActivity() {
-    /**
-     * Enquanto for `false`, a splash continua na tela.
-     *
-     * Lido pelo `keepOnScreenCondition` a cada frame na thread principal, então é um `var` simples
-     * de propósito — não há leitura concorrente.
-     */
-    private var isAppReady = false
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Precisa vir antes de super.onCreate para a Splash Screen API assumir a janela.
@@ -49,7 +42,8 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        splashScreen.setKeepOnScreenCondition { !isAppReady }
+        // Lido a cada frame na thread principal; `.value` evita coletar um Flow só para isso.
+        splashScreen.setKeepOnScreenCondition { !viewModel.isReady.value }
         splashScreen.setOnExitAnimationListener { splashProvider ->
             ObjectAnimator.ofFloat(
                 splashProvider.view,
@@ -62,17 +56,6 @@ class MainActivity : ComponentActivity() {
                 doOnEnd { splashProvider.remove() }
                 start()
             }
-        }
-
-        lifecycleScope.launch {
-            // Ponto de extensão da splash. É aqui que entram, quando existirem:
-            // restauração da sessão do Firebase Auth, leitura do papel ativo (activeRole) e
-            // aquecimento do Room — porque o grafo de navegação depende do papel, e montar o
-            // grafo errado para depois trocar produz um piscar de tela na abertura.
-            //
-            // Regra a manter: nada de espera artificial e nada de I/O de rede bloqueante aqui.
-            // A promessa do produto é abrir o treino em ≤2s, inclusive offline (backlog E6-01).
-            isAppReady = true
         }
 
         setContent {

@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.ui.theme
+package com.gabrielfreire.runandlift.core.designsystem
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement

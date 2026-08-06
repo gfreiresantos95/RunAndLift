@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.ui.theme
+package com.gabrielfreire.runandlift.core.designsystem
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable

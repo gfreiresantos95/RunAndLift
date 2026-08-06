@@ -13,11 +13,11 @@
         caso sancionado, e é o que o próprio Material 3 faz (LocalContentColor e afins).
         LocalExtendedColorScheme existe para carregar os papéis de cor que o Material não tem.
 
-        Fora de ui/theme a regra continua ativa: CompositionLocal novo em tela é sinal de que
+        Fora do design system a regra continua ativa: CompositionLocal novo em tela é sinal de que
         alguma coisa deveria ter sido passada por parâmetro.
     -->
     <issue id="ComposeCompositionLocalUsage">
-        <ignore path="src/main/java/com/gabrielfreire/runandlift/ui/theme/**" />
+        <ignore path="src/main/java/com/gabrielfreire/runandlift/core/designsystem/**" />
     </issue>
 
 </lint>

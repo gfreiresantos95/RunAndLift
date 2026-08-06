@@ -26,3 +26,4 @@ se pensou na época é justamente o que se quer preservar.
 |---|---|---|
 | [0001](0001-ferramentas-de-qualidade-e-formatacao.md) | Ferramentas de qualidade e formatação | Aceito |
 | [0002](0002-jdk-21-no-daemon-do-gradle.md) | JDK 21 no daemon do Gradle | Aceito |
+| [0003](0003-estrutura-de-modulos-e-injecao-de-dependencia.md) | Estrutura de módulos e injeção de dependência | Aceito |

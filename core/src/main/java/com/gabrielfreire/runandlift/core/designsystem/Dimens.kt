@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.ui.theme
+package com.gabrielfreire.runandlift.core.designsystem
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.sizeIn

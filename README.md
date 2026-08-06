@@ -24,7 +24,7 @@ Aplicativo Android nativo para prescrição e acompanhamento de treinos de muscu
 | Backend sob demanda | Cloud Functions |
 | CI | GitHub Actions |
 
-**Build:** Gradle 9.5 · AGP 9.3.1 · Kotlin 2.4.10 · compileSdk 37 · minSdk 26 (o esqueleto ainda está em 24) · toolchain JDK 25 provisionada automaticamente.
+**Build:** Gradle 9.5 · AGP 9.3.1 · Kotlin 2.4.10 · compileSdk 37 · minSdk 26 · toolchain JDK 21 provisionada automaticamente.
 
 ---
 
@@ -98,18 +98,24 @@ qualidade) e mensais para as actions. Quem valida é o CI. Nada é mesclado auto
 
 ## Arquitetura
 
-### Estrutura de módulos (alvo)
+### Estrutura de módulos
 
 ```
-:app          — aplicação, navegação raiz, injeção
+:app          — aplicação, MainViewModel, AppContainer (injeção manual)
 :core         — design system, utilitários, contratos comuns
-:data         — Room, Firestore, repositórios, fila de sincronização
-:feature-*    — uma funcionalidade por módulo
+:data         — Room, Firestore, repositórios, fila de sincronização (ainda vazio)
+:feature-*    — uma funcionalidade por módulo (criados sob demanda, a partir da primeira tela)
 ```
+
+A dependência anda em um sentido só: `:app → :core`, `:app → :data`, `:data → :core`. `:core` não
+depende de ninguém — é o que impede o design system de virar refém de regra de negócio.
+
+O padrão de apresentação é MVVM: o ViewModel expõe estado como `StateFlow` somente-leitura, a
+mutação fica restrita a ele, e nenhuma referência a `Context` ou tipo de UI entra ali.
 
 ### Design system
 
-Vive em `ui/theme/` e é consumido sempre pela camada mais alta: `MaterialTheme.colorScheme` para
+Vive em `:core`, no pacote `core.designsystem`, e é consumido sempre pela camada mais alta: `MaterialTheme.colorScheme` para
 os papéis do Material 3, `MaterialTheme.extendedColors` para os papéis que ele não tem, e
 `AppTypography` / `AppShapes` / `Dimens` para o resto. Os tokens de marca são `internal` e nenhuma
 tela os referencia direto — trocar a paleta é reescrever um arquivo.

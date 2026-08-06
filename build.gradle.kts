@@ -3,7 +3,11 @@ import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 plugins {
+    // Declarados aqui com `apply false` só para fixar a versão no classpath da build. Sem isto,
+    // o módulo que pedir `alias(libs.plugins.android.library)` com versão colide com o AGP que já
+    // veio pelo `android.application`.
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.spotless)

@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.ui.theme
+package com.gabrielfreire.runandlift.core.designsystem
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme

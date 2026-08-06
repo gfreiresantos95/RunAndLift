@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.ui.theme
+package com.gabrielfreire.runandlift.core.designsystem
 
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
