@@ -29,3 +29,4 @@ se pensou na época é justamente o que se quer preservar.
 | [0003](0003-estrutura-de-modulos-e-injecao-de-dependencia.md) | Estrutura de módulos e injeção de dependência | Aceito |
 | [0004](0004-configuracao-do-firebase.md) | Configuração do Firebase | Aceito |
 | [0005](0005-firestore-edicao-e-banco-padrao.md) | Firestore em edição Standard, banco `(default)` | Aceito |
+| [0006](0006-repositorio-cache-first-e-estrategia-de-teste.md) | Repositório cache-first e estratégia de teste | Aceito |

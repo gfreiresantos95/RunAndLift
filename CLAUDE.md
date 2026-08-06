@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Android app (`com.gabrielfreire.runandlift`, "Run & Lift"), Kotlin + Jetpack Compose with Material 3. Three modules, dependencies flowing one way only: `:app` → `:core`, `:app` → `:data`, `:data` → `:core`; `:core` depends on nothing.
 
 - `:core` — the design system (`core/…/core/designsystem`). All Compose UI lives here for now.
-- `:data` — **no code yet**; the boundary exists so Room/Firestore/WorkManager land in the right place (see `data/README.md`).
+- `:data` — Room as the UI's source of truth, Firestore behind it, cache-first repositories. Entities/DAOs/data sources are `internal`; only interfaces and `model/` domain types cross out, built by `DataContainer`. See `data/README.md` and `docs/adr/0006`.
 - `:app` — `MainActivity`, `MainViewModel`, and `AppContainer` (manual DI, held by `RunAndLiftApplication`).
 
 `:feature-*` modules are planned but deliberately not created until the first real screen. MVVM is the pattern: state out as a read-only `StateFlow`, mutation confined to the ViewModel, no `Context` or UI types in it. Rationale and revisit triggers for the structure, the DI choice, and the deferral of convention plugins are in `docs/adr/0003`.
@@ -54,6 +54,17 @@ Rule exceptions live in `config/detekt/detekt.yml` with the reason in a comment 
 Compose-specific checks come from `compose-lint-checks` (Slack), wired through `lintChecks` and run by `./gradlew lint`. Its exceptions live in `core/lint.xml`, scoped by path rather than disabled globally — a rule that gets in the way inside the design system is usually still right in screen code. Every module holding Compose code needs its own `lintChecks(libs.compose.lint.checks)`.
 
 ktlint settings live in `.editorconfig` and nowhere else. Note the plumbing: Spotless hands ktlint an in-memory string, so ktlint can't discover `.editorconfig` on disk and `setEditorConfigPath` doesn't help either. `editorConfigProperties()` in `build.gradle.kts` therefore parses the `[*]` and `[*.{kt,kts}]` sections and feeds them to `editorConfigOverride`, which is the only channel ktlint honours. Don't add ktlint keys directly to that map — put them in `.editorconfig` so the IDE and the build stay on one source.
+
+## Data layer rules
+
+Four rules every repository follows — they are what makes offline real rather than "a cache that sometimes works" (`OfflineFirstExerciseRepository` is the reference implementation):
+
+1. **Reads never touch the network.** `observe*` comes from Room and re-emits on table change.
+2. **Sync is an explicit call**; its result arrives through the same `Flow`, not the return value.
+3. **Network failure is a return value, not an exception** — the app keeps working on disk data.
+4. **Every network call states its Firestore read cost** in KDoc, and avoids the call when it can.
+
+Room schemas are exported to `data/schemas/` and committed — migrations (E0-13) have nothing to migrate from otherwise. Never add `fallbackToDestructiveMigration`. Tests use hand-written fakes, not MockK; `./gradlew koverHtmlReport` gives coverage, with no minimum threshold by design.
 
 ## Firebase
 

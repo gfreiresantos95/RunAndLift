@@ -1,0 +1,44 @@
+package com.gabrielfreire.runandlift.data
+
+import android.content.Context
+import com.gabrielfreire.runandlift.data.local.RunAndLiftDatabase
+import com.gabrielfreire.runandlift.data.remote.catalog.CatalogVersionSource
+import com.gabrielfreire.runandlift.data.remote.exercise.FirestoreExerciseRemoteDataSource
+import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
+import com.gabrielfreire.runandlift.data.repository.OfflineFirstExerciseRepository
+import com.gabrielfreire.runandlift.data.util.AppDispatchers
+import com.google.firebase.firestore.FirebaseFirestore
+
+/**
+ * Porta de entrada de `:data`. Constrói o banco, as fontes remotas e os repositórios.
+ *
+ * Existe porque entidades, DAOs e fontes de dados são `internal`: quem está fora do módulo não
+ * consegue — nem deve — montar um repositório à mão. O que sai daqui são interfaces e modelos de
+ * domínio.
+ *
+ * Tudo é `by lazy` porque abrir o banco custa I/O, e a `Application` roda antes da primeira tela —
+ * o produto promete abertura em ≤2s (E6-01). O banco só é tocado no primeiro uso de verdade.
+ *
+ * @param catalogVersionSource implementado em `:app` sobre o Remote Config. Ver [CatalogVersionSource].
+ */
+class DataContainer(
+    context: Context,
+    catalogVersionSource: CatalogVersionSource,
+    dispatchers: AppDispatchers = AppDispatchers(),
+) {
+    private val applicationContext = context.applicationContext
+
+    private val database: RunAndLiftDatabase by lazy { RunAndLiftDatabase.create(applicationContext) }
+
+    private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+
+    val exerciseRepository: ExerciseRepository by lazy {
+        OfflineFirstExerciseRepository(
+            exerciseDao = database.exerciseDao(),
+            catalogMetadataDao = database.catalogMetadataDao(),
+            remoteDataSource = FirestoreExerciseRemoteDataSource(firestore),
+            catalogVersionSource = catalogVersionSource,
+            dispatchers = dispatchers,
+        )
+    }
+}

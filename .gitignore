@@ -11,6 +11,9 @@
 # Android / Gradle
 *.iml
 .gradle/
+# Saída do compilador Kotlin 2.x: .kotlin/sessions durante o build e .kotlin/errors quando a
+# compilação falha. Fica fora de build/, então precisa de regra própria.
+.kotlin/
 local.properties
 /build
 */build/

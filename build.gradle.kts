@@ -12,6 +12,8 @@ plugins {
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.firebase.crashlytics) apply false
     alias(libs.plugins.firebase.perf) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kover)
     alias(libs.plugins.detekt)
     alias(libs.plugins.spotless)
 }
@@ -58,6 +60,13 @@ fun editorConfigProperties(vararg sections: String): Map<String, String> {
 }
 
 val ktlintSettings = editorConfigProperties("*", "*.{kt,kts}")
+
+// Kover: apenas relatório, sem piso de cobertura. Percentual mínimo em projeto nesta fase
+// premiaria teste de getter e não diria nada sobre a política que realmente importa. O relatório
+// serve para enxergar o que ficou descoberto, não para barrar build.
+dependencies {
+    kover(project(":data"))
+}
 
 spotless {
     kotlin {
