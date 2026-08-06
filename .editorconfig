@@ -1,0 +1,42 @@
+# Fonte de verdade única das convenções de formatação.
+#
+# Duas coisas leem este arquivo:
+#   - a IDE, diretamente;
+#   - o build, via `editorConfigProperties()` em build.gradle.kts, que repassa as seções [*] e
+#     [*.{kt,kts}] ao ktlint pelo editorConfigOverride do Spotless.
+#
+# Esse repasse é necessário porque o Spotless entrega ao ktlint uma string em memória, não um
+# arquivo em disco — sem caminho real o ktlint não tem de onde subir procurando .editorconfig, e
+# nem `setEditorConfigPath` resolve nesta combinação de versões. Editar aqui basta: não há chave
+# duplicada em outro lugar.
+root = true
+
+[*]
+charset = utf-8
+# Espelha o `* text=auto eol=lf` do .gitattributes.
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+max_line_length = 120
+# Compose usa PascalCase em @Composable por convenção oficial: a função declara UI, não executa
+# ação. Mesma exceção configurada no detekt (naming > FunctionNaming).
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# Desligada porque proíbe o padrão de documentação do projeto: KDoc no topo do arquivo seguido de
+# marcadores de seção em `//`. Não há como satisfazê-la sem desmontar essa estrutura, e o ganho
+# seria nulo. As demais regras do ktlint_official continuam ativas.
+ktlint_standard_no-consecutive-comments = disabled
+
+[*.bat]
+# O .gitattributes mantém .bat em CRLF; o editor precisa concordar.
+end_of_line = crlf
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+# Dois espaços no fim da linha são quebra de linha em Markdown.
+trim_trailing_whitespace = false

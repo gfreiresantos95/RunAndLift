@@ -14,16 +14,21 @@ import androidx.compose.ui.unit.dp
 object Dimens {
 
     // --- Espaçamento: grade de 4dp ---
-    /** 4dp — entre elementos colados (ícone e seu rótulo). */
+    /** 4dp — entre elementos colados (ícone e o seu rótulo). */
     val SpaceXSmall = 4.dp
+
     /** 8dp — entre itens de um mesmo grupo. */
     val SpaceSmall = 8.dp
+
     /** 12dp — padding interno de componente compacto. */
     val SpaceMedium = 12.dp
+
     /** 16dp — padding padrão de tela e de card. */
     val SpaceLarge = 16.dp
+
     /** 24dp — entre seções distintas. */
     val SpaceXLarge = 24.dp
+
     /** 32dp — respiro de bloco isolado. */
     val SpaceXXLarge = 32.dp
 
@@ -31,6 +36,7 @@ object Dimens {
     val ScreenPadding = PaddingValues(horizontal = SpaceLarge, vertical = SpaceMedium)
 
     // --- Alvos de toque ---
+
     /**
      * 48dp. Piso absoluto para qualquer coisa clicável, exigido pelo backlog (E0-09) e pelas
      * diretrizes de acessibilidade do Android. Vale inclusive para ícone pequeno: o desenho pode
@@ -51,10 +57,13 @@ object Dimens {
     val CornerFull = 999.dp
 
     // --- Elementos ---
+
     /** Altura de linha de lista com uma linha de texto e ícone. */
     val ListItemHeight = 56.dp
+
     /** Espessura de divisor e de contorno. */
     val BorderThin = 1.dp
+
     /** Tamanho de avatar em lista de alunos. */
     val AvatarSmall = 40.dp
     val AvatarMedium = 56.dp

@@ -27,7 +27,7 @@ There is no ktlint/detekt/spotless configuration — formatting is whatever Andr
 
 These are newer than most Android docs and samples assume; don't "fix" them back to the older idioms:
 
-- **AGP 9.3.1 / Gradle 9.5 / Kotlin 2.4.10 / compileSdk 37, minSdk 24.** The Gradle daemon runs on a JDK 25 toolchain auto-provisioned via foojay (`gradle/gradle-daemon-jvm.properties`), so no local `JAVA_HOME` setup is needed. Java source/target compatibility is 11.
+- **AGP 9.3.1 / Gradle 9.5 / Kotlin 2.4.10 / compileSdk 37, minSdk 24.** The Gradle daemon runs on a **JDK 21** toolchain auto-provisioned via foojay (`gradle/gradle-daemon-jvm.properties`), so no local `JAVA_HOME` setup is needed. Java source/target compatibility is 11. The daemon is pinned to 21 rather than 25 because detekt 1.23.x cannot run on JDK 25 — its embedded Kotlin compiler fails parsing the JVM version. Change that pin only together with the detekt decision, and regenerate it with `./gradlew updateDaemonJvm --jvm-version=<n>` so the download URLs stay in sync.
 - **No `kotlin-android` plugin.** AGP 9 handles Kotlin compilation itself; only `com.android.application` and `org.jetbrains.kotlin.plugin.compose` are applied. Adding `kotlin-android` will break the build.
 - **New AGP 9 DSL** in `app/build.gradle.kts`: `compileSdk { version = release(37) }` and `buildTypes { release { optimization { enable = false } } }` (replaces `isMinifyEnabled`). R8 is currently off for release.
 - **Keep rules live in `app/src/main/keepRules/`**, not `proguard-rules.pro`; AGP merges every file in that directory.
@@ -36,6 +36,16 @@ These are newer than most Android docs and samples assume; don't "fix" them back
 ## Dependencies
 
 All versions go through the version catalog at `gradle/libs.versions.toml` and are referenced as `libs.*` aliases — never hardcode a coordinate in `build.gradle.kts`. `settings.gradle.kts` sets `FAIL_ON_PROJECT_REPOS`, so repositories are declared only there. Compose artifacts are versionless in the catalog because they are pinned by the Compose BOM. Note the BOM is a `platform()` dependency in **both** `implementation` and `androidTestImplementation` — dropping it from the latter leaves `compose-ui-test-junit4` with no version.
+
+## Code quality
+
+`./gradlew spotlessApply` formats (ktlint), `spotlessCheck` verifies without writing, `detekt` runs static analysis. CI runs `spotlessCheck detekt lint test`; there is deliberately **no detekt baseline**, so the violation count must stay at zero — fix the cause rather than suppress.
+
+Write new code inside these limits instead of discovering them at commit time: **6 parameters** per function and **7** per constructor (defaults don't count, so Compose slot APIs are fine), **11 functions** per file and per class, **60 lines** per function, **120 columns**.
+
+Rule exceptions live in `config/detekt/detekt.yml` with the reason in a comment — mostly Compose frictions (`@Composable` PascalCase, unused private `@Preview`, colour tokens as magic numbers).
+
+ktlint settings live in `.editorconfig` and nowhere else. Note the plumbing: Spotless hands ktlint an in-memory string, so ktlint can't discover `.editorconfig` on disk and `setEditorConfigPath` doesn't help either. `editorConfigProperties()` in `build.gradle.kts` therefore parses the `[*]` and `[*.{kt,kts}]` sections and feeds them to `editorConfigOverride`, which is the only channel ktlint honours. Don't add ktlint keys directly to that map — put them in `.editorconfig` so the IDE and the build stay on one source.
 
 ## Design system (`ui/theme/`)
 

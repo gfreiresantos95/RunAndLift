@@ -53,19 +53,19 @@ private fun ColorRolesPreview() {
                 ColorSwatch(
                     name = "primary",
                     background = scheme.primary,
-                    content = scheme.onPrimary
+                    content = scheme.onPrimary,
                 )
 
                 ColorSwatch(
                     name = "primaryContainer",
                     background = scheme.primaryContainer,
-                    content = scheme.onPrimaryContainer
+                    content = scheme.onPrimaryContainer,
                 )
 
                 ColorSwatch(
                     name = "secondary",
                     background = scheme.secondary,
-                    content = scheme.onSecondary
+                    content = scheme.onSecondary,
                 )
 
                 ColorSwatch(
@@ -77,7 +77,7 @@ private fun ColorRolesPreview() {
                 ColorSwatch(
                     name = "tertiary",
                     background = scheme.tertiary,
-                    content = scheme.onTertiary
+                    content = scheme.onTertiary,
                 )
 
                 ColorSwatch(
@@ -91,31 +91,31 @@ private fun ColorRolesPreview() {
                 ColorSwatch(
                     name = "surface",
                     background = scheme.surface,
-                    content = scheme.onSurface
+                    content = scheme.onSurface,
                 )
 
                 ColorSwatch(
                     name = "surfaceContainer",
                     background = scheme.surfaceContainer,
-                    content = scheme.onSurface
+                    content = scheme.onSurface,
                 )
 
                 ColorSwatch(
                     name = "surfaceContainerHigh",
                     background = scheme.surfaceContainerHigh,
-                    content = scheme.onSurface
+                    content = scheme.onSurface,
                 )
 
                 ColorSwatch(
                     name = "surfaceVariant",
                     background = scheme.surfaceVariant,
-                    content = scheme.onSurfaceVariant
+                    content = scheme.onSurfaceVariant,
                 )
 
                 ColorSwatch(
                     name = "inverseSurface",
                     background = scheme.inverseSurface,
-                    content = scheme.inverseOnSurface
+                    content = scheme.inverseOnSurface,
                 )
 
                 SectionTitle(text = "Estado — semáforo de aderência")
@@ -134,7 +134,7 @@ private fun ColorRolesPreview() {
                 ColorSwatch(
                     name = "errorContainer",
                     background = scheme.errorContainer,
-                    content = scheme.onErrorContainer
+                    content = scheme.onErrorContainer,
                 )
             }
         }
@@ -177,25 +177,25 @@ private fun TypographyPreview() {
                 TypeSample(
                     name = "metric large · 111",
                     style = MetricTextStyles.large,
-                    sample = "111"
+                    sample = "111",
                 )
 
                 TypeSample(
                     name = "metric large · 888",
                     style = MetricTextStyles.large,
-                    sample = "888"
+                    sample = "888",
                 )
 
                 TypeSample(
                     name = "metric medium",
                     style = MetricTextStyles.medium,
-                    sample = "82,5 kg"
+                    sample = "82,5 kg",
                 )
 
                 TypeSample(
                     name = "metric small",
                     style = MetricTextStyles.small,
-                    sample = "12 × 3"
+                    sample = "12 × 3",
                 )
             }
         }
@@ -271,6 +271,7 @@ private fun TypeSample(name: String, style: TextStyle, sample: String = "Treino 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(140.dp),
         )
+
         Text(
             text = sample,
             style = style,

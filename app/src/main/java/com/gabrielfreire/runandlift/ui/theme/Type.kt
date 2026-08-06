@@ -22,116 +22,35 @@ import androidx.compose.ui.unit.sp
  * - `lineHeightStyle` com recorte de espaço extra deixa o texto opticamente centralizado nos
  *   componentes compactos, que é onde a maior parte desta UI vive.
  */
-private val DefaultLineHeightStyle = LineHeightStyle(
-    alignment = LineHeightStyle.Alignment.Center,
-    trim = LineHeightStyle.Trim.None,
-)
+private val DefaultLineHeightStyle =
+    LineHeightStyle(alignment = LineHeightStyle.Alignment.Center, trim = LineHeightStyle.Trim.None)
 
-private fun appTextStyle(
-    fontSize: Int,
-    lineHeight: Int,
-    weight: FontWeight,
-    letterSpacing: Double,
-): TextStyle = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = weight,
-    fontSize = fontSize.sp,
-    lineHeight = lineHeight.sp,
-    letterSpacing = letterSpacing.sp,
-    lineHeightStyle = DefaultLineHeightStyle,
-)
+private fun appTextStyle(fontSize: Int, lineHeight: Int, weight: FontWeight, letterSpacing: Double): TextStyle =
+    TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = weight,
+        fontSize = fontSize.sp,
+        lineHeight = lineHeight.sp,
+        letterSpacing = letterSpacing.sp,
+        lineHeightStyle = DefaultLineHeightStyle,
+    )
 
 val AppTypography = Typography(
-    displayLarge = appTextStyle(
-        fontSize = 57,
-        lineHeight = 64,
-        weight = FontWeight.Normal,
-        letterSpacing = -0.25
-    ),
-    displayMedium = appTextStyle(
-        fontSize = 45,
-        lineHeight = 52,
-        weight = FontWeight.Normal,
-        letterSpacing = 0.0
-    ),
-    displaySmall = appTextStyle(
-        fontSize = 36,
-        lineHeight = 44,
-        weight = FontWeight.Normal,
-        letterSpacing = 0.0
-    ),
-    headlineLarge = appTextStyle(
-        fontSize = 32,
-        lineHeight = 40,
-        weight = FontWeight.SemiBold,
-        letterSpacing = 0.0
-    ),
-    headlineMedium = appTextStyle(
-        fontSize = 28,
-        lineHeight = 36,
-        weight = FontWeight.SemiBold,
-        letterSpacing = 0.0
-    ),
-    headlineSmall = appTextStyle(
-        fontSize = 24,
-        lineHeight = 32,
-        weight = FontWeight.SemiBold,
-        letterSpacing = 0.0
-    ),
-    titleLarge = appTextStyle(
-        fontSize = 22,
-        lineHeight = 28,
-        weight = FontWeight.SemiBold,
-        letterSpacing = 0.0
-    ),
-    titleMedium = appTextStyle(
-        fontSize = 16,
-        lineHeight = 24,
-        weight = FontWeight.Medium,
-        letterSpacing = 0.15
-    ),
-    titleSmall = appTextStyle(
-        fontSize = 14,
-        lineHeight = 20,
-        weight = FontWeight.Medium,
-        letterSpacing = 0.1
-    ),
-    bodyLarge = appTextStyle(
-        fontSize = 16,
-        lineHeight = 24,
-        weight = FontWeight.Normal,
-        letterSpacing = 0.5
-    ),
-    bodyMedium = appTextStyle(
-        fontSize = 14,
-        lineHeight = 20,
-        weight = FontWeight.Normal,
-        letterSpacing = 0.25
-    ),
-    bodySmall = appTextStyle(
-        fontSize = 12,
-        lineHeight = 16,
-        weight = FontWeight.Normal,
-        letterSpacing = 0.4
-    ),
-    labelLarge = appTextStyle(
-        fontSize = 14,
-        lineHeight = 20,
-        weight = FontWeight.Medium,
-        letterSpacing = 0.1
-    ),
-    labelMedium = appTextStyle(
-        fontSize = 12,
-        lineHeight = 16,
-        weight = FontWeight.Medium,
-        letterSpacing = 0.5
-    ),
-    labelSmall = appTextStyle(
-        fontSize = 11,
-        lineHeight = 16,
-        weight = FontWeight.Medium,
-        letterSpacing = 0.5
-    ),
+    displayLarge = appTextStyle(fontSize = 57, lineHeight = 64, weight = FontWeight.Normal, letterSpacing = -0.25),
+    displayMedium = appTextStyle(fontSize = 45, lineHeight = 52, weight = FontWeight.Normal, letterSpacing = 0.0),
+    displaySmall = appTextStyle(fontSize = 36, lineHeight = 44, weight = FontWeight.Normal, letterSpacing = 0.0),
+    headlineLarge = appTextStyle(fontSize = 32, lineHeight = 40, weight = FontWeight.SemiBold, letterSpacing = 0.0),
+    headlineMedium = appTextStyle(fontSize = 28, lineHeight = 36, weight = FontWeight.SemiBold, letterSpacing = 0.0),
+    headlineSmall = appTextStyle(fontSize = 24, lineHeight = 32, weight = FontWeight.SemiBold, letterSpacing = 0.0),
+    titleLarge = appTextStyle(fontSize = 22, lineHeight = 28, weight = FontWeight.SemiBold, letterSpacing = 0.0),
+    titleMedium = appTextStyle(fontSize = 16, lineHeight = 24, weight = FontWeight.Medium, letterSpacing = 0.15),
+    titleSmall = appTextStyle(fontSize = 14, lineHeight = 20, weight = FontWeight.Medium, letterSpacing = 0.1),
+    bodyLarge = appTextStyle(fontSize = 16, lineHeight = 24, weight = FontWeight.Normal, letterSpacing = 0.5),
+    bodyMedium = appTextStyle(fontSize = 14, lineHeight = 20, weight = FontWeight.Normal, letterSpacing = 0.25),
+    bodySmall = appTextStyle(fontSize = 12, lineHeight = 16, weight = FontWeight.Normal, letterSpacing = 0.4),
+    labelLarge = appTextStyle(fontSize = 14, lineHeight = 20, weight = FontWeight.Medium, letterSpacing = 0.1),
+    labelMedium = appTextStyle(fontSize = 12, lineHeight = 16, weight = FontWeight.Medium, letterSpacing = 0.5),
+    labelSmall = appTextStyle(fontSize = 11, lineHeight = 16, weight = FontWeight.Medium, letterSpacing = 0.5),
 )
 
 /**
@@ -156,18 +75,12 @@ object MetricTextStyles {
             .copy(fontFeatureSettings = TABULAR_FIGURES)
 
     /** Número em lista ou card: carga da série anterior, total de treinos. */
-    val medium: TextStyle = appTextStyle(
-        fontSize = 24,
-        lineHeight = 32,
-        weight = FontWeight.SemiBold,
-        letterSpacing = 0.0
-    ).copy(fontFeatureSettings = TABULAR_FIGURES)
+    val medium: TextStyle =
+        appTextStyle(fontSize = 24, lineHeight = 32, weight = FontWeight.SemiBold, letterSpacing = 0.0)
+            .copy(fontFeatureSettings = TABULAR_FIGURES)
 
     /** Número embutido em texto corrido ou em chip compacto. */
-    val small: TextStyle = appTextStyle(
-        fontSize = 16,
-        lineHeight = 24,
-        weight = FontWeight.Medium,
-        letterSpacing = 0.0
-    ).copy(fontFeatureSettings = TABULAR_FIGURES)
+    val small: TextStyle =
+        appTextStyle(fontSize = 16, lineHeight = 24, weight = FontWeight.Medium, letterSpacing = 0.0)
+            .copy(fontFeatureSettings = TABULAR_FIGURES)
 }

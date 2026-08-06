@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Formata e verifica antes de deixar o commit passar.
+#
+# Ativação (uma vez por clone, por pessoa):
+#     git config core.hooksPath .githooks
+#
+# Este hook é conveniência: ele pode ser pulado com `git commit --no-verify`. A garantia real é
+# o CI, que roda spotlessCheck e detekt em todo push e pull request.
+
+set -e
+
+# O Gradle precisa de uma JVM para subir. Em ambiente gráfico (IDE, cliente de Git) o PATH
+# costuma ser mais pobre que o do terminal, e a mensagem padrão do Gradle não ajuda muito.
+if [ -z "$JAVA_HOME" ] && ! command -v java >/dev/null 2>&1; then
+    echo "pre-commit: nenhuma JVM encontrada (JAVA_HOME vazio e 'java' fora do PATH)."
+    echo "            Aponte JAVA_HOME para uma JDK 21 e tente de novo."
+    exit 1
+fi
+
+echo "pre-commit: formatando (spotlessApply) e analisando (detekt)..."
+
+if ! ./gradlew spotlessApply detekt --daemon; then
+    echo ""
+    echo "pre-commit: falhou. Corrija o que o detekt apontou e refaça o commit."
+    echo "            Para pular deliberadamente: git commit --no-verify"
+    exit 1
+fi
+
+# O spotlessApply pode ter reescrito arquivos já rastreados; sem isto, o commit sairia com a
+# versão não formatada. Note que `-u` reencena TODO arquivo rastreado modificado, inclusive os que
+# você tinha deixado de fora do stage de propósito.
+git add -u
+
+echo "pre-commit: ok."

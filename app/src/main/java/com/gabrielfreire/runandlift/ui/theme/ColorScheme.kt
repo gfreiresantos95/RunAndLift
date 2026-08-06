@@ -21,22 +21,18 @@ internal val LightColorScheme = lightColorScheme(
     primaryContainer = Cobalto90,
     onPrimaryContainer = Cobalto10,
     inversePrimary = Cobalto80,
-
     secondary = Aco40,
     onSecondary = Neutro100,
     secondaryContainer = Aco90,
     onSecondaryContainer = Aco10,
-
     tertiary = Brasa40,
     onTertiary = Neutro100,
     tertiaryContainer = Brasa90,
     onTertiaryContainer = Brasa10,
-
     error = Vermelho40,
     onError = Neutro100,
     errorContainer = Vermelho90,
     onErrorContainer = Vermelho10,
-
     background = Neutro98,
     onBackground = Neutro10,
     surface = Neutro98,
@@ -46,7 +42,6 @@ internal val LightColorScheme = lightColorScheme(
     surfaceTint = Cobalto40,
     inverseSurface = Neutro20,
     inverseOnSurface = Neutro96,
-
     surfaceDim = Neutro87,
     surfaceBright = Neutro98,
     surfaceContainerLowest = Neutro100,
@@ -54,7 +49,6 @@ internal val LightColorScheme = lightColorScheme(
     surfaceContainer = Neutro94,
     surfaceContainerHigh = Neutro92,
     surfaceContainerHighest = Neutro90,
-
     outline = NeutroVariante50,
     outlineVariant = NeutroVariante80,
     scrim = Neutro0,
@@ -66,22 +60,18 @@ internal val DarkColorScheme = darkColorScheme(
     primaryContainer = Cobalto30,
     onPrimaryContainer = Cobalto90,
     inversePrimary = Cobalto40,
-
     secondary = Aco80,
     onSecondary = Aco20,
     secondaryContainer = Aco30,
     onSecondaryContainer = Aco90,
-
     tertiary = Brasa80,
     onTertiary = Brasa20,
     tertiaryContainer = Brasa30,
     onTertiaryContainer = Brasa90,
-
     error = Vermelho80,
     onError = Vermelho20,
     errorContainer = Vermelho30,
     onErrorContainer = Vermelho90,
-
     background = Neutro8,
     onBackground = Neutro90,
     surface = Neutro8,
@@ -91,7 +81,6 @@ internal val DarkColorScheme = darkColorScheme(
     surfaceTint = Cobalto80,
     inverseSurface = Neutro90,
     inverseOnSurface = Neutro20,
-
     surfaceDim = Neutro8,
     surfaceBright = Neutro24,
     surfaceContainerLowest = Neutro4,
@@ -99,7 +88,6 @@ internal val DarkColorScheme = darkColorScheme(
     surfaceContainer = Neutro12,
     surfaceContainerHigh = Neutro17,
     surfaceContainerHighest = Neutro22,
-
     outline = NeutroVariante60,
     outlineVariant = NeutroVariante30,
     scrim = Neutro0,

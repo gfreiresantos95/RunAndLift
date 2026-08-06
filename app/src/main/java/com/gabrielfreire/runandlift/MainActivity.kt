@@ -33,7 +33,6 @@ import kotlinx.coroutines.launch
 private const val SPLASH_EXIT_DURATION_MS = 250L
 
 class MainActivity : ComponentActivity() {
-
     /**
      * Enquanto for `false`, a splash continua na tela.
      *
@@ -55,7 +54,8 @@ class MainActivity : ComponentActivity() {
             ObjectAnimator.ofFloat(
                 splashProvider.view,
                 View.ALPHA,
-                1f, 0f
+                1f,
+                0f,
             ).apply {
                 duration = SPLASH_EXIT_DURATION_MS
                 // Sem remove() a splash fica congelada sobre o app.

@@ -14,12 +14,7 @@ import androidx.compose.ui.graphics.Color
  * - [container] / [onContainer] — para fundo suave (chip, card de alerta, linha de lista).
  */
 @Immutable
-data class ColorRole(
-    val color: Color,
-    val onColor: Color,
-    val container: Color,
-    val onContainer: Color,
-)
+data class ColorRole(val color: Color, val onColor: Color, val container: Color, val onContainer: Color)
 
 /**
  * Papéis de cor que o Material 3 não define e que o domínio exige.
@@ -50,57 +45,17 @@ data class ExtendedColorScheme(
 )
 
 internal val LightExtendedColorScheme = ExtendedColorScheme(
-    ok = ColorRole(
-        color = Verde40,
-        onColor = Neutro100,
-        container = Verde90,
-        onContainer = Verde10,
-    ),
-    attention = ColorRole(
-        color = Ambar40,
-        onColor = Neutro100,
-        container = Ambar90,
-        onContainer = Ambar10,
-    ),
-    critical = ColorRole(
-        color = Vermelho40,
-        onColor = Neutro100,
-        container = Vermelho90,
-        onContainer = Vermelho10,
-    ),
-    highlight = ColorRole(
-        color = Brasa40,
-        onColor = Neutro100,
-        container = Brasa90,
-        onContainer = Brasa10,
-    ),
+    ok = ColorRole(color = Verde40, onColor = Neutro100, container = Verde90, onContainer = Verde10),
+    attention = ColorRole(color = Ambar40, onColor = Neutro100, container = Ambar90, onContainer = Ambar10),
+    critical = ColorRole(color = Vermelho40, onColor = Neutro100, container = Vermelho90, onContainer = Vermelho10),
+    highlight = ColorRole(color = Brasa40, onColor = Neutro100, container = Brasa90, onContainer = Brasa10),
 )
 
 internal val DarkExtendedColorScheme = ExtendedColorScheme(
-    ok = ColorRole(
-        color = Verde80,
-        onColor = Verde20,
-        container = Verde30,
-        onContainer = Verde90,
-    ),
-    attention = ColorRole(
-        color = Ambar80,
-        onColor = Ambar20,
-        container = Ambar30,
-        onContainer = Ambar90,
-    ),
-    critical = ColorRole(
-        color = Vermelho80,
-        onColor = Vermelho20,
-        container = Vermelho30,
-        onContainer = Vermelho90,
-    ),
-    highlight = ColorRole(
-        color = Brasa80,
-        onColor = Brasa20,
-        container = Brasa30,
-        onContainer = Brasa90,
-    ),
+    ok = ColorRole(color = Verde80, onColor = Verde20, container = Verde30, onContainer = Verde90),
+    attention = ColorRole(color = Ambar80, onColor = Ambar20, container = Ambar30, onContainer = Ambar90),
+    critical = ColorRole(color = Vermelho80, onColor = Vermelho20, container = Vermelho30, onContainer = Vermelho90),
+    highlight = ColorRole(color = Brasa80, onColor = Brasa20, container = Brasa30, onContainer = Brasa90),
 )
 
 /**

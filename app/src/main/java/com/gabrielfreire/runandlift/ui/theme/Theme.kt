@@ -23,19 +23,18 @@ import androidx.core.view.WindowCompat
  *   vier, entra como uma fonte de valor para este parâmetro — não como um tema paralelo.
  */
 @Composable
-fun RunAndLiftTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
+fun RunAndLiftTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val extendedColorScheme = if (darkTheme) DarkExtendedColorScheme else LightExtendedColorScheme
     val view = LocalView.current
 
     if (!view.isInEditMode) {
         SideEffect {
-            // Em edge-to-edge o app desenha atrás das barras do sistema, então os ícones delas
-            // (hora, bateria, sinal) precisam inverter junto com o tema — senão viram ícone
-            // branco sobre superfície clara no tema claro.
+            /**
+             * Em edge-to-edge o app desenha atrás das barras do sistema, então os ícones delas
+             * (hora, bateria, sinal) precisam inverter junto com o tema — senão vira ícone
+             * branco sobre superfície clara no tema claro.
+             */
             val window = (view.context as Activity).window
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !darkTheme

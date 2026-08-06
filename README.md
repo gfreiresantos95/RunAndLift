@@ -51,6 +51,31 @@ Rodar um teste específico:
 
 O acesso ao projeto Firebase (arquivo `google-services.json`) não faz parte do repositório e deve ser obtido com o mantenedor.
 
+### Qualidade de código
+
+Ative o hook de pré-commit uma vez, logo após clonar — ele formata e analisa antes de deixar o
+commit passar:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Esse passo é por clone e por pessoa: o Git não versiona `.git/hooks`, então não há como ativá-lo
+automaticamente. O hook é conveniência e pode ser pulado com `--no-verify`; a garantia real é o CI,
+que roda `spotlessCheck detekt lint test` em todo push e pull request para `main`.
+
+```powershell
+.\gradlew.bat spotlessApply     # formata (ktlint)
+.\gradlew.bat spotlessCheck     # verifica formatação, sem escrever
+.\gradlew.bat detekt            # análise estática
+```
+
+Não há baseline do detekt: a contagem de violações é zero e deve continuar assim.
+
+As regras de formatação ficam no `.editorconfig`, que é lido tanto pela IDE quanto pelo build —
+não há chave duplicada em `build.gradle.kts`. As regras de complexidade ficam em
+`config/detekt/detekt.yml`.
+
 ---
 
 ## Arquitetura
