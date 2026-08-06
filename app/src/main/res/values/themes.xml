@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.RunAndLift" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        Tema da janela depois que a splash sai. Não estiliza widget nenhum: quem desenha a UI é o
+        Compose (ui/theme/Theme.kt). O que este tema faz é só garantir que a janela nasça com o
+        fundo certo e transparente atrás das barras do sistema, para o edge-to-edge.
+    -->
+    <style name="Theme.RunAndLift" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">@bool/window_light_status_bar</item>
+    </style>
+
+    <!--
+        Splash pela Splash Screen API (androidx.core:core-splashscreen), que unifica o
+        comportamento nativo do Android 12+ com o retrocompatível abaixo dele.
+
+        Duas decisões aqui:
+        - O fundo da splash é o MESMO @color/window_background da janela e da `surface` do Compose.
+          Isso elimina o flash de cor entre splash e primeira tela — que é justamente o tipo de
+          detalhe que faz um app parecer instável.
+        - O ícone ganha um círculo de fundo (windowSplashScreenIconBackgroundColor) porque o ícone
+          atual é branco. TEMPORÁRIO: quando existir arte própria de splash, o círculo provavelmente
+          sai junto.
+
+        Não usar android:windowBackground aqui — no Android 12+ ele é ignorado durante a splash, e o
+        resultado seria uma splash correta no aparelho antigo e errada no novo.
+    -->
+    <style name="Theme.RunAndLift.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/window_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_icon_background</item>
+        <!-- Tema aplicado assim que a splash sai. Obrigatório. -->
+        <item name="postSplashScreenTheme">@style/Theme.RunAndLift</item>
+    </style>
+
 </resources>

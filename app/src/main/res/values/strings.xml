@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Run &amp; Lift</string>
+
+    <!-- Estados do semáforo de aderência. Sempre acompanham a cor: cor sozinha não informa. -->
+    <string name="adherence_ok">Em dia</string>
+    <string name="adherence_slipping">Escorregando</string>
+    <string name="adherence_gone">Parou</string>
+
+    <!-- Temporário: sai quando entrar a primeira tela real. -->
+    <string name="foundation_placeholder_body">Fundação técnica no ar: tema, tipografia, cores de
+        estado e splash. As telas de treinador e de aluno entram nos próximos itens.</string>
 </resources>

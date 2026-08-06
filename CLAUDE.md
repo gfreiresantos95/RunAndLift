@@ -27,7 +27,7 @@ There is no ktlint/detekt/spotless configuration — formatting is whatever Andr
 
 These are newer than most Android docs and samples assume; don't "fix" them back to the older idioms:
 
-- **AGP 9.3.1 / Gradle 9.5 / Kotlin 2.2.10 / compileSdk 37, minSdk 24.** The Gradle daemon runs on a JDK 25 toolchain auto-provisioned via foojay (`gradle/gradle-daemon-jvm.properties`), so no local `JAVA_HOME` setup is needed. Java source/target compatibility is 11.
+- **AGP 9.3.1 / Gradle 9.5 / Kotlin 2.4.10 / compileSdk 37, minSdk 24.** The Gradle daemon runs on a JDK 25 toolchain auto-provisioned via foojay (`gradle/gradle-daemon-jvm.properties`), so no local `JAVA_HOME` setup is needed. Java source/target compatibility is 11.
 - **No `kotlin-android` plugin.** AGP 9 handles Kotlin compilation itself; only `com.android.application` and `org.jetbrains.kotlin.plugin.compose` are applied. Adding `kotlin-android` will break the build.
 - **New AGP 9 DSL** in `app/build.gradle.kts`: `compileSdk { version = release(37) }` and `buildTypes { release { optimization { enable = false } } }` (replaces `isMinifyEnabled`). R8 is currently off for release.
 - **Keep rules live in `app/src/main/keepRules/`**, not `proguard-rules.pro`; AGP merges every file in that directory.
@@ -35,10 +35,31 @@ These are newer than most Android docs and samples assume; don't "fix" them back
 
 ## Dependencies
 
-All versions go through the version catalog at `gradle/libs.versions.toml` and are referenced as `libs.*` aliases — never hardcode a coordinate in `build.gradle.kts`. `settings.gradle.kts` sets `FAIL_ON_PROJECT_REPOS`, so repositories are declared only there. Compose artifacts are versionless in the catalog because they are pinned by the Compose BOM (`composeBom = "2026.02.01"`).
+All versions go through the version catalog at `gradle/libs.versions.toml` and are referenced as `libs.*` aliases — never hardcode a coordinate in `build.gradle.kts`. `settings.gradle.kts` sets `FAIL_ON_PROJECT_REPOS`, so repositories are declared only there. Compose artifacts are versionless in the catalog because they are pinned by the Compose BOM. Note the BOM is a `platform()` dependency in **both** `implementation` and `androidTestImplementation` — dropping it from the latter leaves `compose-ui-test-junit4` with no version.
 
-## Theming
+## Design system (`ui/theme/`)
 
-`RunAndLiftTheme` (`ui/theme/Theme.kt`) wraps `MaterialTheme` and defaults `dynamicColor = true`, so on API 31+ the Material You system palette wins and the hand-written `Purple40`/`Purple80` schemes in `Color.kt` only apply on API 24–30. When checking color work, verify on both an API 31+ device and an older one, or pass `dynamicColor = false`. `MainActivity` calls `enableEdgeToEdge()`, so new screens must consume the `Scaffold` inner padding (and window insets) rather than assuming a system-bar-free area.
+Four layers, and code should always consume the highest one:
 
-The XML theme (`res/values/themes.xml`, `Theme.RunAndLift`) is a bare `android:Theme.Material.Light.NoActionBar` used only for the activity window before Compose takes over.
+- `Color.kt` — brand tonal ramps (Cobalto/Aço/Brasa + state families) as `internal` tokens. **Never referenced from a screen.**
+- `ColorScheme.kt` — maps those tokens onto Material 3 roles for light and dark. The two schemes are mirrored (tone 40 in light ↔ tone 80 in dark); keep that symmetry or screens stop working in one theme.
+- `ExtendedColors.kt` — the roles M3 lacks: `ok` / `attention` / `critical` (the adherence semaphore) and `highlight` (records). Read via `MaterialTheme.extendedColors`. Each is a `ColorRole` with `color`/`onColor`/`container`/`onContainer`.
+- `Type.kt`, `Shape.kt`, `Dimens.kt` — `AppTypography`, `AppShapes`, plus the spacing grid and `Dimens.MinTouchTarget` (48 dp) with the `Modifier.minimumTouchTarget()` helper.
+
+Hard rules, all of them decisions rather than preferences:
+
+- **No dynamic color (Material You).** `RunAndLiftTheme` takes only `darkTheme`. The adherence semaphore must mean the same thing on every device, and Material You would repaint both it and the brand. An in-app theme preference is a later backlog item and must feed `darkTheme`, not introduce a parallel theme.
+- **Colour is never the only channel.** Any use of the semaphore carries an icon and a text label — an accessibility requirement in the backlog, not a nicety. Contrast stays at WCAG AA; touch targets never go below 48 dp; text sizes are always `sp`.
+- `MetricTextStyles` (in `Type.kt`) exists for measured numbers — load, reps, RPE, adherence — because they need tabular figures so the layout doesn't shift as values change.
+- `ThemePreviews.kt` is a light/dark gallery of every colour role and text style. Run it before and after touching any token.
+
+`MainActivity` calls `enableEdgeToEdge()`, and `RunAndLiftTheme` flips the system-bar icon appearance to match the theme, so new screens must consume `Scaffold` inner padding and window insets.
+
+## Splash
+
+Uses the Splash Screen API via `androidx.core:core-splashscreen`, so behaviour is identical above and below Android 12. `MainActivity` calls `installSplashScreen()` **before** `super.onCreate()`.
+
+- `Theme.RunAndLift.Splash` (`res/values/themes.xml`) is the launcher activity's theme; `postSplashScreenTheme` hands off to `Theme.RunAndLift`.
+- The splash background, the window background, and the Compose `surface` colour are deliberately the same value (`@color/window_background`, config-overridden in `values-night/`) so there is no colour flash on handoff. Changing one means changing all three.
+- The icon is still the template launcher foreground and is temporary; it sits on a coloured circle because that artwork is white.
+- `isAppReady` gates `setKeepOnScreenCondition`. Session restore, active-role lookup, and Room warm-up belong in the `lifecycleScope` block that flips it — no artificial delay and no blocking network I/O, since the product promises the workout screen opens in ≤2 s offline.

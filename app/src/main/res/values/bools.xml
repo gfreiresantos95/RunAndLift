@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Vale só durante a splash. Depois que o Compose assume, quem controla a aparência das barras
+    do sistema é RunAndLiftTheme, via WindowInsetsControllerCompat.
+-->
+<resources>
+    <bool name="window_light_status_bar">true</bool>
+</resources>

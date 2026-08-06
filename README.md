@@ -24,7 +24,7 @@ Aplicativo Android nativo para prescrição e acompanhamento de treinos de muscu
 | Backend sob demanda | Cloud Functions |
 | CI | GitHub Actions |
 
-**Build:** Gradle 9.5 · AGP 9.3.1 · Kotlin 2.2.10 · compileSdk 37 · minSdk 26 (o esqueleto ainda está em 24) · toolchain JDK 25 provisionada automaticamente.
+**Build:** Gradle 9.5 · AGP 9.3.1 · Kotlin 2.4.10 · compileSdk 37 · minSdk 26 (o esqueleto ainda está em 24) · toolchain JDK 25 provisionada automaticamente.
 
 ---
 
@@ -63,6 +63,25 @@ O acesso ao projeto Firebase (arquivo `google-services.json`) não faz parte do 
 :data         — Room, Firestore, repositórios, fila de sincronização
 :feature-*    — uma funcionalidade por módulo
 ```
+
+### Design system
+
+Vive em `ui/theme/` e é consumido sempre pela camada mais alta: `MaterialTheme.colorScheme` para
+os papéis do Material 3, `MaterialTheme.extendedColors` para os papéis que ele não tem, e
+`AppTypography` / `AppShapes` / `Dimens` para o resto. Os tokens de marca são `internal` e nenhuma
+tela os referencia direto — trocar a paleta é reescrever um arquivo.
+
+Três regras que são decisão, não preferência:
+
+- **Sem cor dinâmica (Material You).** As cores de estado precisam significar o mesmo em qualquer
+  aparelho, e cor dinâmica repintaria tanto elas quanto a identidade.
+- **Cor nunca é o único canal de informação.** Todo estado sinalizado por cor acompanha ícone e
+  rótulo textual. Contraste mínimo AA, alvo de toque mínimo de 48 dp, texto sempre em `sp`.
+- **Números medidos usam dígitos tabulares** (`MetricTextStyles`), para o layout não deslocar
+  conforme o valor muda.
+
+`ThemePreviews.kt` é uma galeria de todos os papéis de cor e estilos de texto nos dois temas —
+o lugar para conferir antes e depois de mexer em qualquer token.
 
 ### Offline-first de verdade
 
