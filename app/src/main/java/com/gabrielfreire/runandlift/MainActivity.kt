@@ -16,13 +16,15 @@ import com.gabrielfreire.runandlift.ui.theme.RunAndLiftTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
+
         setContent {
             RunAndLiftTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(paddingValues = innerPadding)
                     )
                 }
             }
@@ -42,6 +44,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     RunAndLiftTheme {
-        Greeting("Android")
+        Greeting(name = "Android")
     }
 }
