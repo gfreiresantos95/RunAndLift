@@ -1,12 +1,17 @@
 package com.gabrielfreire.runandlift.data
 
 import android.content.Context
+import com.gabrielfreire.runandlift.data.auth.AuthRepository
+import com.gabrielfreire.runandlift.data.auth.FirebaseAuthRepository
 import com.gabrielfreire.runandlift.data.local.RunAndLiftDatabase
 import com.gabrielfreire.runandlift.data.remote.catalog.CatalogVersionSource
 import com.gabrielfreire.runandlift.data.remote.exercise.FirestoreExerciseRemoteDataSource
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
 import com.gabrielfreire.runandlift.data.repository.OfflineFirstExerciseRepository
+import com.gabrielfreire.runandlift.data.user.FirestoreUserRepository
+import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.data.util.AppDispatchers
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 /**
@@ -32,6 +37,8 @@ class DataContainer(
 
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
+    private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+
     val exerciseRepository: ExerciseRepository by lazy {
         OfflineFirstExerciseRepository(
             exerciseDao = database.exerciseDao(),
@@ -40,5 +47,13 @@ class DataContainer(
             catalogVersionSource = catalogVersionSource,
             dispatchers = dispatchers,
         )
+    }
+
+    val authRepository: AuthRepository by lazy {
+        FirebaseAuthRepository(firebaseAuth = firebaseAuth, dispatchers = dispatchers)
+    }
+
+    val userRepository: UserRepository by lazy {
+        FirestoreUserRepository(firestore = firestore, dispatchers = dispatchers)
     }
 }

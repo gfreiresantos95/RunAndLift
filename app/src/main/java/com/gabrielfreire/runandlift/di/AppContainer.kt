@@ -2,7 +2,9 @@ package com.gabrielfreire.runandlift.di
 
 import android.content.Context
 import com.gabrielfreire.runandlift.data.DataContainer
+import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
+import com.gabrielfreire.runandlift.data.user.UserRepository
 
 /**
  * Grafo de dependências do aplicativo, criado uma vez em
@@ -27,4 +29,10 @@ class AppContainer(context: Context) {
 
     /** Catálogo de exercícios, servido do banco local (backlog E0-03, E4-03). */
     val exerciseRepository: ExerciseRepository get() = dataContainer.exerciseRepository
+
+    /** Autenticação (E1-01, E1-10). */
+    val authRepository: AuthRepository get() = dataContainer.authRepository
+
+    /** Papéis e papel ativo (E1-02, E1-09). */
+    val userRepository: UserRepository get() = dataContainer.userRepository
 }

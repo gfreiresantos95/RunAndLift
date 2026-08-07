@@ -69,6 +69,7 @@ dependencies {
     // :core traz Compose e Material 3 por `api` — não redeclarar aqui.
     implementation(project(":core"))
     implementation(project(":data"))
+    implementation(project(":feature-auth"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))
@@ -79,6 +80,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
 
     // Firebase de escopo do app: observabilidade e flags. Firestore e Auth ficam em :data, que é
     // quem fala com o backend.

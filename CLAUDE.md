@@ -8,9 +8,10 @@ Android app (`com.gabrielfreire.runandlift`, "Run & Lift"), Kotlin + Jetpack Com
 
 - `:core` — the design system (`core/…/core/designsystem`). All Compose UI lives here for now.
 - `:data` — Room as the UI's source of truth, Firestore behind it, cache-first repositories. Entities/DAOs/data sources are `internal`; only interfaces and `model/` domain types cross out, built by `DataContainer`. See `data/README.md` and `docs/adr/0006`.
-- `:app` — `MainActivity`, `MainViewModel`, and `AppContainer` (manual DI, held by `RunAndLiftApplication`).
+- `:feature-auth` — sign in, sign up, password recovery, role selection. Exposes only `AuthRoutes` and `authGraph()`; everything else is `internal`. Repositories arrive as parameters so the feature never depends on `:app`.
+- `:app` — `MainActivity`, `MainViewModel`, `AppContainer` (manual DI), and the root `NavHost` with the `trainer`/`student` graphs.
 
-`:feature-*` modules are planned but deliberately not created until the first real screen. MVVM is the pattern: state out as a read-only `StateFlow`, mutation confined to the ViewModel, no `Context` or UI types in it. Rationale and revisit triggers for the structure, the DI choice, and the deferral of convention plugins are in `docs/adr/0003`.
+Navigation is **three sibling graphs**, never one graph with role conditionals — a trainer screen must not be reachable from a student's back stack. `MainViewModel` resolves the start destination *before* the NavHost is composed, so the app never opens on the wrong screen for a frame. See `docs/adr/0009`. MVVM is the pattern: state out as a read-only `StateFlow`, mutation confined to the ViewModel, no `Context` or UI types in it. Rationale and revisit triggers for the structure, the DI choice, and the deferral of convention plugins are in `docs/adr/0003`.
 
 ## Commands
 

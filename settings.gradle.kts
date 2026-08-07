@@ -33,3 +33,4 @@ rootProject.name = "RunAndLift"
 include(":app")
 include(":core")
 include(":data")
+include(":feature-auth")

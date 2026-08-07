@@ -155,14 +155,19 @@ qualidade) e mensais para as actions. Quem valida é o CI. Nada é mesclado auto
 ### Estrutura de módulos
 
 ```
-:app          — aplicação, MainViewModel, AppContainer (injeção manual)
-:core         — design system, utilitários, contratos comuns
-:data         — Room, Firestore, repositórios, fila de sincronização (ainda vazio)
-:feature-*    — uma funcionalidade por módulo (criados sob demanda, a partir da primeira tela)
+:app           — aplicação, grafo raiz de navegação, AppContainer (injeção manual)
+:core          — design system: tema, tipografia, componentes
+:data          — Room, Firestore, repositórios
+:feature-auth  — entrar, criar conta, recuperar senha, escolher papel
+:feature-*     — demais funcionalidades, criadas sob demanda
 ```
 
-A dependência anda em um sentido só: `:app → :core`, `:app → :data`, `:data → :core`. `:core` não
-depende de ninguém — é o que impede o design system de virar refém de regra de negócio.
+A dependência anda em um sentido só: `:app` e `:feature-*` dependem de `:core` e `:data`; `:core`
+não depende de ninguém. Módulo de feature nunca depende do `:app` — os repositórios chegam por
+parâmetro na função do grafo.
+
+A navegação é composta por **grafos irmãos por papel** (`auth`, `trainer`, `student`), e não por um
+grafo único com condicionais: tela de treinador não existe na pilha de um aluno.
 
 O padrão de apresentação é MVVM: o ViewModel expõe estado como `StateFlow` somente-leitura, a
 mutação fica restrita a ele, e nenhuma referência a `Context` ou tipo de UI entra ali.

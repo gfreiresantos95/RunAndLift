@@ -1,0 +1,54 @@
+<resources>
+    <!-- Entrada -->
+    <string name="auth_sign_in_title">Entrar</string>
+    <string name="auth_sign_up_title">Criar conta</string>
+    <string name="auth_email">E-mail</string>
+    <string name="auth_password">Senha</string>
+    <string name="auth_password_show">Mostrar</string>
+    <string name="auth_password_hide">Ocultar</string>
+    <string name="auth_sign_in_action">Entrar</string>
+    <string name="auth_sign_up_action">Criar conta</string>
+    <string name="auth_go_to_sign_up">Ainda não tenho conta</string>
+    <string name="auth_go_to_sign_in">Já tenho conta</string>
+    <string name="auth_forgot_password">Esqueci minha senha</string>
+
+    <!-- Recuperação de senha -->
+    <string name="auth_recovery_title">Recuperar senha</string>
+    <string name="auth_recovery_explanation">Informe o e-mail da sua conta. Se ele estiver
+        cadastrado, você recebe um link para criar uma senha nova.</string>
+    <string name="auth_recovery_action">Enviar link</string>
+    <string name="auth_recovery_sent">Se o e-mail estiver cadastrado, o link já está a caminho.
+        Confira também a caixa de spam.</string>
+
+    <!-- Validação de formulário -->
+    <string name="auth_error_email_required">Informe seu e-mail.</string>
+    <string name="auth_error_email_invalid">Esse e-mail não parece válido.</string>
+    <string name="auth_error_password_required">Informe sua senha.</string>
+    <!-- Plural, e não string com %d: o dia em que o mínimo for 1, "1 caracteres" apareceria. -->
+    <plurals name="auth_error_password_too_short">
+        <item quantity="one">A senha precisa de pelo menos %1$d caractere.</item>
+        <item quantity="other">A senha precisa de pelo menos %1$d caracteres.</item>
+    </plurals>
+
+    <!-- Falhas vindas do servidor -->
+    <string name="auth_error_invalid_credentials">E-mail ou senha incorretos.</string>
+    <string name="auth_error_email_in_use">Já existe uma conta com esse e-mail.</string>
+    <string name="auth_error_weak_password">Escolha uma senha mais forte.</string>
+    <string name="auth_error_no_network">Sem conexão. Verifique a internet e tente de novo.</string>
+    <string name="auth_error_too_many_attempts">Muitas tentativas. Aguarde alguns minutos.</string>
+    <string name="auth_error_unknown">Não foi possível concluir. Tente de novo.</string>
+    <string name="auth_error_no_google_account">Nenhuma conta Google disponível neste aparelho.
+        Adicione uma nas configurações do Android e tente de novo.</string>
+
+    <!-- Entrar com Google -->
+    <string name="auth_google_action">Entrar com Google</string>
+
+    <!-- Escolha de papel -->
+    <string name="onboarding_title">Como você vai usar o Run &amp; Lift?</string>
+    <string name="onboarding_explanation">Dá para mudar depois, e dá para ser os dois.</string>
+    <string name="onboarding_student">Sou aluno</string>
+    <string name="onboarding_student_description">Recebo treinos e registro minhas séries.</string>
+    <string name="onboarding_trainer">Sou treinador</string>
+    <string name="onboarding_trainer_description">Prescrevo treinos e acompanho meus alunos.</string>
+    <string name="onboarding_confirm">Continuar</string>
+</resources>
