@@ -94,10 +94,12 @@ dois botões ficam ancorados embaixo, no alcance do polegar. O bloco da marca ro
 de empurrar os botões para fora quando a fonte do sistema está no tamanho máximo — o público mais
 velho usa esse tamanho (E0-09), e o que não pode acontecer é a ação sumir por causa disso.
 
-A pilha de navegação ficou plana de propósito: do cadastro, "Já tenho conta" **substitui** a tela em
-vez de empilhar, e da entrada, "Ainda não tenho conta" volta às boas-vindas em vez de abrir o
-cadastro — porque é lá que o papel é escolhido, e um cadastro sem papel escolhido cai na tela extra
-que esta decisão veio eliminar. Com isso a pilha nunca passa de duas telas antes de autenticar.
+Cadastro e entrada formam um **par que alterna sem crescer**: do cadastro, "Já tem uma conta?
+Entrar" empilha; da entrada, "Ainda não tem conta? Criar conta" desempilha. Ir e voltar quantas
+vezes quiser mantém a pilha em três telas no máximo, e — o que importa de fato — o cadastro
+embaixo continua sendo **aquele**, com o papel escolhido na abertura. Navegar para um cadastro novo
+a partir da entrada perderia essa escolha e mandaria a pessoa para a tela extra que esta decisão
+veio eliminar.
 
 ## Quando revisitar
 

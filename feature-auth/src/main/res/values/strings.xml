@@ -1,26 +1,54 @@
 <resources>
+    <!-- Marca, usada na abertura e na barra superior do fluxo de entrada -->
+    <string name="auth_app_name">Run &amp; Lift</string>
+    <string name="auth_back">Voltar</string>
+
     <!-- Boas-vindas: escolha de papel antes do login -->
-    <string name="welcome_app_name">Run &amp; Lift</string>
     <string name="welcome_slogan">Do plano à última repetição, no mesmo lugar.</string>
     <!-- Afirmativa, e não pergunta: a tela não está consultando, está conduzindo para as duas
          saídas logo abaixo. -->
     <string name="welcome_prompt">Escolha o seu perfil para começar</string>
     <string name="welcome_reversible">Você poderá alterar o seu perfil depois.</string>
 
-    <!-- Entrada -->
-    <string name="auth_sign_in_title">Entrar</string>
-    <string name="auth_sign_up_title">Criar conta</string>
-    <string name="auth_sign_up_title_student">Criar conta de aluno</string>
-    <string name="auth_sign_up_title_trainer">Criar conta de treinador</string>
+    <!-- Etiqueta do perfil em que a pessoa está. Só o substantivo: o chip é indicador de
+         contexto, não uma frase. -->
+    <string name="auth_role_student">Aluno</string>
+    <string name="auth_role_trainer">Treinador</string>
+
+    <!-- Entrada. Títulos neutros: quem carrega o perfil é o chip, não a manchete. -->
+    <string name="auth_sign_in_title">Entre na sua conta</string>
+    <string name="auth_sign_in_subtitle">Use o e-mail e a senha cadastrados.</string>
+    <string name="auth_sign_up_title">Crie a sua conta</string>
+    <string name="auth_sign_up_subtitle">Leva menos de um minuto.</string>
+    <!-- O subtítulo do cadastro confirma o perfil escolhido na abertura sem gastar uma tela
+         inteira perguntando de novo. -->
+    <string name="auth_sign_up_subtitle_student">Você recebe os treinos do seu treinador e registra
+        as suas séries, com ou sem internet na academia.</string>
+    <string name="auth_sign_up_subtitle_trainer">Você monta os treinos e acompanha a evolução de
+        cada aluno num lugar só.</string>
+
     <string name="auth_email">E-mail</string>
     <string name="auth_password">Senha</string>
-    <string name="auth_password_show">Mostrar</string>
-    <string name="auth_password_hide">Ocultar</string>
+    <!-- Descrições do alternador de visibilidade: viraram conteúdo de acessibilidade quando o
+         controle passou de texto para ícone. -->
+    <string name="auth_password_show">Mostrar senha</string>
+    <string name="auth_password_hide">Ocultar senha</string>
+    <!-- Dito na entrada do campo, antes de a pessoa errar: regra anunciada vale mais que erro
+         explicado. Plural pelo mesmo motivo do erro correspondente. -->
+    <plurals name="auth_password_min_length">
+        <item quantity="one">Mínimo de %1$d caractere.</item>
+        <item quantity="other">Mínimo de %1$d caracteres.</item>
+    </plurals>
     <string name="auth_sign_in_action">Entrar</string>
     <string name="auth_sign_up_action">Criar conta</string>
-    <string name="auth_go_to_sign_up">Ainda não tenho conta</string>
-    <string name="auth_go_to_sign_in">Já tenho conta</string>
     <string name="auth_forgot_password">Esqueci minha senha</string>
+    <string name="auth_or">ou</string>
+
+    <!-- Caminho alternativo: a pergunta é texto, só a resposta é tocável. -->
+    <string name="auth_prompt_no_account">Ainda não tem conta?</string>
+    <string name="auth_prompt_has_account">Já tem uma conta?</string>
+    <string name="auth_go_to_sign_up">Criar conta</string>
+    <string name="auth_go_to_sign_in">Entrar</string>
 
     <!-- Recuperação de senha -->
     <string name="auth_recovery_title">Recuperar senha</string>
@@ -29,6 +57,7 @@
     <string name="auth_recovery_action">Enviar link</string>
     <string name="auth_recovery_sent">Se o e-mail estiver cadastrado, o link já está a caminho.
         Confira também a caixa de spam.</string>
+    <string name="auth_recovery_back">Voltar para entrar</string>
 
     <!-- Validação de formulário -->
     <string name="auth_error_email_required">Informe seu e-mail.</string>

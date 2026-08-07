@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -85,7 +86,13 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 navController = navController,
-                                modifier = Modifier.padding(paddingValues = innerPadding),
+                                // `consumeWindowInsets` junto do padding, e não só o padding:
+                                // sem ele, uma tela com Scaffold próprio aplicaria o recuo da
+                                // barra de status uma segunda vez e nasceria com o dobro do
+                                // espaço no topo.
+                                modifier = Modifier
+                                    .padding(paddingValues = innerPadding)
+                                    .consumeWindowInsets(paddingValues = innerPadding),
                             )
                         }
                     }

@@ -75,7 +75,7 @@ private fun BrandBlock(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = stringResource(id = R.string.welcome_app_name),
+            text = stringResource(id = R.string.auth_app_name),
             style = MaterialTheme.typography.displaySmall,
             textAlign = TextAlign.Center,
         )

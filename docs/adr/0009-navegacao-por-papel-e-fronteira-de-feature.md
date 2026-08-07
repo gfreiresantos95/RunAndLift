@@ -58,6 +58,8 @@ ViewModels de dois módulos.
 Os componentes de `:core` nasceram do uso, não da imaginação: `AppButton`, `AppTextField` e
 `AppPasswordField` saíram das telas de entrada. O alternador de visibilidade da senha é **texto**,
 não ícone de olho — para o público de D11, "Mostrar" é inequívoco e o desenho não é.
+*(Revisto pelo [ADR-0011](0011-telas-separadas-de-entrada-e-alternador-de-senha-por-icone.md): o
+alternador passou a ser ícone, e o texto virou descrição de acessibilidade.)*
 
 Três decisões de produto ficaram embutidas e merecem registro:
 

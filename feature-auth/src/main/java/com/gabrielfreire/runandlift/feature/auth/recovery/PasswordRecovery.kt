@@ -147,7 +147,7 @@ internal fun PasswordRecoveryScreen(
         )
 
         AppTextButton(
-            text = stringResource(R.string.auth_go_to_sign_in),
+            text = stringResource(R.string.auth_recovery_back),
             onClick = onBack,
             enabled = !state.submitting,
         )

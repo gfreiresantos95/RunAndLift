@@ -1,9 +1,13 @@
 package com.gabrielfreire.runandlift.core.designsystem.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
@@ -47,7 +51,13 @@ fun AppButton(
     }
 }
 
-/** Ação secundária, com o mesmo alvo de toque e o mesmo comportamento de carregamento. */
+/**
+ * Ação secundária, com o mesmo alvo de toque e o mesmo comportamento de carregamento.
+ *
+ * @param leadingContent desenho à esquerda do rótulo — hoje, o logotipo de quem provê a entrada
+ *   federada. Fica visível inclusive durante o carregamento: some com ele e o botão muda de
+ *   largura no meio da operação.
+ */
 @Composable
 fun AppOutlinedButton(
     text: String,
@@ -55,6 +65,7 @@ fun AppOutlinedButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
+    leadingContent: (@Composable () -> Unit)? = null,
 ) {
     OutlinedButton(
         onClick = onClick,
@@ -63,7 +74,7 @@ fun AppOutlinedButton(
             .defaultMinSize(minHeight = Dimens.ComfortableTouchTarget),
         enabled = enabled && !loading,
     ) {
-        ButtonContent(text = text, loading = loading)
+        ButtonContent(text = text, loading = loading, leadingContent = leadingContent)
     }
 }
 
@@ -80,23 +91,33 @@ fun AppTextButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 }
 
 @Composable
-private fun ButtonContent(text: String, loading: Boolean) {
-    // O Box mantém a caixa do mesmo tamanho nos dois estados: sem ele, o botão encolhe ao entrar
-    // em carregamento e o layout salta.
-    Box(contentAlignment = Alignment.Center) {
-        // alpha(0f) e não remoção do texto: o rótulo continua ocupando espaço, então a largura do
-        // botão não muda ao entrar em carregamento.
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.alpha(if (loading) 0f else 1f),
-        )
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(PROGRESS_SIZE),
-                strokeWidth = PROGRESS_STROKE,
-                color = LocalContentColor.current,
+private fun ButtonContent(text: String, loading: Boolean, leadingContent: (@Composable () -> Unit)? = null) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (leadingContent != null) {
+            leadingContent()
+            Spacer(modifier = Modifier.width(Dimens.SpaceMedium))
+        }
+
+        // O Box mantém a caixa do mesmo tamanho nos dois estados: sem ele, o botão encolhe ao
+        // entrar em carregamento e o layout salta.
+        Box(contentAlignment = Alignment.Center) {
+            // alpha(0f) e não remoção do texto: o rótulo continua ocupando espaço, então a largura
+            // do botão não muda ao entrar em carregamento.
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.alpha(if (loading) 0f else 1f),
             )
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(PROGRESS_SIZE),
+                    strokeWidth = PROGRESS_STROKE,
+                    color = LocalContentColor.current,
+                )
+            }
         }
     }
 }

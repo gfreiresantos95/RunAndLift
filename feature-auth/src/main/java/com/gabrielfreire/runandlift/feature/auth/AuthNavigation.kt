@@ -1,17 +1,16 @@
 package com.gabrielfreire.runandlift.feature.auth
 
 import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -21,11 +20,12 @@ import androidx.navigation.navArgument
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
-import com.gabrielfreire.runandlift.feature.auth.credentials.CredentialsActions
-import com.gabrielfreire.runandlift.feature.auth.credentials.CredentialsLabels
-import com.gabrielfreire.runandlift.feature.auth.credentials.CredentialsScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.CredentialsViewModel
+import com.gabrielfreire.runandlift.feature.auth.credentials.SignInActions
+import com.gabrielfreire.runandlift.feature.auth.credentials.SignInScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInViewModel
+import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpActions
+import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpViewModel
 import com.gabrielfreire.runandlift.feature.auth.google.GoogleSignInRequester
 import com.gabrielfreire.runandlift.feature.auth.onboarding.RoleSelectionScreen
@@ -40,8 +40,9 @@ import kotlinx.coroutines.launch
  * Grafo de entrada: boas-vindas, login, cadastro, recuperação e escolha de papel (E1-01, E1-10,
  * E1-02).
  *
- * Começa nas boas-vindas, e não no login, porque o papel escolhido ali decide o funil de cadastro
- * inteiro. Quem já tem conta atravessa a tela com um toque em "Já tenho conta".
+ * Começa nas boas-vindas, e não no login, porque o perfil escolhido ali decide o funil de cadastro
+ * inteiro. Entrar e criar conta são **destinos separados**, cada um com a sua tela: o que os dois
+ * pedem é igual, o que prometem não é.
  *
  * Os repositórios chegam por parâmetro, e não de um container global, para `:feature-auth` não
  * depender de `:app` — o que inverteria a direção dos módulos. Quem injeta é quem tem o grafo de
@@ -67,23 +68,19 @@ fun NavGraphBuilder.authGraph(
         composable(AuthRoutes.WELCOME) {
             WelcomeDestination(navController)
         }
-        composable(AuthRoutes.SIGN_IN) {
-            SignInDestination(navController, dependencies, onAuthenticatedWithRole)
+        composable(route = AuthRoutes.SIGN_IN_PATTERN, arguments = roleArgument()) { entry ->
+            SignInDestination(
+                navController = navController,
+                dependencies = dependencies,
+                role = entry.role(),
+                onAuthenticatedWithRole = onAuthenticatedWithRole,
+            )
         }
-        composable(
-            route = AuthRoutes.SIGN_UP_PATTERN,
-            arguments = listOf(
-                navArgument(AuthRoutes.ROLE_ARG) {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                },
-            ),
-        ) { entry ->
+        composable(route = AuthRoutes.SIGN_UP_PATTERN, arguments = roleArgument()) { entry ->
             SignUpDestination(
                 navController = navController,
                 dependencies = dependencies,
-                intendedRole = ActiveRole.fromStorage(entry.arguments?.getString(AuthRoutes.ROLE_ARG)),
+                intendedRole = entry.role(),
                 onAuthenticatedWithRole = onAuthenticatedWithRole,
             )
         }
@@ -109,6 +106,17 @@ internal data class AuthDependencies(
     val googleSignIn: GoogleSignInRequester,
 )
 
+/** Argumento de perfil, opcional e com padrão nulo — as duas telas funcionam sem ele. */
+private fun roleArgument() = listOf(
+    navArgument(AuthRoutes.ROLE_ARG) {
+        type = NavType.StringType
+        nullable = true
+        defaultValue = null
+    },
+)
+
+private fun NavBackStackEntry.role(): ActiveRole? = ActiveRole.fromStorage(arguments?.getString(AuthRoutes.ROLE_ARG))
+
 /**
  * Boas-vindas. Sem estado a guardar: o toque no papel já é a navegação, e o papel escolhido vira
  * argumento da rota de cadastro — que é onde ele vai ser gravado, depois de a conta existir.
@@ -118,13 +126,14 @@ internal data class AuthDependencies(
  */
 @Composable
 private fun WelcomeDestination(navController: NavHostController) {
-    WelcomeScreen(onSelectRole = { navController.navigate(AuthRoutes.signUp(it)) })
+    WelcomeScreen(onSelectRole = { navController.navigate(AuthRoutes.signIn(it)) })
 }
 
 @Composable
 private fun SignInDestination(
     navController: NavHostController,
     dependencies: AuthDependencies,
+    role: ActiveRole?,
     onAuthenticatedWithRole: (ActiveRole) -> Unit,
     viewModel: SignInViewModel = viewModel(
         factory = viewModelFactory {
@@ -136,23 +145,20 @@ private fun SignInDestination(
     val scope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    CredentialsScreen(
+    SignInScreen(
         state = state,
-        labels = CredentialsLabels(
-            title = stringResource(R.string.auth_sign_in_title),
-            submit = stringResource(R.string.auth_sign_in_action),
-            alternative = stringResource(R.string.auth_go_to_sign_up),
-        ),
-        actions = CredentialsActions(
+        role = role,
+        actions = SignInActions(
             onEmailChange = viewModel::onEmailChange,
             onPasswordChange = viewModel::onPasswordChange,
             onSubmit = viewModel::onSubmit,
-            // Volta às boas-vindas em vez de abrir o cadastro direto: quem não tem conta precisa
-            // escolher o papel antes, e é lá que a escolha acontece.
-            onAlternative = { navController.popBackStack(AuthRoutes.WELCOME, inclusive = false) },
+            // Desempilha em vez de navegar: o cadastro está logo abaixo, com o perfil que a pessoa
+            // escolheu na abertura. Empilhar um segundo cadastro perderia essa escolha.
+            onCreateAccount = { navController.navigate(AuthRoutes.signUp(role)) },
             onForgotPassword = { navController.navigate(AuthRoutes.RECOVERY) },
             onAuthenticated = { navController.continueAfterAuth(state.resolvedRole, onAuthenticatedWithRole) },
             onGoogleSignIn = { requestGoogleSignIn(scope, context, dependencies.googleSignIn, viewModel) },
+            onBack = { navController.popBackStack() },
         ),
     )
 }
@@ -175,27 +181,22 @@ private fun SignUpDestination(
     val scope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    CredentialsScreen(
+    SignUpScreen(
         state = state,
-        labels = CredentialsLabels(
-            title = stringResource(intendedRole.signUpTitle()),
-            submit = stringResource(R.string.auth_sign_up_action),
-            alternative = stringResource(R.string.auth_go_to_sign_in),
-        ),
-        actions = CredentialsActions(
+        role = intendedRole,
+        actions = SignUpActions(
             onEmailChange = viewModel::onEmailChange,
             onPasswordChange = viewModel::onPasswordChange,
             onSubmit = viewModel::onSubmit,
-            // Substitui o cadastro na pilha em vez de empilhar: sem isso, "voltar" na tela de
-            // entrar levaria de volta a um cadastro que a pessoa acabou de dizer não querer.
-            onAlternative = {
-                navController.navigate(AuthRoutes.SIGN_IN) {
-                    popUpTo(AuthRoutes.WELCOME)
-                    launchSingleTop = true
-                }
+            // `launchSingleTop` para o par cadastro/entrar alternar sem crescer: daqui empilha, e
+            // de lá desempilha. A pilha antes de autenticar nunca passa de três telas. O perfil vai
+            // junto, mas só como etiqueta — entrar não grava papel.
+            onSignIn = {
+                navController.navigate(AuthRoutes.signIn(intendedRole)) { launchSingleTop = true }
             },
             onAuthenticated = { navController.continueAfterAuth(state.resolvedRole, onAuthenticatedWithRole) },
             onGoogleSignIn = { requestGoogleSignIn(scope, context, dependencies.googleSignIn, viewModel) },
+            onBack = { navController.popBackStack() },
         ),
     )
 }
@@ -249,14 +250,6 @@ private fun RoleSelectionDestination(
  */
 private fun NavHostController.continueAfterAuth(role: ActiveRole?, onAuthenticatedWithRole: (ActiveRole) -> Unit) {
     if (role != null) onAuthenticatedWithRole(role) else navigate(AuthRoutes.ROLE_SELECTION)
-}
-
-/** Título do cadastro. Repetir o papel escolhido confirma, sem uma tela a mais, o que vai ser criado. */
-@StringRes
-private fun ActiveRole?.signUpTitle(): Int = when (this) {
-    ActiveRole.STUDENT -> R.string.auth_sign_up_title_student
-    ActiveRole.TRAINER -> R.string.auth_sign_up_title_trainer
-    null -> R.string.auth_sign_up_title
 }
 
 /**
