@@ -1,7 +1,17 @@
 <resources>
+    <!-- Boas-vindas: escolha de papel antes do login -->
+    <string name="welcome_app_name">Run &amp; Lift</string>
+    <string name="welcome_slogan">Do plano à última repetição, no mesmo lugar.</string>
+    <!-- Afirmativa, e não pergunta: a tela não está consultando, está conduzindo para as duas
+         saídas logo abaixo. -->
+    <string name="welcome_prompt">Escolha o seu perfil para começar</string>
+    <string name="welcome_reversible">Você poderá alterar o seu perfil depois.</string>
+
     <!-- Entrada -->
     <string name="auth_sign_in_title">Entrar</string>
     <string name="auth_sign_up_title">Criar conta</string>
+    <string name="auth_sign_up_title_student">Criar conta de aluno</string>
+    <string name="auth_sign_up_title_trainer">Criar conta de treinador</string>
     <string name="auth_email">E-mail</string>
     <string name="auth_password">Senha</string>
     <string name="auth_password_show">Mostrar</string>

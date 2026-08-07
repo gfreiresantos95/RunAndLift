@@ -3,19 +3,14 @@ package com.gabrielfreire.runandlift.feature.auth.onboarding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +34,12 @@ internal data class RoleSelectionUiState(
 )
 
 /**
- * Bifurcação "sou aluno" / "sou treinador" (backlog E1-02).
+ * Escolha de papel **depois** de autenticar (backlog E1-02).
+ *
+ * Desde que existe [WelcomeScreen], esta tela é a rede de segurança, não o caminho comum: quem
+ * passa pelas boas-vindas chega ao papel já gravado pelo cadastro. Ela ainda é alcançada por conta
+ * que existe sem papel — sessão anterior à escolha, primeiro login com Google feito pela tela de
+ * entrar, ou gravação que falhou no cadastro.
  *
  * Grava o papel em `users/{uid}` **somando** ao que já existir, nunca substituindo: é o que
  * permite a mesma conta ser treinador e aluno de outro treinador, sem segundo login (§3.2).
@@ -121,19 +121,19 @@ internal fun RoleSelectionScreen(
             modifier = Modifier.selectableGroup(),
             verticalArrangement = Arrangement.spacedBy(Dimens.SpaceMedium),
         ) {
-            RoleCard(
+            RoleOptionCard(
                 title = stringResource(R.string.onboarding_student),
                 description = stringResource(R.string.onboarding_student_description),
                 selected = state.selected == ActiveRole.STUDENT,
-                enabled = !state.submitting,
                 onClick = { onSelect(ActiveRole.STUDENT) },
+                enabled = !state.submitting,
             )
-            RoleCard(
+            RoleOptionCard(
                 title = stringResource(R.string.onboarding_trainer),
                 description = stringResource(R.string.onboarding_trainer_description),
                 selected = state.selected == ActiveRole.TRAINER,
-                enabled = !state.submitting,
                 onClick = { onSelect(ActiveRole.TRAINER) },
+                enabled = !state.submitting,
             )
         }
 
@@ -152,44 +152,5 @@ internal fun RoleSelectionScreen(
             enabled = state.selected != null,
             loading = state.submitting,
         )
-    }
-}
-
-@Composable
-private fun RoleCard(
-    title: String,
-    description: String,
-    selected: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        // `selectable` com Role.RadioButton, e não `clickable`: é o que faz o leitor de tela
-        // anunciar o cartão como opção escolhível e informar qual está marcada.
-        modifier = modifier
-            .fillMaxWidth()
-            .selectable(
-                selected = selected,
-                enabled = enabled,
-                role = Role.RadioButton,
-                onClick = onClick,
-            ),
-        colors = if (selected) {
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        } else {
-            CardDefaults.cardColors()
-        },
-    ) {
-        Column(
-            modifier = Modifier.padding(Dimens.SpaceLarge),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXSmall),
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
-            Text(text = description, style = MaterialTheme.typography.bodyMedium)
-        }
     }
 }

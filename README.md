@@ -158,7 +158,7 @@ qualidade) e mensais para as actions. Quem valida é o CI. Nada é mesclado auto
 :app           — aplicação, grafo raiz de navegação, AppContainer (injeção manual)
 :core          — design system: tema, tipografia, componentes
 :data          — Room, Firestore, repositórios
-:feature-auth  — entrar, criar conta, recuperar senha, escolher papel
+:feature-auth  — boas-vindas, entrar, criar conta, recuperar senha, escolher papel
 :feature-*     — demais funcionalidades, criadas sob demanda
 ```
 
@@ -168,6 +168,10 @@ parâmetro na função do grafo.
 
 A navegação é composta por **grafos irmãos por papel** (`auth`, `trainer`, `student`), e não por um
 grafo único com condicionais: tela de treinador não existe na pilha de um aluno.
+
+O papel é escolhido **antes do login**, na tela de boas-vindas, e gravado pelo cadastro — quem já
+tem conta apenas tem o papel lido. O porquê está no
+[ADR-0010](docs/adr/0010-escolha-de-papel-antes-do-login.md).
 
 O padrão de apresentação é MVVM: o ViewModel expõe estado como `StateFlow` somente-leitura, a
 mutação fica restrita a ele, e nenhuma referência a `Context` ou tipo de UI entra ali.

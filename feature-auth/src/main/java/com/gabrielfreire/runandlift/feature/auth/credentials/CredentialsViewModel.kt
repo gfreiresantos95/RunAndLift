@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.AuthResult
+import com.gabrielfreire.runandlift.data.model.ActiveRole
+import com.gabrielfreire.runandlift.data.model.UserAccount
 import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
 import com.gabrielfreire.runandlift.feature.auth.EmailError
 import com.gabrielfreire.runandlift.feature.auth.PasswordError
@@ -24,6 +26,11 @@ internal data class CredentialsUiState(
     val failure: AuthFailure? = null,
     val submitting: Boolean = false,
     val authenticated: Boolean = false,
+    /**
+     * Papel com que a conta segue: gravado agora, no cadastro, ou lido do perfil, ao entrar.
+     * Quando é `null`, o papel ainda é desconhecido e a navegação passa pela tela de escolha.
+     */
+    val resolvedRole: ActiveRole? = null,
 )
 
 /**
@@ -45,6 +52,18 @@ internal abstract class CredentialsViewModel(
     val uiState: StateFlow<CredentialsUiState> = _uiState.asStateFlow()
 
     protected abstract suspend fun authenticate(email: String, password: String): AuthResult
+
+    /**
+     * Com que papel esta conta segue, decidido logo depois de ela existir. Cadastro **grava** o
+     * papel escolhido nas boas-vindas; entrada **lê** o papel que a conta já tem.
+     *
+     * `null` significa "ainda não se sabe", e leva à tela de escolha de papel — é o desfecho de
+     * conta antiga sem papel, e também o de uma gravação que falhou.
+     *
+     * Vale para os dois caminhos de autenticação, e-mail e Google, porque nos dois a conta só
+     * ganha `uid` aqui.
+     */
+    protected open suspend fun resolveRole(account: UserAccount?): ActiveRole? = null
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, emailError = null, failure = null) }
@@ -73,19 +92,8 @@ internal abstract class CredentialsViewModel(
             is GoogleSignInResult.Failed ->
                 _uiState.update { it.copy(submitting = false, failure = result.reason) }
 
-            is GoogleSignInResult.Token -> authenticateWithGoogle(result.idToken)
-        }
-    }
-
-    private fun authenticateWithGoogle(idToken: String) {
-        viewModelScope.launch {
-            when (val result = authRepository.signInWithGoogle(idToken)) {
-                is AuthResult.Success ->
-                    _uiState.update { it.copy(submitting = false, authenticated = true) }
-
-                is AuthResult.Failure ->
-                    _uiState.update { it.copy(submitting = false, failure = result.reason) }
-            }
+            is GoogleSignInResult.Token ->
+                viewModelScope.launch { complete(authRepository.signInWithGoogle(result.idToken)) }
         }
     }
 
@@ -106,28 +114,21 @@ internal abstract class CredentialsViewModel(
 
         _uiState.update { it.copy(submitting = true, failure = null) }
 
-        viewModelScope.launch {
-            when (val result = authenticate(current.email, current.password)) {
-                is AuthResult.Success ->
-                    _uiState.update { it.copy(submitting = false, authenticated = true) }
+        viewModelScope.launch { complete(authenticate(current.email, current.password)) }
+    }
 
-                is AuthResult.Failure ->
-                    _uiState.update { it.copy(submitting = false, failure = result.reason) }
+    /** Desfecho comum aos dois caminhos de autenticação. */
+    private suspend fun complete(result: AuthResult) {
+        when (result) {
+            is AuthResult.Success -> {
+                val role = resolveRole(result.account)
+                _uiState.update {
+                    it.copy(submitting = false, authenticated = true, resolvedRole = role)
+                }
             }
+
+            is AuthResult.Failure ->
+                _uiState.update { it.copy(submitting = false, failure = result.reason) }
         }
     }
-}
-
-internal class SignInViewModel(private val authRepository: AuthRepository) :
-    CredentialsViewModel(requireStrongPassword = false, authRepository = authRepository) {
-
-    override suspend fun authenticate(email: String, password: String): AuthResult =
-        authRepository.signInWithEmail(email = email, password = password)
-}
-
-internal class SignUpViewModel(private val authRepository: AuthRepository) :
-    CredentialsViewModel(requireStrongPassword = true, authRepository = authRepository) {
-
-    override suspend fun authenticate(email: String, password: String): AuthResult =
-        authRepository.signUpWithEmail(email = email, password = password)
 }

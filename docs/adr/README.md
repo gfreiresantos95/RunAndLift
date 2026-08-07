@@ -33,3 +33,4 @@ se pensou na época é justamente o que se quer preservar.
 | [0007](0007-security-rules-e-id-de-vinculo-deterministico.md) | Security Rules e id de vínculo determinístico | Aceito |
 | [0008](0008-zero-anuncio.md) | Zero anúncio, sempre | Aceito |
 | [0009](0009-navegacao-por-papel-e-fronteira-de-feature.md) | Navegação por papel e fronteira do módulo de feature | Aceito |
+| [0010](0010-escolha-de-papel-antes-do-login.md) | Escolha de papel antes do login | Aceito |
