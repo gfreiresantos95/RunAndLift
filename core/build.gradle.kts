@@ -38,5 +38,9 @@ dependencies {
     // O design system inteiro mora aqui, então as regras do compose-lints precisam rodar aqui.
     lintChecks(libs.compose.lint.checks)
 
+    // O design system se confere pela galeria de previews, com uma exceção: mapeamento de cursor
+    // de máscara é aritmética, e aritmética errada aqui vira exceção em tempo de execução.
+    testImplementation(libs.junit)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

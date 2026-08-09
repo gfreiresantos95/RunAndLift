@@ -5,11 +5,16 @@ import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.AuthResult
 import com.gabrielfreire.runandlift.data.model.ActiveRole
+import com.gabrielfreire.runandlift.data.model.PrivacyConsent
+import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.model.UserAccount
 import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.model.UserRoles
 import com.gabrielfreire.runandlift.data.user.UserRepository
+import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
+import com.gabrielfreire.runandlift.feature.auth.BirthDateError
 import com.gabrielfreire.runandlift.feature.auth.EmailError
+import com.gabrielfreire.runandlift.feature.auth.NameError
 import com.gabrielfreire.runandlift.feature.auth.PasswordError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -20,10 +25,13 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * Comportamento do formulário de credenciais.
@@ -74,6 +82,9 @@ class CredentialsViewModelTest {
         var rolesAdded: List<ActiveRole> = emptyList()
             private set
 
+        var lastDetails: SignUpDetails? = null
+            private set
+
         override suspend fun profile(uid: String): UserProfile? = storedRole?.let {
             UserProfile(
                 uid = uid,
@@ -83,18 +94,30 @@ class CredentialsViewModelTest {
             )
         }
 
-        override suspend fun addRole(uid: String, role: ActiveRole, displayName: String?): UserProfile {
+        override suspend fun saveProfile(uid: String, role: ActiveRole?, details: SignUpDetails): UserProfile {
             if (failWriting) error("sem rede")
-            rolesAdded = rolesAdded + role
+            lastDetails = details
+            role?.let { rolesAdded = rolesAdded + it }
             return UserProfile(
                 uid = uid,
-                displayName = displayName,
+                displayName = details.displayName,
                 roles = UserRoles(trainer = role == ActiveRole.TRAINER, student = role == ActiveRole.STUDENT),
                 activeRole = role,
+                birthDate = details.birthDate,
+                phone = details.phone,
             )
         }
 
         override suspend fun setActiveRole(uid: String, role: ActiveRole) = Unit
+    }
+
+    /** Preenche o cadastro inteiro com dados válidos — o que cada teste faz é desviar de um deles. */
+    private fun SignUpViewModel.fillValidForm() {
+        onNameChange("Ana Ribeiro")
+        onEmailChange("valido@exemplo.com")
+        onPasswordChange("senha123")
+        onBirthDateChange("21051990")
+        onTermsChange(true)
     }
 
     @Before
@@ -145,12 +168,98 @@ class CredentialsViewModelTest {
         val repository = FakeAuthRepository()
         val viewModel = SignUpViewModel(repository, FakeUserRepository())
 
-        viewModel.onEmailChange("valido@exemplo.com")
+        viewModel.fillValidForm()
         viewModel.onPasswordChange("123")
         viewModel.onSubmit()
 
         assertEquals(PasswordError.TOO_SHORT, viewModel.uiState.value.passwordError)
         assertEquals(0, repository.calls)
+    }
+
+    @Test
+    fun `cadastro nao cria conta sem aceite dos termos`() = runTest(testDispatcher) {
+        val repository = FakeAuthRepository()
+        val viewModel = SignUpViewModel(repository, FakeUserRepository())
+
+        viewModel.fillValidForm()
+        viewModel.onTermsChange(false)
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        assertTrue("aceite é condição para a conta existir", viewModel.formState.value.termsMissing)
+        assertEquals(0, repository.calls)
+    }
+
+    @Test
+    fun `um envio revela todos os erros de uma vez`() = runTest(testDispatcher) {
+        val viewModel = SignUpViewModel(FakeAuthRepository(), FakeUserRepository())
+
+        viewModel.onSubmit()
+
+        // Formulário que revela um erro por envio faz a pessoa tentar N vezes para descobrir N
+        // coisas — a validação extra não pode ser curto-circuitada pela de credencial.
+        assertEquals(EmailError.REQUIRED, viewModel.uiState.value.emailError)
+        assertEquals(PasswordError.REQUIRED, viewModel.uiState.value.passwordError)
+        assertEquals(NameError.REQUIRED, viewModel.formState.value.nameError)
+        assertEquals(BirthDateError.REQUIRED, viewModel.formState.value.birthDateError)
+        assertTrue(viewModel.formState.value.termsMissing)
+    }
+
+    @Test
+    fun `cadastro recusa quem nao tem a idade minima`() = runTest(testDispatcher) {
+        val repository = FakeAuthRepository()
+        val viewModel = SignUpViewModel(repository, FakeUserRepository())
+        val tooYoung = LocalDate.now().minusYears(AuthFormValidation.MIN_AGE_YEARS - 1L)
+
+        viewModel.fillValidForm()
+        viewModel.onBirthDateChange(tooYoung.format(DateTimeFormatter.ofPattern("ddMMyyyy")))
+        viewModel.onSubmit()
+
+        assertEquals(BirthDateError.TOO_YOUNG, viewModel.formState.value.birthDateError)
+        assertEquals(0, repository.calls)
+    }
+
+    @Test
+    fun `cadastro grava o que o formulario coletou, inclusive o consentimento`() = runTest(testDispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.STUDENT)
+
+        viewModel.fillValidForm()
+        viewModel.onPhoneChange("11987654321")
+        viewModel.onMarketingChange(true)
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        val details = users.lastDetails
+        assertEquals("Ana Ribeiro", details?.displayName)
+        assertEquals(LocalDate.of(1990, 5, 21), details?.birthDate)
+        assertEquals("11987654321", details?.phone)
+        assertEquals(PrivacyConsent.CURRENT_TERMS_VERSION, details?.consent?.termsVersion)
+        assertEquals(true, details?.consent?.marketingOptIn)
+    }
+
+    @Test
+    fun `opt-in de marketing e separado do aceite dos termos`() = runTest(testDispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.STUDENT)
+
+        viewModel.fillValidForm()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // Consentimento em bloco não é consentimento: aceitar os termos não pode ligar o marketing.
+        assertEquals(false, users.lastDetails?.consent?.marketingOptIn)
+    }
+
+    @Test
+    fun `mascara nao chega ao estado, so digito`() = runTest(testDispatcher) {
+        val viewModel = SignUpViewModel(FakeAuthRepository(), FakeUserRepository())
+
+        viewModel.onBirthDateChange("21/05/1990")
+        viewModel.onPhoneChange("(11) 98765-4321")
+
+        assertEquals("21051990", viewModel.formState.value.birthDate)
+        assertEquals("11987654321", viewModel.formState.value.phone)
     }
 
     @Test
@@ -213,8 +322,7 @@ class CredentialsViewModelTest {
         val users = FakeUserRepository()
         val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.TRAINER)
 
-        viewModel.onEmailChange("valido@exemplo.com")
-        viewModel.onPasswordChange("senha123")
+        viewModel.fillValidForm()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -231,14 +339,16 @@ class CredentialsViewModelTest {
         val users = FakeUserRepository()
         val viewModel = SignUpViewModel(FakeAuthRepository(), users, intendedRole = null)
 
-        viewModel.onEmailChange("valido@exemplo.com")
-        viewModel.onPasswordChange("senha123")
+        viewModel.fillValidForm()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.authenticated)
         assertEquals(emptyList<ActiveRole>(), users.rolesAdded)
         assertNull(viewModel.uiState.value.resolvedRole)
+        // Sem papel ainda, mas o consentimento não pode esperar pela tela seguinte: coletado e
+        // não registrado é o mesmo que não ter coletado.
+        assertNotNull(users.lastDetails?.consent)
     }
 
     @Test
@@ -249,8 +359,7 @@ class CredentialsViewModelTest {
             ActiveRole.STUDENT,
         )
 
-        viewModel.onEmailChange("valido@exemplo.com")
-        viewModel.onPasswordChange("senha123")
+        viewModel.fillValidForm()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 

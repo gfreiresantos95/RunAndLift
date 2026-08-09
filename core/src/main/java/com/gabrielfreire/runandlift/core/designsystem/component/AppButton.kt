@@ -19,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 
@@ -87,6 +89,25 @@ fun AppTextButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         enabled = enabled,
     ) {
         Text(text = text, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+/**
+ * Mesma ação terciária, com o rótulo já estilizado por trechos.
+ *
+ * Existe para a frase que é **um alvo só** mas não tem uma ênfase só — "Ainda não tem conta? Crie
+ * uma conta". Partir isso em texto solto mais botão dá dois elementos para o leitor de tela e dois
+ * alvos para o dedo, quando a intenção é uma; deixar tudo com a cor de ação apaga qual parte é a
+ * ação. O [androidx.compose.ui.text.AnnotatedString] resolve os dois: um controle, duas ênfases.
+ */
+@Composable
+fun AppTextButton(text: AnnotatedString, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    TextButton(
+        onClick = onClick,
+        modifier = modifier.defaultMinSize(minHeight = Dimens.MinTouchTarget),
+        enabled = enabled,
+    ) {
+        Text(text = text, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
     }
 }
 

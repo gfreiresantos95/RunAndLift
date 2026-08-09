@@ -44,11 +44,55 @@
     <string name="auth_forgot_password">Esqueci minha senha</string>
     <string name="auth_or">ou</string>
 
-    <!-- Caminho alternativo: a pergunta é texto, só a resposta é tocável. -->
+    <!-- Caminho alternativo. Pergunta e resposta formam UM botão de texto só — é a única porta
+         para o cadastro, e alvo dividido aqui é caminho perdido. A resposta está no imperativo
+         ("Crie uma conta") porque é o que a pessoa manda o app fazer, não o nome de uma tela. -->
     <string name="auth_prompt_no_account">Ainda não tem conta?</string>
     <string name="auth_prompt_has_account">Já tem uma conta?</string>
-    <string name="auth_go_to_sign_up">Criar conta</string>
+    <string name="auth_go_to_sign_up">Crie uma conta</string>
     <string name="auth_go_to_sign_in">Entrar</string>
+
+    <!-- Aviso legal da entrada federada: a folha do Google cria conta, e criar conta exige dizer
+         a que se está concordando. Os documentos ficam a um toque, logo abaixo. -->
+    <string name="auth_legal_notice_sign_in">Ao continuar, você concorda com os Termos de Uso e a
+        Política de Privacidade.</string>
+
+    <!-- Cadastro: identidade -->
+    <string name="auth_name">Nome completo</string>
+    <string name="auth_name_support_student">É assim que o seu treinador vai te encontrar na lista
+        de alunos.</string>
+    <string name="auth_name_support_trainer">É o nome que os seus alunos veem no app.</string>
+    <string name="auth_birth_date">Data de nascimento</string>
+    <!-- A finalidade é dita no próprio campo, e não numa política que ninguém abre: é o que a LGPD
+         chama de informação adequada sobre o tratamento (art. 9º). -->
+    <string name="auth_birth_date_support_student">Ajusta as faixas de esforço do seu treino.</string>
+    <string name="auth_birth_date_support_trainer">Confirma que você tem idade para criar
+        a conta.</string>
+    <string name="auth_phone">Celular (WhatsApp)</string>
+    <string name="auth_phone_support_student">Opcional. Seu treinador usa para falar com você fora
+        do app.</string>
+    <string name="auth_phone_support_trainer">Opcional. Seus alunos usam para falar com você fora
+        do app.</string>
+
+    <!-- Minimização de dados dita em voz alta: o que o cadastro NÃO pede tranquiliza tanto quanto
+         o que ele explica. -->
+    <string name="auth_health_notice">Peso, medidas e histórico de lesões não são pedidos aqui.
+        Esses dados vêm depois, na avaliação com o seu treinador, e só com a sua autorização.</string>
+
+    <!-- Consentimento (LGPD art. 8º). Duas caixas separadas, as duas desmarcadas: aceite em bloco
+         não é consentimento, e caixa pré-marcada não é escolha. -->
+    <string name="auth_terms_accept">Li e concordo com os Termos de Uso e a Política de
+        Privacidade.</string>
+    <string name="auth_terms_required">Para criar a conta é preciso aceitar os Termos de Uso e a
+        Política de Privacidade.</string>
+    <string name="auth_terms_open">Termos de Uso</string>
+    <string name="auth_privacy_open">Política de Privacidade</string>
+    <string name="auth_marketing_opt_in">Quero receber dicas de treino e novidades por e-mail.</string>
+    <string name="auth_marketing_support">Opcional, e você pode cancelar quando quiser.</string>
+
+    <!-- Endereços dos documentos. Provisórios: o domínio existe, as páginas ainda não. -->
+    <string name="auth_terms_url" translatable="false">https://runandlift.app/termos</string>
+    <string name="auth_privacy_url" translatable="false">https://runandlift.app/privacidade</string>
 
     <!-- Recuperação de senha -->
     <string name="auth_recovery_title">Recuperar senha</string>
@@ -68,6 +112,23 @@
         <item quantity="one">A senha precisa de pelo menos %1$d caractere.</item>
         <item quantity="other">A senha precisa de pelo menos %1$d caracteres.</item>
     </plurals>
+    <string name="auth_error_name_required">Informe o seu nome.</string>
+    <string name="auth_error_name_incomplete">Informe nome e sobrenome.</string>
+    <string name="auth_error_birth_date_required">Informe a sua data de nascimento.</string>
+    <!-- "Incompleta" e "não existe" são erros diferentes: quem está no meio da digitação não
+         merece ouvir que errou. -->
+    <string name="auth_error_birth_date_incomplete">Complete a data no formato DD/MM/AAAA.</string>
+    <string name="auth_error_birth_date_invalid">Essa data não existe. Confira o dia, o mês e o
+        ano.</string>
+    <!-- Diz a regra e, principalmente, por onde o menor de idade entra — barreira sem saída é
+         porta na cara. -->
+    <plurals name="auth_error_birth_date_too_young">
+        <item quantity="one">É preciso ter %1$d ano para criar conta. Menores de idade são
+            cadastrados pelo treinador, com o responsável.</item>
+        <item quantity="other">É preciso ter %1$d anos para criar conta. Menores de idade são
+            cadastrados pelo treinador, com o responsável.</item>
+    </plurals>
+    <string name="auth_error_phone_invalid">Informe DDD e número, com 10 ou 11 dígitos.</string>
 
     <!-- Falhas vindas do servidor -->
     <string name="auth_error_invalid_credentials">E-mail ou senha incorretos.</string>

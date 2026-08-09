@@ -65,6 +65,17 @@ internal abstract class CredentialsViewModel(
      */
     protected open suspend fun resolveRole(account: UserAccount?): ActiveRole? = null
 
+    /**
+     * Validação dos campos que esta base não conhece — nome, data de nascimento e aceite, no
+     * cadastro. Devolve `false` para interromper o envio, e é responsável por publicar os próprios
+     * erros no estado.
+     *
+     * É chamada **sempre**, mesmo com e-mail ou senha já inválidos, para a tela apontar todos os
+     * problemas de uma vez: formulário que revela um erro por envio faz a pessoa tentar três vezes
+     * para descobrir três coisas.
+     */
+    protected open fun validateExtras(): Boolean = true
+
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, emailError = null, failure = null) }
     }
@@ -107,7 +118,11 @@ internal abstract class CredentialsViewModel(
             requireMinLength = requireStrongPassword,
         )
 
-        if (emailError != null || passwordError != null) {
+        // Avaliada antes do `if` para não ser curto-circuitada: os erros dela precisam aparecer
+        // junto com os de e-mail e senha, não no envio seguinte.
+        val extrasValid = validateExtras()
+
+        if (emailError != null || passwordError != null || !extrasValid) {
             _uiState.update { it.copy(emailError = emailError, passwordError = passwordError) }
             return
         }

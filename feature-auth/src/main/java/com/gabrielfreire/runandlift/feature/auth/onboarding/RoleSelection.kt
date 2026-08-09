@@ -18,6 +18,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
+import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.R
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,10 +75,12 @@ internal class RoleSelectionViewModel(
 
         viewModelScope.launch {
             runCatching {
-                userRepository.addRole(
+                userRepository.saveProfile(
                     uid = account.uid,
                     role = role,
-                    displayName = account.email?.substringBefore('@'),
+                    // Nome derivado do e-mail só entra se ainda não houver um: quem passou pelo
+                    // formulário de cadastro já informou o nome real, e o repositório preserva.
+                    details = SignUpDetails(displayName = account.email?.substringBefore('@')),
                 )
             }.onSuccess { profile ->
                 _uiState.update { it.copy(submitting = false, confirmedRole = profile.activeRole) }

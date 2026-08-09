@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
@@ -31,6 +34,10 @@ import com.gabrielfreire.runandlift.feature.auth.message
  * Tela própria, e não a mesma do cadastro com rótulos trocados: os dois fluxos divergem no que
  * pedem e no que prometem. Aqui existe "esqueci minha senha" e **não** existe regra de senha —
  * anunciar o tamanho mínimo ao entrar revelaria a regra a quem tem senha antiga mais curta.
+ *
+ * É também **a única porta do cadastro**: o "Ainda não tem conta? Crie uma conta" do rodapé é o
+ * único caminho para o formulário de criação, e leva o perfil escolhido na abertura junto. Por
+ * isso ele é um botão de texto inteiro, e não uma frase com uma palavra clicável no fim.
  *
  * @param role perfil de onde a pessoa veio, exibido como etiqueta. É o **caminho** que ela
  *   escolheu na abertura, não uma afirmação sobre a conta: quem entra com uma conta de treinador
@@ -134,6 +141,21 @@ private fun SignInForm(state: CredentialsUiState, actions: SignInActions, modifi
         Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         GoogleSignInButton(onClick = actions.onGoogleSignIn, enabled = !state.submitting)
+
+        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+
+        // A folha do Google entra e **cadastra** pela mesma porta: quem chega aqui sem conta sai
+        // daqui com uma. Dizer a que se está concordando é obrigação de quem cria a conta, e não
+        // do formulário de cadastro — que esta pessoa não vai ver.
+        Text(
+            text = stringResource(R.string.auth_legal_notice_sign_in),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        LegalLinks(onOpen = actions.onOpenLegalDocument, enabled = !state.submitting)
     }
 }
 
@@ -180,4 +202,5 @@ private fun previewSignInActions() = SignInActions(
     onCreateAccount = {},
     onBack = {},
     onAuthenticated = {},
+    onOpenLegalDocument = {},
 )

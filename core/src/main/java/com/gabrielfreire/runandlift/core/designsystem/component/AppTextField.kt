@@ -3,6 +3,8 @@ package com.gabrielfreire.runandlift.core.designsystem.component
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
@@ -14,8 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -25,6 +29,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.gabrielfreire.runandlift.core.R
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import kotlinx.coroutines.launch
 
 /**
  * Campo de texto do app.
@@ -36,6 +41,11 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
  *
  * O erro é anunciado por leitor de tela pelo `semantics { error(...) }` — sem isso, quem usa
  * TalkBack percebe a borda vermelha e nada mais.
+ *
+ * Ao receber foco, o campo **inteiro** é trazido para dentro da área visível — rótulo, caixa e a
+ * linha de apoio abaixo dela. O `BasicTextField` por dentro já faz isso sozinho, mas só com o
+ * retângulo do cursor: o suficiente para enxergar o que se digita, e não para ler a regra ou o erro
+ * que estão logo abaixo, que é justamente onde a linha de apoio some atrás do teclado.
  *
  * @param supportingText regra do campo, dita **antes** de o usuário errar. "Mínimo de 8
  *   caracteres" na entrada vale mais que "senha muito curta" depois do envio.
@@ -58,8 +68,14 @@ fun AppTextField(
     onImeAction: (() -> Unit)? = null,
 ) {
     val hasError = errorMessage != null
+    val bringIntoView = remember { BringIntoViewRequester() }
+    val scope = rememberCoroutineScope()
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .bringIntoViewRequester(bringIntoView),
+    ) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -77,6 +93,10 @@ fun AppTextField(
             trailingIcon = trailingContent,
             modifier = Modifier
                 .fillMaxWidth()
+                // Pedir de novo a cada evento de foco é barato: se o campo já está visível, o
+                // pedido não move nada. O que ele resolve é o campo que ganha foco pela tecla
+                // "próximo" do teclado, sem toque nenhum para rolar a tela antes.
+                .onFocusEvent { if (it.isFocused) scope.launch { bringIntoView.bringIntoView() } }
                 .semantics { if (errorMessage != null) error(errorMessage) },
         )
 

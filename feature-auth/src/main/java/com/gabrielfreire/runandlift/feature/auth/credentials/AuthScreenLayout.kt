@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -20,13 +21,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.component.AppOutlinedButton
@@ -48,14 +55,26 @@ import com.gabrielfreire.runandlift.feature.auth.message
  * O miolo rola por dentro, então o rodapé nunca é empurrado para fora — nem com o teclado aberto,
  * nem com a fonte do sistema no tamanho máximo (E0-09).
  *
+ * **Teclado.** `imePadding` encolhe a faixa rolável em vez de deslizar a tela inteira para cima:
+ * com a área de rolagem menor, o campo que recebe foco é trazido para dentro dela pelo próprio
+ * `BasicTextField`, e o rodapé continua acima do teclado em vez de sumir atrás dele. O
+ * `consumeWindowInsets` antes dele não é detalhe: sem ele o recuo da barra de navegação seria
+ * contado duas vezes — uma pelo `Scaffold`, outra pelo teclado — e sobraria uma faixa vazia do
+ * tamanho da barra entre o rodapé e o teclado.
+ *
+ * @param anchorTop ancora o miolo logo abaixo da barra superior em vez de centralizá-lo no espaço
+ *   livre. Verdadeiro para conteúdo que é uma **sequência a percorrer**, como um formulário longo:
+ *   centralizar o que não cabe na tela apenas desalinha o primeiro campo em cada aparelho. Falso
+ *   para conteúdo curto, que centralizado fica no alcance do polegar.
  * @param bottom saída alternativa; recebe o rodapé inteiro.
- * @param content miolo da tela, já dentro de uma [Column] centralizada.
+ * @param content miolo da tela, já dentro de uma [Column] rolável.
  */
 @Composable
 internal fun AuthScreenLayout(
     onBack: () -> Unit,
     bottom: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    anchorTop: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -72,6 +91,7 @@ internal fun AuthScreenLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
                 .imePadding(),
         ) {
             Column(
@@ -80,7 +100,7 @@ internal fun AuthScreenLayout(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .padding(Dimens.ScreenPadding),
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = if (anchorTop) Arrangement.Top else Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 content = content,
             )
@@ -164,6 +184,33 @@ internal fun FailureBanner(failure: AuthFailure, modifier: Modifier = Modifier) 
     }
 }
 
+/**
+ * Abre Termos ou Política no navegador.
+ *
+ * Fica aqui, e não no ViewModel, porque abrir uma URL é ação de UI e precisa do handler do
+ * Compose — ViewModel que resolve isso acaba segurando `Context`.
+ *
+ * Navegador do sistema em vez de uma tela interna com WebView: documento jurídico muda sem passar
+ * por publicação na loja, e a versão publicada precisa ser a versão que a pessoa lê.
+ */
+@Composable
+internal fun rememberLegalDocumentOpener(): (LegalDocument) -> Unit {
+    val uriHandler = LocalUriHandler.current
+    val terms = stringResource(R.string.auth_terms_url)
+    val privacy = stringResource(R.string.auth_privacy_url)
+
+    return remember(uriHandler, terms, privacy) {
+        { document ->
+            uriHandler.openUri(
+                when (document) {
+                    LegalDocument.TERMS -> terms
+                    LegalDocument.PRIVACY -> privacy
+                },
+            )
+        }
+    }
+}
+
 /** Separador entre o formulário e a entrada por Google — dois caminhos, não uma sequência. */
 @Composable
 internal fun OrSeparator(modifier: Modifier = Modifier) {
@@ -206,7 +253,18 @@ internal fun GoogleSignInButton(onClick: () -> Unit, enabled: Boolean, modifier:
     )
 }
 
-/** Pergunta em texto comum, resposta em botão: só o que é tocável parece tocável. */
+/**
+ * Caminho alternativo, em **um único botão de texto**: "Ainda não tem conta? Crie uma conta".
+ *
+ * Antes eram dois elementos, a pergunta em texto comum e a resposta em botão. O desenho parecia
+ * mais honesto — só o tocável parece tocável — e falhava na prática: quem lê a pergunta mira nela,
+ * erra o alvo e conclui que a tela não tem saída para o cadastro. Sendo esta a **única** porta do
+ * fluxo de criação de conta, errar o alvo aqui não é um toque perdido, é um caminho perdido.
+ *
+ * A frase inteira vira o alvo, e a ênfase separa o que é pergunta do que é ação: a
+ * [androidx.compose.ui.text.AnnotatedString] mantém um controle só para o leitor de tela, com duas
+ * cores para o olho.
+ */
 @Composable
 internal fun AlternativePrompt(
     prompt: String,
@@ -215,19 +273,22 @@ internal fun AlternativePrompt(
     enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = prompt,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    val promptColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val actionColor = MaterialTheme.colorScheme.primary
 
-        AppTextButton(text = action, onClick = onClick, enabled = enabled)
+    val label = remember(prompt, action, promptColor, actionColor) {
+        buildAnnotatedString {
+            withStyle(SpanStyle(color = promptColor, fontWeight = FontWeight.Normal)) {
+                append(prompt)
+            }
+            append(" ")
+            withStyle(SpanStyle(color = actionColor, fontWeight = FontWeight.SemiBold)) {
+                append(action)
+            }
+        }
     }
+
+    AppTextButton(text = label, onClick = onClick, enabled = enabled, modifier = modifier.fillMaxWidth())
 }
 
 private val GOOGLE_LOGO_SIZE = 20.dp

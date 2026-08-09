@@ -25,8 +25,10 @@ import com.gabrielfreire.runandlift.feature.auth.credentials.SignInActions
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInViewModel
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpActions
+import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpFormActions
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpViewModel
+import com.gabrielfreire.runandlift.feature.auth.credentials.rememberLegalDocumentOpener
 import com.gabrielfreire.runandlift.feature.auth.google.GoogleSignInRequester
 import com.gabrielfreire.runandlift.feature.auth.onboarding.RoleSelectionScreen
 import com.gabrielfreire.runandlift.feature.auth.onboarding.RoleSelectionViewModel
@@ -42,7 +44,11 @@ import kotlinx.coroutines.launch
  *
  * Começa nas boas-vindas, e não no login, porque o perfil escolhido ali decide o funil de cadastro
  * inteiro. Entrar e criar conta são **destinos separados**, cada um com a sua tela: o que os dois
- * pedem é igual, o que prometem não é.
+ * pedem já não é o mesmo, e o que prometem nunca foi.
+ *
+ * O caminho é **linear**: boas-vindas escolhem o perfil, e as duas saídas vão para a entrada;
+ * o cadastro só é alcançado pelo rodapé da entrada, e de lá só se volta. Uma porta só para o
+ * cadastro é o que garante que o perfil escolhido na abertura chegue inteiro até a gravação.
  *
  * Os repositórios chegam por parâmetro, e não de um container global, para `:feature-auth` não
  * depender de `:app` — o que inverteria a direção dos módulos. Quem injeta é quem tem o grafo de
@@ -118,11 +124,14 @@ private fun roleArgument() = listOf(
 private fun NavBackStackEntry.role(): ActiveRole? = ActiveRole.fromStorage(arguments?.getString(AuthRoutes.ROLE_ARG))
 
 /**
- * Boas-vindas. Sem estado a guardar: o toque no papel já é a navegação, e o papel escolhido vira
- * argumento da rota de cadastro — que é onde ele vai ser gravado, depois de a conta existir.
+ * Boas-vindas. Sem estado a guardar: o toque no papel já é a navegação, e o papel escolhido viaja
+ * como argumento de rota até o cadastro — que é onde ele vai ser gravado, depois de a conta
+ * existir.
  *
- * Quem já tem conta chega ao login pelo "Já tenho conta" do cadastro. Sai um toque a mais para
- * quem volta, e some a saída lateral que competia com a única decisão desta tela.
+ * As duas saídas vão para a **entrada**, não para o cadastro. Quem instala o app pela primeira vez
+ * é minoria em qualquer dia que não seja o do lançamento: a maioria dos toques aqui é de gente que
+ * já tem conta, e mandá-la ao cadastro para de lá voltar ao login inverte o caminho comum. O
+ * cadastro fica a um toque de distância, no rodapé da entrada, com o mesmo perfil no bolso.
  */
 @Composable
 private fun WelcomeDestination(navController: NavHostController) {
@@ -144,6 +153,7 @@ private fun SignInDestination(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val openLegalDocument = rememberLegalDocumentOpener()
 
     SignInScreen(
         state = state,
@@ -152,13 +162,20 @@ private fun SignInDestination(
             onEmailChange = viewModel::onEmailChange,
             onPasswordChange = viewModel::onPasswordChange,
             onSubmit = viewModel::onSubmit,
-            // Desempilha em vez de navegar: o cadastro está logo abaixo, com o perfil que a pessoa
-            // escolheu na abertura. Empilhar um segundo cadastro perderia essa escolha.
-            onCreateAccount = { navController.navigate(AuthRoutes.signUp(role)) },
+            // **A única entrada do fluxo de criação de conta.** O perfil escolhido na abertura vai
+            // junto na rota: sem ele, o cadastro não teria papel para gravar e jogaria a pessoa na
+            // tela de escolha depois de autenticar — a pergunta repetida que o ADR-0010 eliminou.
+            //
+            // `launchSingleTop` porque cadastro e entrada alternam pelo rodapé: sem isso, ir e
+            // voltar empilharia uma tela nova a cada toque.
+            onCreateAccount = {
+                navController.navigate(AuthRoutes.signUp(role)) { launchSingleTop = true }
+            },
             onForgotPassword = { navController.navigate(AuthRoutes.RECOVERY) },
             onAuthenticated = { navController.continueAfterAuth(state.resolvedRole, onAuthenticatedWithRole) },
             onGoogleSignIn = { requestGoogleSignIn(scope, context, dependencies.googleSignIn, viewModel) },
             onBack = { navController.popBackStack() },
+            onOpenLegalDocument = openLegalDocument,
         ),
     )
 }
@@ -177,26 +194,32 @@ private fun SignUpDestination(
         },
     ),
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val form by viewModel.formState.collectAsStateWithLifecycle()
+    val openLegalDocument = rememberLegalDocumentOpener()
 
     SignUpScreen(
         state = state,
+        form = form,
         role = intendedRole,
         actions = SignUpActions(
             onEmailChange = viewModel::onEmailChange,
             onPasswordChange = viewModel::onPasswordChange,
             onSubmit = viewModel::onSubmit,
-            // `launchSingleTop` para o par cadastro/entrar alternar sem crescer: daqui empilha, e
-            // de lá desempilha. A pilha antes de autenticar nunca passa de três telas. O perfil vai
-            // junto, mas só como etiqueta — entrar não grava papel.
-            onSignIn = {
-                navController.navigate(AuthRoutes.signIn(intendedRole)) { launchSingleTop = true }
-            },
+            // Desempilha, não navega: só se chega ao cadastro **pela** entrada, então a entrada
+            // está logo abaixo, com o formulário que a pessoa já preencheu. Navegar empilharia uma
+            // segunda cópia dela e faria "voltar" atravessar duas telas iguais.
+            onSignIn = { navController.popBackStack() },
             onAuthenticated = { navController.continueAfterAuth(state.resolvedRole, onAuthenticatedWithRole) },
-            onGoogleSignIn = { requestGoogleSignIn(scope, context, dependencies.googleSignIn, viewModel) },
             onBack = { navController.popBackStack() },
+        ),
+        formActions = SignUpFormActions(
+            onNameChange = viewModel::onNameChange,
+            onBirthDateChange = viewModel::onBirthDateChange,
+            onPhoneChange = viewModel::onPhoneChange,
+            onTermsChange = viewModel::onTermsChange,
+            onMarketingChange = viewModel::onMarketingChange,
+            onOpenLegalDocument = openLegalDocument,
         ),
     )
 }

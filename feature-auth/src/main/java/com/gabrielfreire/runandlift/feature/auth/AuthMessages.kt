@@ -32,6 +32,36 @@ internal fun PasswordError.message(): String = when (this) {
 }
 
 @Composable
+internal fun NameError.message(): String = stringResource(
+    when (this) {
+        NameError.REQUIRED -> R.string.auth_error_name_required
+        NameError.INCOMPLETE -> R.string.auth_error_name_incomplete
+    },
+)
+
+@Composable
+internal fun BirthDateError.message(): String = when (this) {
+    BirthDateError.REQUIRED -> stringResource(R.string.auth_error_birth_date_required)
+
+    BirthDateError.INCOMPLETE -> stringResource(R.string.auth_error_birth_date_incomplete)
+
+    BirthDateError.INVALID -> stringResource(R.string.auth_error_birth_date_invalid)
+
+    BirthDateError.TOO_YOUNG -> pluralStringResource(
+        R.plurals.auth_error_birth_date_too_young,
+        AuthFormValidation.MIN_AGE_YEARS,
+        AuthFormValidation.MIN_AGE_YEARS,
+    )
+}
+
+@Composable
+internal fun PhoneError.message(): String = stringResource(
+    when (this) {
+        PhoneError.INVALID -> R.string.auth_error_phone_invalid
+    },
+)
+
+@Composable
 internal fun AuthFailure.message(): String = stringResource(messageRes())
 
 @StringRes
