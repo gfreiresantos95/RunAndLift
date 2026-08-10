@@ -1,10 +1,12 @@
 package com.gabrielfreire.runandlift.core.designsystem.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -12,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.gabrielfreire.runandlift.core.R
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
  * Barra superior do app: título ao centro e, quando houver para onde voltar, a seta à esquerda.
@@ -57,4 +61,21 @@ fun AppTopBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
         modifier = modifier,
     )
+}
+
+/**
+ * Com e sem seta. O `Surface` por trás não é enfeite do preview: é o que revela que a barra é
+ * transparente e herda a cor da tela, em vez de desenhar uma faixa própria.
+ */
+@LightDarkPreviews
+@Composable
+private fun AppTopBarPreview() {
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column {
+                AppTopBar(title = "Run & Lift", onBack = {}, backContentDescription = "Voltar")
+                AppTopBar(title = "Run & Lift")
+            }
+        }
+    }
 }

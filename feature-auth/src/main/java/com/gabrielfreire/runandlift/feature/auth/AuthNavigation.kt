@@ -1,6 +1,5 @@
 package com.gabrielfreire.runandlift.feature.auth
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -10,17 +9,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.navArgument
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
-import com.gabrielfreire.runandlift.feature.auth.credentials.CredentialsViewModel
+import com.gabrielfreire.runandlift.feature.auth.credentials.CompleteProfileScreen
+import com.gabrielfreire.runandlift.feature.auth.credentials.CompleteProfileViewModel
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInActions
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInViewModel
@@ -35,8 +32,6 @@ import com.gabrielfreire.runandlift.feature.auth.onboarding.RoleSelectionViewMod
 import com.gabrielfreire.runandlift.feature.auth.onboarding.WelcomeScreen
 import com.gabrielfreire.runandlift.feature.auth.recovery.PasswordRecoveryScreen
 import com.gabrielfreire.runandlift.feature.auth.recovery.PasswordRecoveryViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 /**
  * Grafo de entrada: boas-vindas, login, cadastro, recuperação e escolha de papel (E1-01, E1-10,
@@ -90,6 +85,17 @@ fun NavGraphBuilder.authGraph(
                 onAuthenticatedWithRole = onAuthenticatedWithRole,
             )
         }
+        composable(route = AuthRoutes.COMPLETE_PROFILE_PATTERN, arguments = roleArgument()) { entry ->
+            // Sem papel não há o que completar: o que ainda vai ser perguntado depende dele. Quem
+            // chega aqui sem papel passou antes pela escolha, que é quem sabe respondê-lo.
+            entry.role()?.let { role ->
+                CompleteProfileDestination(
+                    dependencies = dependencies,
+                    role = role,
+                    onAuthenticatedWithRole = onAuthenticatedWithRole,
+                )
+            }
+        }
         composable(AuthRoutes.RECOVERY) {
             RecoveryDestination(navController, dependencies.authRepository)
         }
@@ -111,17 +117,6 @@ internal data class AuthDependencies(
     val userRepository: UserRepository,
     val googleSignIn: GoogleSignInRequester,
 )
-
-/** Argumento de perfil, opcional e com padrão nulo — as duas telas funcionam sem ele. */
-private fun roleArgument() = listOf(
-    navArgument(AuthRoutes.ROLE_ARG) {
-        type = NavType.StringType
-        nullable = true
-        defaultValue = null
-    },
-)
-
-private fun NavBackStackEntry.role(): ActiveRole? = ActiveRole.fromStorage(arguments?.getString(AuthRoutes.ROLE_ARG))
 
 /**
  * Boas-vindas. Sem estado a guardar: o toque no papel já é a navegação, e o papel escolhido viaja
@@ -146,7 +141,9 @@ private fun SignInDestination(
     onAuthenticatedWithRole: (ActiveRole) -> Unit,
     viewModel: SignInViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { SignInViewModel(dependencies.authRepository, dependencies.userRepository) }
+            initializer {
+                SignInViewModel(dependencies.authRepository, dependencies.userRepository, role)
+            }
         },
     ),
 ) {
@@ -172,7 +169,7 @@ private fun SignInDestination(
                 navController.navigate(AuthRoutes.signUp(role)) { launchSingleTop = true }
             },
             onForgotPassword = { navController.navigate(AuthRoutes.RECOVERY) },
-            onAuthenticated = { navController.continueAfterAuth(state.resolvedRole, onAuthenticatedWithRole) },
+            onAuthenticated = { navController.continueAfterAuth(state, onAuthenticatedWithRole) },
             onGoogleSignIn = { requestGoogleSignIn(scope, context, dependencies.googleSignIn, viewModel) },
             onBack = { navController.popBackStack() },
             onOpenLegalDocument = openLegalDocument,
@@ -210,13 +207,55 @@ private fun SignUpDestination(
             // está logo abaixo, com o formulário que a pessoa já preencheu. Navegar empilharia uma
             // segunda cópia dela e faria "voltar" atravessar duas telas iguais.
             onSignIn = { navController.popBackStack() },
-            onAuthenticated = { navController.continueAfterAuth(state.resolvedRole, onAuthenticatedWithRole) },
+            onAuthenticated = { navController.continueAfterAuth(state, onAuthenticatedWithRole) },
             onBack = { navController.popBackStack() },
         ),
         formActions = SignUpFormActions(
             onNameChange = viewModel::onNameChange,
             onBirthDateChange = viewModel::onBirthDateChange,
             onPhoneChange = viewModel::onPhoneChange,
+            onCrefChange = viewModel::onCrefChange,
+            onTermsChange = viewModel::onTermsChange,
+            onMarketingChange = viewModel::onMarketingChange,
+            onOpenLegalDocument = openLegalDocument,
+        ),
+    )
+}
+
+/** Conclusão de cadastro: pede o que o provedor de entrada não tinha para dar, e grava o papel. */
+@Composable
+private fun CompleteProfileDestination(
+    dependencies: AuthDependencies,
+    role: ActiveRole,
+    onAuthenticatedWithRole: (ActiveRole) -> Unit,
+    viewModel: CompleteProfileViewModel = viewModel(
+        // O papel na chave: trocar de papel na mesma rota precisa recomeçar com outra régua, e um
+        // ViewModel reaproveitado traria o "o que falta" do papel anterior.
+        key = role.storageValue,
+        factory = viewModelFactory {
+            initializer {
+                CompleteProfileViewModel(dependencies.authRepository, dependencies.userRepository, role)
+            }
+        },
+    ),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val form by viewModel.formState.collectAsStateWithLifecycle()
+    val openLegalDocument = rememberLegalDocumentOpener()
+
+    CompleteProfileScreen(
+        state = state,
+        form = form,
+        onSubmit = viewModel::onSubmit,
+        onCompleted = onAuthenticatedWithRole,
+        actions = SignUpFormActions(
+            // O nome veio do provedor e não tem campo nesta tela; a ação existe só porque os
+            // blocos de campo são os mesmos do cadastro, e reaproveitá-los vale mais do que
+            // duplicar contrato para omitir uma lambda.
+            onNameChange = {},
+            onBirthDateChange = viewModel::onBirthDateChange,
+            onPhoneChange = viewModel::onPhoneChange,
+            onCrefChange = viewModel::onCrefChange,
             onTermsChange = viewModel::onTermsChange,
             onMarketingChange = viewModel::onMarketingChange,
             onOpenLegalDocument = openLegalDocument,
@@ -262,31 +301,4 @@ private fun RoleSelectionDestination(
         onConfirm = viewModel::onConfirm,
         onConfirmed = onAuthenticatedWithRole,
     )
-}
-
-/**
- * Para onde ir depois de autenticar: direto ao grafo do papel quando ele já é conhecido, e para a
- * escolha de papel quando não é.
- *
- * Uma função só, usada por entrar e por cadastrar, porque a regra é a mesma nas duas — e porque
- * duplicá-la é como uma das duas telas acabaria perguntando o papel a quem já tem.
- */
-private fun NavHostController.continueAfterAuth(role: ActiveRole?, onAuthenticatedWithRole: (ActiveRole) -> Unit) {
-    if (role != null) onAuthenticatedWithRole(role) else navigate(AuthRoutes.ROLE_SELECTION)
-}
-
-/**
- * Abre a folha do Google e entrega o desfecho ao ViewModel.
- *
- * Fica na camada de tela, e não no ViewModel, porque a chamada mostra UI do sistema e exige um
- * Context de Activity — ViewModel que segura Context vaza a tela inteira.
- */
-private fun requestGoogleSignIn(
-    scope: CoroutineScope,
-    context: Context,
-    googleSignIn: GoogleSignInRequester,
-    viewModel: CredentialsViewModel,
-) {
-    viewModel.onGoogleSignInStarted()
-    scope.launch { viewModel.onGoogleSignInResult(googleSignIn.requestIdToken(context)) }
 }

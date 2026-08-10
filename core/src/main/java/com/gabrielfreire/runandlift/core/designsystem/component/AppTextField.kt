@@ -1,5 +1,6 @@
 package com.gabrielfreire.runandlift.core.designsystem.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,11 +26,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.gabrielfreire.runandlift.core.R
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import kotlinx.coroutines.launch
 
 /**
@@ -51,6 +56,9 @@ import kotlinx.coroutines.launch
  *   caracteres" na entrada vale mais que "senha muito curta" depois do envio.
  * @param onImeAction o que a tecla de ação do teclado dispara. Sem isso ela não faz nada, e quem
  *   está de teclado aberto precisa fechá-lo para alcançar o botão.
+ * @param capitalization o que o teclado oferece em maiúscula. Existe para campos cujo conteúdo é
+ *   maiúsculo por natureza, como um registro profissional: se o valor vai ser convertido de
+ *   qualquer jeito, o teclado precisa concordar, ou parece que o aparelho está corrigindo.
  */
 @Composable
 fun AppTextField(
@@ -62,6 +70,7 @@ fun AppTextField(
     supportingText: String? = null,
     enabled: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     imeAction: ImeAction = ImeAction.Next,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     trailingContent: (@Composable () -> Unit)? = null,
@@ -83,7 +92,11 @@ fun AppTextField(
             singleLine = true,
             isError = hasError,
             enabled = enabled,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+            keyboardOptions = KeyboardOptions(
+                capitalization = capitalization,
+                keyboardType = keyboardType,
+                imeAction = imeAction,
+            ),
             keyboardActions = KeyboardActions(
                 onDone = { onImeAction?.invoke() },
                 onGo = { onImeAction?.invoke() },
@@ -176,4 +189,48 @@ fun AppPasswordField(
             }
         },
     )
+}
+
+/**
+ * Os quatro estados da linha de apoio, um embaixo do outro: sem nada, com regra, com erro e
+ * desabilitado. É onde se confere que a troca de regra por erro **não** muda a altura do campo.
+ */
+@LightDarkPreviews
+@Composable
+private fun AppTextFieldPreview() {
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column(
+                modifier = Modifier.padding(Dimens.SpaceLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
+            ) {
+                AppTextField(value = "ana@exemplo.com", onValueChange = {}, label = "E-mail")
+
+                AppTextField(
+                    value = "Ana Ribeiro",
+                    onValueChange = {},
+                    label = "Nome completo",
+                    supportingText = "É assim que o seu treinador vai te encontrar na lista de alunos.",
+                )
+
+                AppTextField(
+                    value = "ana",
+                    onValueChange = {},
+                    label = "E-mail",
+                    errorMessage = "Esse e-mail não parece válido.",
+                )
+
+                AppTextField(value = "", onValueChange = {}, label = "Celular", enabled = false)
+
+                AppPasswordField(
+                    value = "senha123",
+                    onValueChange = {},
+                    label = "Senha",
+                    showLabel = "Mostrar senha",
+                    hideLabel = "Ocultar senha",
+                    supportingText = "Mínimo de 6 caracteres.",
+                )
+            }
+        }
+    }
 }

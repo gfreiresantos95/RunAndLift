@@ -64,6 +64,53 @@ class AuthFormValidationTest {
     }
 
     @Test
+    fun `telefone do treinador e obrigatorio, porque ele e o canal`() {
+        assertEquals(PhoneError.REQUIRED, AuthFormValidation.validatePhone("", required = true))
+        assertNull(AuthFormValidation.validatePhone("11987654321", required = true))
+    }
+
+    @Test
+    fun `cref e guardado sem separador e gravado com ele`() {
+        // O campo mascarado entrega só o conteúdo; a pontuação da carteira entra na gravação.
+        assertEquals("012345-G/SP", AuthFormValidation.formatCref("012345GSP"))
+        assertNull("incompleto não vira registro pela metade", AuthFormValidation.formatCref("012345G"))
+        assertEquals("012345GSP", AuthFormValidation.crefContent("012345-G/SP"))
+    }
+
+    @Test
+    fun `cref incompleto ou com estado inexistente nao passa`() {
+        assertEquals(CrefError.REQUIRED, AuthFormValidation.validateCref(""))
+        assertEquals("faltou o estado", CrefError.INVALID, AuthFormValidation.validateCref("012345G"))
+        assertEquals("XX não é unidade da federação", CrefError.INVALID, AuthFormValidation.validateCref("012345GXX"))
+        assertNull(AuthFormValidation.validateCref("012345GSP"))
+    }
+
+    @Test
+    fun `email exige dominio com ponto e topo de duas letras`() {
+        assertEquals(EmailError.REQUIRED, AuthFormValidation.validateEmail("  "))
+        assertEquals("domínio sem ponto", EmailError.INVALID, AuthFormValidation.validateEmail("ana@exemplo"))
+        assertEquals("topo de uma letra", EmailError.INVALID, AuthFormValidation.validateEmail("ana@exemplo.c"))
+        assertEquals("arroba dobrada", EmailError.INVALID, AuthFormValidation.validateEmail("ana@@exemplo.com"))
+        assertEquals("espaço no meio", EmailError.INVALID, AuthFormValidation.validateEmail("an a@exemplo.com"))
+        assertNull(AuthFormValidation.validateEmail("ana.ribeiro+treino@exemplo.com.br"))
+        assertNull("espaço nas pontas é do teclado, não do endereço", AuthFormValidation.validateEmail(" ana@x.co "))
+    }
+
+    @Test
+    fun `senha curta e recusada antes de ir a rede`() {
+        val short = "a".repeat(AuthFormValidation.MIN_PASSWORD_LENGTH - 1)
+
+        assertEquals(
+            PasswordError.TOO_SHORT,
+            AuthFormValidation.validatePassword(short, requireMinLength = true),
+        )
+        assertNull(AuthFormValidation.validatePassword(short + "a", requireMinLength = true))
+        // Ao entrar a regra não vale: quem tem senha antiga mais curta não pode ser barrado por
+        // uma exigência que passou a existir depois da conta dele.
+        assertNull(AuthFormValidation.validatePassword(short, requireMinLength = false))
+    }
+
+    @Test
     fun `parse devolve nulo em vez de estourar`() {
         assertEquals(LocalDate.of(1990, 5, 21), AuthFormValidation.parseBirthDate("21051990"))
         assertNull(AuthFormValidation.parseBirthDate("2105199"))

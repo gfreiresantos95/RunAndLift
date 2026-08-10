@@ -16,6 +16,8 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.model.ActiveRole
+import com.gabrielfreire.runandlift.feature.auth.CrefError
+import com.gabrielfreire.runandlift.feature.auth.PhoneError
 import com.gabrielfreire.runandlift.feature.auth.R
 
 /**
@@ -29,11 +31,21 @@ import com.gabrielfreire.runandlift.feature.auth.R
  * garante que o perfil escolhido nas boas-vindas continue viajando junto — abrir o cadastro por
  * outro caminho traria alguém sem perfil, que teria de responder de novo na tela seguinte.
  *
+ * O "Já tem uma conta? Entrar" fica no **fim do conteúdo rolável**, e não preso no rodapé: num
+ * formulário longo, uma saída fixa fica visível durante todo o preenchimento oferecendo a porta de
+ * fora justamente a quem já decidiu entrar por esta.
+ *
  * O título é sempre o mesmo — quem carrega o perfil é a etiqueta, não a manchete. Repetir "de
  * aluno" no título com o chip logo acima dizendo "Aluno" seria dizer a mesma coisa duas vezes.
  *
- * @param role perfil escolhido na abertura. Decide a finalidade declarada em cada campo, e não os
- *   campos em si: só o aviso sobre dado de saúde é exclusivo do aluno.
+ * **A tela é a mesma para aluno e treinador**, e isso é decisão, não economia: o que se pede para
+ * abrir uma conta — nome, e-mail, senha, nascimento, contato, aceite — não depende de estar
+ * prescrevendo ou executando treino. Duplicá-la para acrescentar um campo faria duas telas
+ * divergirem em tudo o que elas têm em comum, que é quase tudo.
+ *
+ * @param role perfil escolhido na abertura. Decide a finalidade declarada em cada campo de apoio,
+ *   o bloco que aparece antes do aceite — aviso de dado de saúde para o aluno, registro
+ *   profissional para o treinador — e a obrigatoriedade do celular.
  */
 @Composable
 internal fun SignUpScreen(
@@ -51,11 +63,6 @@ internal fun SignUpScreen(
     AuthScreenLayout(
         modifier = modifier,
         onBack = actions.onBack,
-        // Ancorado no topo, e não centralizado: o formulário é mais alto que qualquer tela em que
-        // ele vai rodar, então "centralizar" só mudaria onde o primeiro campo começa em cada
-        // aparelho. Começando logo abaixo da barra, o título e o campo de nome ficam no mesmo lugar
-        // sempre, e o resto se alcança rolando.
-        anchorTop = true,
         bottom = {
             AlternativePrompt(
                 prompt = stringResource(R.string.auth_prompt_has_account),
@@ -109,12 +116,7 @@ private fun SignUpPreview() {
     RunAndLiftTheme {
         SignUpScreen(
             state = CredentialsUiState(email = "ana@exemplo.com", password = "123456"),
-            form = SignUpFormState(
-                name = "Ana Ribeiro",
-                birthDate = "21051990",
-                phone = "11987654321",
-                acceptedTerms = true,
-            ),
+            form = previewStudentForm(),
             actions = previewSignUpActions(),
             formActions = previewSignUpFormActions(),
             role = ActiveRole.STUDENT,
@@ -122,37 +124,49 @@ private fun SignUpPreview() {
     }
 }
 
-@Preview(name = "Criar conta · vazio e com erros", showBackground = true, heightDp = 1500)
+/**
+ * A mesma tela, o outro perfil. Vale abrir os dois lado a lado: o título, o rodapé e a ordem dos
+ * campos não mudam — muda a etiqueta, a promessa do subtítulo e o bloco antes do aceite.
+ */
+@Preview(name = "Criar conta · treinador, claro", showBackground = true, heightDp = 1700)
+@Preview(
+    name = "Criar conta · treinador, escuro",
+    showBackground = true,
+    heightDp = 1700,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun SignUpTrainerPreview() {
+    RunAndLiftTheme {
+        SignUpScreen(
+            state = CredentialsUiState(email = "bruno@exemplo.com", password = "123456"),
+            form = previewTrainerForm(),
+            actions = previewSignUpActions(),
+            formActions = previewSignUpFormActions(),
+            role = ActiveRole.TRAINER,
+        )
+    }
+}
+
+/** Tudo o que pode dar errado de uma vez, que é como o formulário responde a um envio vazio. */
+@Preview(name = "Criar conta · treinador, com erros", showBackground = true, heightDp = 1700)
 @Composable
 private fun SignUpFailurePreview() {
     RunAndLiftTheme {
         SignUpScreen(
             state = CredentialsUiState(
-                email = "ana@exemplo.com",
+                email = "bruno@exemplo.com",
                 failure = AuthFailure.EMAIL_ALREADY_IN_USE,
             ),
-            form = SignUpFormState(termsMissing = true),
+            form = SignUpFormState(
+                cref = "012345",
+                crefError = CrefError.INVALID,
+                phoneError = PhoneError.REQUIRED,
+                termsMissing = true,
+            ),
             actions = previewSignUpActions(),
             formActions = previewSignUpFormActions(),
-            role = ActiveRole.STUDENT,
+            role = ActiveRole.TRAINER,
         )
     }
 }
-
-private fun previewSignUpActions() = SignUpActions(
-    onEmailChange = {},
-    onPasswordChange = {},
-    onSubmit = {},
-    onSignIn = {},
-    onBack = {},
-    onAuthenticated = {},
-)
-
-private fun previewSignUpFormActions() = SignUpFormActions(
-    onNameChange = {},
-    onBirthDateChange = {},
-    onPhoneChange = {},
-    onTermsChange = {},
-    onMarketingChange = {},
-    onOpenLegalDocument = {},
-)

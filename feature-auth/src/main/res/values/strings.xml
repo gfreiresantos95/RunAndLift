@@ -71,13 +71,25 @@
     <string name="auth_phone">Celular (WhatsApp)</string>
     <string name="auth_phone_support_student">Opcional. Seu treinador usa para falar com você fora
         do app.</string>
-    <string name="auth_phone_support_trainer">Opcional. Seus alunos usam para falar com você fora
-        do app.</string>
+    <!-- Sem "Opcional": para o treinador este campo é obrigatório. O aluno tem com quem falar
+         dentro do app assim que o vínculo existe; o treinador é o canal, e o número dele é o que o
+         aluno procura antes de existir vínculo nenhum. -->
+    <string name="auth_phone_support_trainer">Seus alunos usam para falar com você fora do
+        app.</string>
 
     <!-- Minimização de dados dita em voz alta: o que o cadastro NÃO pede tranquiliza tanto quanto
          o que ele explica. -->
     <string name="auth_health_notice">Peso, medidas e histórico de lesões não são pedidos aqui.
         Esses dados vêm depois, na avaliação com o seu treinador, e só com a sua autorização.</string>
+
+    <!-- Cadastro: registro profissional, só do treinador -->
+    <string name="auth_cref">Registro no CREF</string>
+    <string name="auth_cref_support">Como está na sua carteira. Exemplo: 012345-G/SP.</string>
+    <!-- Contraparte do aviso do aluno: lá o app diz o que NÃO pede, aqui diz o que vai FAZER com o
+         que pediu. Nos dois casos, responder antes de a pergunta ser feita. -->
+    <string name="auth_cref_notice">Prescrever treino é atividade privativa de profissional
+        registrado (Lei 9.696/1998). Seu número fica visível para os alunos vinculados a você e
+        pode ser conferido no CONFEF.</string>
 
     <!-- Consentimento (LGPD art. 8º). Duas caixas separadas, as duas desmarcadas: aceite em bloco
          não é consentimento, e caixa pré-marcada não é escolha. -->
@@ -93,6 +105,15 @@
     <!-- Endereços dos documentos. Provisórios: o domínio existe, as páginas ainda não. -->
     <string name="auth_terms_url" translatable="false">https://runandlift.app/termos</string>
     <string name="auth_privacy_url" translatable="false">https://runandlift.app/privacidade</string>
+
+    <!-- Conclusão de cadastro depois da entrada por Google. Diz de quem é a lacuna sem culpar
+         ninguém: o provedor informa o que informa, e o resto quem sabe é a pessoa. -->
+    <string name="auth_complete_title">Falta pouco</string>
+    <string name="auth_complete_subtitle">O Google informa nome e e-mail. O resto quem precisa
+        dizer é você.</string>
+    <string name="auth_complete_subtitle_named">Olá, %1$s. O Google informa nome e e-mail — o resto
+        quem precisa dizer é você.</string>
+    <string name="auth_complete_action">Concluir cadastro</string>
 
     <!-- Recuperação de senha -->
     <string name="auth_recovery_title">Recuperar senha</string>
@@ -129,6 +150,12 @@
             cadastrados pelo treinador, com o responsável.</item>
     </plurals>
     <string name="auth_error_phone_invalid">Informe DDD e número, com 10 ou 11 dígitos.</string>
+    <string name="auth_error_phone_required">Informe o seu celular com DDD.</string>
+    <string name="auth_error_cref_required">Informe o seu registro no CREF.</string>
+    <!-- Aponta as três partes e repete o exemplo: "inválido" sozinho deixa a pessoa adivinhando
+         qual delas errou. -->
+    <string name="auth_error_cref_invalid">Confira o número, a categoria e a sigla do estado.
+        Exemplo: 012345-G/SP.</string>
 
     <!-- Falhas vindas do servidor -->
     <string name="auth_error_invalid_credentials">E-mail ou senha incorretos.</string>

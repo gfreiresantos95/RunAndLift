@@ -31,19 +31,33 @@ object AuthRoutes {
 
     private const val SIGN_IN = "auth/sign-in"
     private const val SIGN_UP = "auth/sign-up"
+    private const val COMPLETE_PROFILE = "auth/complete-profile"
 
     /**
-     * Padrões registrados no grafo. O argumento é opcional (sintaxe de query) porque as duas telas
+     * Padrões registrados no grafo. O argumento é opcional (sintaxe de query) porque as três telas
      * também são alcançáveis sem perfil conhecido.
      */
     internal const val SIGN_IN_PATTERN = "$SIGN_IN?$ROLE_ARG={$ROLE_ARG}"
     internal const val SIGN_UP_PATTERN = "$SIGN_UP?$ROLE_ARG={$ROLE_ARG}"
+    internal const val COMPLETE_PROFILE_PATTERN = "$COMPLETE_PROFILE?$ROLE_ARG={$ROLE_ARG}"
 
     /** Rota concreta da entrada, com ou sem perfil. */
     internal fun signIn(role: ActiveRole? = null): String = withRole(SIGN_IN, role)
 
     /** Rota concreta do cadastro, com ou sem perfil. */
     internal fun signUp(role: ActiveRole? = null): String = withRole(SIGN_UP, role)
+
+    /**
+     * Conclusão de cadastro: o que o provedor de entrada não tinha para dar.
+     *
+     * Pública porque `:app` também precisa dela — quem abre o app com uma conta pela metade tem de
+     * cair aqui, ou fechar o aplicativo viraria a forma de pular a pergunta.
+     *
+     * @param role papel com que a conta segue. Vai na rota, e não é lido do perfil, porque a conta
+     *   recém-criada pelo Google ainda não tem papel gravado: o que existe é a escolha das
+     *   boas-vindas, e é esta tela que a grava.
+     */
+    fun completeProfile(role: ActiveRole? = null): String = withRole(COMPLETE_PROFILE, role)
 
     private fun withRole(route: String, role: ActiveRole?): String =
         if (role == null) route else "$route?$ROLE_ARG=${role.storageValue}"

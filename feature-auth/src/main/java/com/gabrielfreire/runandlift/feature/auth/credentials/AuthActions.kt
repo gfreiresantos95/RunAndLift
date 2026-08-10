@@ -54,6 +54,8 @@ internal data class SignUpFormActions(
     val onNameChange: (String) -> Unit,
     val onBirthDateChange: (String) -> Unit,
     val onPhoneChange: (String) -> Unit,
+    /** Só é acionado no cadastro de treinador — para o aluno o campo nem chega a existir. */
+    val onCrefChange: (String) -> Unit,
     val onTermsChange: (Boolean) -> Unit,
     val onMarketingChange: (Boolean) -> Unit,
     val onOpenLegalDocument: (LegalDocument) -> Unit,

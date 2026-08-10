@@ -6,6 +6,8 @@ import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.model.UserRoles
 import com.gabrielfreire.runandlift.data.util.AppDispatchers
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -33,8 +35,15 @@ interface UserRepository {
      * ser treinador e aluno de outra pessoa sem segunda conta (§3.2). Campo de [details] que vier
      * nulo não é escrito, então gravar só o papel não apaga o nome que já estava lá.
      *
-     * Custo declarado: 1 escrita, mais a leitura de [profile] para descobrir os papéis atuais —
-     * **0 do orçamento** quando o documento está no cache, que é o caso logo após o cadastro.
+     * Quando [SignUpDetails.cref] vem preenchido, a mesma chamada abre `trainerProfiles/{uid}`.
+     * São **dois documentos porque são dois públicos**: `users/{uid}` só o titular lê, e o registro
+     * profissional precisa ser legível pelo aluno vinculado. As duas escritas vão num
+     * [com.google.firebase.firestore.WriteBatch] — meia gravação deixaria um treinador com papel e
+     * sem registro.
+     *
+     * Custo declarado: 1 escrita (2 com registro profissional, numa ida só), mais a leitura de
+     * [profile] para descobrir os papéis atuais — **0 do orçamento** quando o documento está no
+     * cache, que é o caso logo após o cadastro.
      *
      * @param role papel a somar. `null` grava apenas a identidade, para o cadastro que ainda não
      *   sabe o papel — a escolha vem na tela seguinte.
@@ -43,6 +52,17 @@ interface UserRepository {
 
     /** Troca o papel ativo, sem alterar os papéis que a conta possui. */
     suspend fun setActiveRole(uid: String, role: ActiveRole)
+
+    /**
+     * Registro no CREF gravado em `trainerProfiles/{uid}`, ou `null` quando não há nenhum.
+     *
+     * Existe separado de [profile] porque mora em outro documento, e porque só interessa a quem é
+     * treinador — cobrar essa leitura de todo aluno seria pagar por um dado que ele não tem.
+     *
+     * Custo declarado: **0 leitura** com o documento em cache, 1 quando não está. Chamado no
+     * caminho frio de conferir se o cadastro do treinador está completo, nunca em tela de treino.
+     */
+    suspend fun trainerRegistration(uid: String): String?
 }
 
 internal class FirestoreUserRepository(
@@ -51,10 +71,7 @@ internal class FirestoreUserRepository(
 ) : UserRepository {
 
     override suspend fun profile(uid: String): UserProfile? = withContext(dispatchers.io) {
-        val document = runCatching { document(uid).get(Source.CACHE).await() }
-            .getOrNull()
-            ?.takeIf { it.exists() }
-            ?: document(uid).get(Source.SERVER).await()
+        val document = readCacheFirst(document(uid))
 
         if (!document.exists()) return@withContext null
 
@@ -71,7 +88,12 @@ internal class FirestoreUserRepository(
             birthDate = document.getString(FIELD_BIRTH_DATE)
                 ?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
             phone = document.getString(FIELD_PHONE),
+            acceptedTermsVersion = document.getString(FIELD_CONSENT_TERMS_VERSION),
         )
+    }
+
+    override suspend fun trainerRegistration(uid: String): String? = withContext(dispatchers.io) {
+        readCacheFirst(trainerDocument(uid)).getString(FIELD_CREF)
     }
 
     override suspend fun saveProfile(uid: String, role: ActiveRole?, details: SignUpDetails): UserProfile =
@@ -86,8 +108,16 @@ internal class FirestoreUserRepository(
             // quem passou pelo formulário.
             val displayName = details.displayName?.takeIf { existing?.displayName.isNullOrBlank() }
 
-            document(uid)
-                .set(fieldsFor(roles, role, details.copy(displayName = displayName)), SetOptions.merge())
+            firestore.batch()
+                .apply {
+                    set(
+                        document(uid),
+                        fieldsFor(roles, role, details.copy(displayName = displayName)),
+                        SetOptions.merge(),
+                    )
+                    details.cref?.let { set(trainerDocument(uid), mapOf(FIELD_CREF to it), SetOptions.merge()) }
+                }
+                .commit()
                 .await()
 
             UserProfile(
@@ -97,6 +127,7 @@ internal class FirestoreUserRepository(
                 activeRole = role ?: existing?.activeRole,
                 birthDate = details.birthDate ?: existing?.birthDate,
                 phone = details.phone ?: existing?.phone,
+                acceptedTermsVersion = details.consent?.termsVersion ?: existing?.acceptedTermsVersion,
             )
         }
 
@@ -141,10 +172,34 @@ internal class FirestoreUserRepository(
         FIELD_MARKETING_OPT_IN to consent.marketingOptIn,
     )
 
+    /**
+     * Cache primeiro, servidor só quando não há nada em disco — regra 3 do orçamento (§2.4).
+     *
+     * A falha do cache é engolida porque "não tem em disco" não é erro; a do servidor **não é**, e
+     * chega a quem chamou: sem rede e sem cache, a resposta honesta é "não sei", e quem decide o
+     * que fazer com isso é a tela.
+     */
+    private suspend fun readCacheFirst(reference: DocumentReference): DocumentSnapshot =
+        runCatching { reference.get(Source.CACHE).await() }
+            .getOrNull()
+            ?.takeIf { it.exists() }
+            ?: reference.get(Source.SERVER).await()
+
     private fun document(uid: String) = firestore.collection(COLLECTION).document(uid)
+
+    /**
+     * `trainerProfiles/{uid}` — o que o aluno vinculado pode ler sobre o treinador.
+     *
+     * O cadastro abre o documento com o registro e mais nada. Vitrine, biografia e especialidades
+     * são opt-in (E3-02) e entram por outra tela, com consentimento próprio; escrevê-las aqui
+     * colocaria o treinador numa listagem pública que ele não pediu.
+     */
+    private fun trainerDocument(uid: String) = firestore.collection(TRAINER_COLLECTION).document(uid)
 
     private companion object {
         const val COLLECTION = "users"
+        const val TRAINER_COLLECTION = "trainerProfiles"
+        const val FIELD_CREF = "cref"
         const val FIELD_DISPLAY_NAME = "displayName"
         const val FIELD_ACTIVE_ROLE = "activeRole"
         const val FIELD_ROLES = "roles"
@@ -160,5 +215,6 @@ internal class FirestoreUserRepository(
         // Na LEITURA o ponto é caminho, então aqui a forma achatada está correta.
         const val FIELD_ROLE_TRAINER = "$FIELD_ROLES.$FIELD_TRAINER"
         const val FIELD_ROLE_STUDENT = "$FIELD_ROLES.$FIELD_STUDENT"
+        const val FIELD_CONSENT_TERMS_VERSION = "$FIELD_CONSENTS.$FIELD_TERMS_VERSION"
     }
 }

@@ -1,5 +1,6 @@
 package com.gabrielfreire.runandlift.navigation
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,11 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.gabrielfreire.runandlift.R
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
  * Grafos por papel (backlog E0-08).
@@ -70,6 +73,28 @@ private fun RolePlaceholderScreen(
             text = body,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * A tela de espera de conta com os dois papéis, que é o caso com o alternador visível. Some quando
+ * E2-06 e E6-01 chegarem, e o preview some junto.
+ */
+@Preview(name = "Espera · claro", showBackground = true, heightDp = 400)
+@Preview(
+    name = "Espera · escuro",
+    showBackground = true,
+    heightDp = 400,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun RolePlaceholderScreenPreview() {
+    RunAndLiftTheme {
+        RolePlaceholderScreen(
+            title = stringResource(R.string.role_trainer_home_title),
+            body = stringResource(R.string.role_trainer_home_body),
+            onSwitchRole = {},
         )
     }
 }

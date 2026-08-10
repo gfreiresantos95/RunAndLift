@@ -280,6 +280,49 @@ describe('painel e trilha de auditoria', () => {
   });
 });
 
+describe('perfil profissional do treinador', () => {
+  it('o cadastro abre o próprio perfil com o registro no CREF', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(trainer.doc(`trainerProfiles/${TRAINER}`).set({ cref: '012345-G/SP' }));
+  });
+
+  it('o treinador lê o próprio registro, que é como o app sabe se o cadastro está completo', async () => {
+    await seed(async (db) => {
+      await db.doc(`trainerProfiles/${TRAINER}`).set({ cref: '012345-G/SP' });
+    });
+
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(trainer.doc(`trainerProfiles/${TRAINER}`).get());
+  });
+
+  it('o aluno vinculado lê o registro do treinador', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set(activeLink(TRAINER, STUDENT));
+      await db.doc(`trainerProfiles/${TRAINER}`).set({ cref: '012345-G/SP' });
+    });
+
+    // O registro é o que sustenta a confiança do aluno no profissional — é dado dele também.
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(student.doc(`trainerProfiles/${TRAINER}`).get());
+  });
+
+  it('NÃO abre o perfil recém-criado para estranho só porque ele não tem vitrine', async () => {
+    await seed(async (db) => {
+      await db.doc(`trainerProfiles/${TRAINER}`).set({ cref: '012345-G/SP' });
+    });
+
+    // O documento nasce sem o campo `showcase`. A regra usa get(campo, padrão) justamente para
+    // esse caso: ausente é "fora da vitrine", e não um erro de avaliação.
+    const stranger = testEnv.authenticatedContext(OTHER_STUDENT).firestore();
+    await assertFails(stranger.doc(`trainerProfiles/${TRAINER}`).get());
+  });
+
+  it('NÃO deixa ninguém escrever registro no perfil de outro treinador', async () => {
+    const other = testEnv.authenticatedContext(OTHER_TRAINER).firestore();
+    await assertFails(other.doc(`trainerProfiles/${TRAINER}`).set({ cref: '999999-G/RJ' }));
+  });
+});
+
 describe('coleção não declarada', () => {
   it('é negada por padrão', async () => {
     const trainer = testEnv.authenticatedContext(TRAINER).firestore();

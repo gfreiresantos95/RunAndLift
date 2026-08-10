@@ -35,9 +35,13 @@ import com.gabrielfreire.runandlift.feature.auth.message
  * pedem e no que prometem. Aqui existe "esqueci minha senha" e **não** existe regra de senha —
  * anunciar o tamanho mínimo ao entrar revelaria a regra a quem tem senha antiga mais curta.
  *
- * É também **a única porta do cadastro**: o "Ainda não tem conta? Crie uma conta" do rodapé é o
- * único caminho para o formulário de criação, e leva o perfil escolhido na abertura junto. Por
- * isso ele é um botão de texto inteiro, e não uma frase com uma palavra clicável no fim.
+ * É também **a única porta do cadastro**: o "Ainda não tem conta? Crie uma conta" ao fim do
+ * conteúdo é o único caminho para o formulário de criação, e leva o perfil escolhido na abertura
+ * junto. Por isso ele é um botão de texto inteiro, e não uma frase com uma palavra clicável no fim.
+ *
+ * Ele **rola junto com a tela** em vez de ficar preso no rodapé. Fixo, ele competia com "Entrar"
+ * desde o primeiro instante e ainda ocupava altura num aparelho pequeno de teclado aberto; ao fim
+ * do conteúdo, aparece depois que a pessoa viu que não tem o que preencher ali.
  *
  * @param role perfil de onde a pessoa veio, exibido como etiqueta. É o **caminho** que ela
  *   escolheu na abertura, não uma afirmação sobre a conta: quem entra com uma conta de treinador

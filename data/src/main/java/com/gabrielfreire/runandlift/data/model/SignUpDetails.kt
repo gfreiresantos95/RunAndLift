@@ -14,12 +14,18 @@ import java.time.LocalDate
  * sensível (LGPD art. 5º, II) e exigem base legal e consentimento próprios; eles pertencem à
  * anamnese, que acontece depois, com o treinador. Pedi-los na criação de conta seria coletar antes
  * de existir finalidade — e alongaria o cadastro justamente onde o abandono é maior.
+ *
+ * @param cref registro profissional, **só do treinador**, já normalizado como `012345-G/SP`. É o
+ *   único campo aqui que não vai para `users/{uid}`: perfil profissional é público para o aluno
+ *   vinculado, e `users/{uid}` é legível apenas pelo titular. Ver [UserProfile] e as regras de
+ *   `trainerProfiles`.
  */
 data class SignUpDetails(
     val displayName: String? = null,
     val birthDate: LocalDate? = null,
     val phone: String? = null,
     val consent: PrivacyConsent? = null,
+    val cref: String? = null,
 )
 
 /**

@@ -6,6 +6,7 @@ import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.AuthRoutes
+import com.gabrielfreire.runandlift.feature.auth.ProfileCompletion
 import com.gabrielfreire.runandlift.navigation.RoleRoutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,10 +16,16 @@ import kotlinx.coroutines.launch
 /**
  * Estado de abertura: decide para onde o app vai antes de a splash sair.
  *
- * Três desfechos possíveis, e a ordem importa:
+ * Quatro desfechos possíveis, e a ordem importa:
  * 1. sem sessão -> fluxo de entrada;
  * 2. com sessão e sem papel -> escolha de papel, porque a conta existe mas não sabe o que é;
- * 3. com sessão e com papel -> direto para o grafo do papel.
+ * 3. com sessão, com papel e cadastro pela metade -> conclusão de cadastro;
+ * 4. com sessão e cadastro completo -> direto para o grafo do papel.
+ *
+ * O terceiro caso é o que impede que **fechar o app** vire a forma de pular o que a conclusão de
+ * cadastro pergunta. Sem ele, quem entra pelo Google e mata o aplicativo na tela de conclusão volta
+ * direto para a home — sem data de nascimento, sem aceite dos termos e, se for treinador, sem o
+ * registro que a lei exige de quem prescreve.
  *
  * Resolver isso aqui, e não depois da primeira composição, é o que evita o app abrir na tela de
  * login e trocar para a home um frame depois — o piscar que o backlog quer evitar na abertura.
@@ -35,11 +42,18 @@ class MainViewModel(private val authRepository: AuthRepository, private val user
             // Perfil vem do cache do Firestore quando existe, então abrir offline com sessão
             // ativa continua funcionando.
             val profile = account?.let { runCatching { userRepository.profile(it.uid) }.getOrNull() }
+            val role = profile?.activeRole
+
+            // Custa 0 leitura com o cache quente, que é o caso de toda abertura depois da
+            // primeira. Leitura que falha responde "está completo", então rede ruim nunca segura
+            // ninguém na porta.
+            val incomplete = account != null && role != null &&
+                ProfileCompletion.missing(userRepository, account.uid, role).any
 
             _uiState.value = MainUiState(
                 ready = true,
-                startDestination = startDestinationFor(hasAccount = account != null, role = profile?.activeRole),
-                activeRole = profile?.activeRole,
+                startDestination = startDestinationFor(account != null, role, incomplete),
+                activeRole = role,
                 canSwitchRole = profile?.roles?.hasBoth == true,
             )
         }
@@ -65,9 +79,10 @@ class MainViewModel(private val authRepository: AuthRepository, private val user
         }
     }
 
-    private fun startDestinationFor(hasAccount: Boolean, role: ActiveRole?): String = when {
+    private fun startDestinationFor(hasAccount: Boolean, role: ActiveRole?, incomplete: Boolean): String = when {
         !hasAccount -> AuthRoutes.GRAPH
         role == null -> AuthRoutes.ROLE_SELECTION
+        incomplete -> AuthRoutes.completeProfile(role)
         else -> RoleRoutes.graphFor(role)
     }
 }

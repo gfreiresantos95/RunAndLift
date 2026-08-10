@@ -132,7 +132,8 @@ complexity:
     threshold: 60
     # Galeria de @Preview é enumeração de casos, não complexidade: não ramifica, não tem estado e
     # não vai para produção. O limite continua valendo para todo o resto, inclusive composables.
-    ignoreAnnotated: ['Preview']
+    # LightDarkPreviews é a multipreview do design system — mesma natureza, outro nome.
+    ignoreAnnotated: ['Preview', 'LightDarkPreviews']
   LongParameterList:
     active: true
     functionThreshold: 6
@@ -765,8 +766,10 @@ style:
     active: true
     allowedNames: ''
     # @Preview é ponto de entrada do Android Studio, não do código: a função é privada e nunca
-    # chamada por nós, e é exatamente assim que deve ser.
-    ignoreAnnotated: ['Preview']
+    # chamada por nós, e é exatamente assim que deve ser. LightDarkPreviews é a multipreview do
+    # design system e precisa constar aqui pelo nome: a regra casa a anotação escrita, não o que
+    # ela expande.
+    ignoreAnnotated: ['Preview', 'LightDarkPreviews']
   UnusedPrivateProperty:
     active: true
     allowedNames: '_|ignored|expected|serialVersionUID'

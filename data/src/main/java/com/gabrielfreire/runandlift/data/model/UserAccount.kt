@@ -43,6 +43,9 @@ enum class ActiveRole {
  * @param birthDate data de nascimento, sem hora. Serve para ajustar faixas de esforço e para a
  *   barreira de idade do cadastro.
  * @param phone celular apenas com dígitos (DDD + número), como o usuário digitou, sem máscara.
+ * @param acceptedTermsVersion versão dos termos que esta conta aceitou, ou `null` se nunca aceitou.
+ *   É a versão, e não um booleano, porque o que importa é **o quê** foi aceito: termos novos
+ *   tornam o aceite antigo insuficiente sem apagá-lo.
  */
 data class UserProfile(
     val uid: String,
@@ -51,4 +54,5 @@ data class UserProfile(
     val activeRole: ActiveRole?,
     val birthDate: LocalDate? = null,
     val phone: String? = null,
+    val acceptedTermsVersion: String? = null,
 )

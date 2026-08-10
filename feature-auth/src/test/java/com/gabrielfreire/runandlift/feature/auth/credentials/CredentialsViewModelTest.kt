@@ -13,9 +13,11 @@ import com.gabrielfreire.runandlift.data.model.UserRoles
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
 import com.gabrielfreire.runandlift.feature.auth.BirthDateError
+import com.gabrielfreire.runandlift.feature.auth.CrefError
 import com.gabrielfreire.runandlift.feature.auth.EmailError
 import com.gabrielfreire.runandlift.feature.auth.NameError
 import com.gabrielfreire.runandlift.feature.auth.PasswordError
+import com.gabrielfreire.runandlift.feature.auth.PhoneError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -74,10 +76,13 @@ class CredentialsViewModelTest {
     /**
      * @param storedRole papel que a conta já tem em `users/{uid}`.
      * @param failWriting simula a gravação do papel falhando com a conta já criada.
+     * @param storedProfile perfil completo já gravado, para o caso em que nada falta.
      */
     private class FakeUserRepository(
         private val storedRole: ActiveRole? = null,
         private val failWriting: Boolean = false,
+        private val storedProfile: UserProfile? = null,
+        private val storedCref: String? = null,
     ) : UserRepository {
         var rolesAdded: List<ActiveRole> = emptyList()
             private set
@@ -85,7 +90,7 @@ class CredentialsViewModelTest {
         var lastDetails: SignUpDetails? = null
             private set
 
-        override suspend fun profile(uid: String): UserProfile? = storedRole?.let {
+        override suspend fun profile(uid: String): UserProfile? = storedProfile ?: storedRole?.let {
             UserProfile(
                 uid = uid,
                 displayName = null,
@@ -93,6 +98,8 @@ class CredentialsViewModelTest {
                 activeRole = it,
             )
         }
+
+        override suspend fun trainerRegistration(uid: String): String? = storedCref
 
         override suspend fun saveProfile(uid: String, role: ActiveRole?, details: SignUpDetails): UserProfile {
             if (failWriting) error("sem rede")
@@ -118,6 +125,18 @@ class CredentialsViewModelTest {
         onPasswordChange("senha123")
         onBirthDateChange("21051990")
         onTermsChange(true)
+    }
+
+    /**
+     * O mesmo formulário mais o que só o treinador precisa: celular obrigatório e registro.
+     *
+     * O CREF entra como **conteúdo**, sem separador, porque é assim que o campo mascarado entrega:
+     * a pontuação é apresentação e entra de volta só na gravação.
+     */
+    private fun SignUpViewModel.fillValidTrainerForm() {
+        fillValidForm()
+        onPhoneChange("11912345678")
+        onCrefChange("012345GSP")
     }
 
     @Before
@@ -322,7 +341,7 @@ class CredentialsViewModelTest {
         val users = FakeUserRepository()
         val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.TRAINER)
 
-        viewModel.fillValidForm()
+        viewModel.fillValidTrainerForm()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -332,6 +351,53 @@ class CredentialsViewModelTest {
             ActiveRole.TRAINER,
             viewModel.uiState.value.resolvedRole,
         )
+    }
+
+    @Test
+    fun `cadastro de treinador nao cria conta sem registro no CREF`() = runTest(testDispatcher) {
+        val repository = FakeAuthRepository()
+        val viewModel = SignUpViewModel(repository, FakeUserRepository(), ActiveRole.TRAINER)
+
+        // Tudo o que o aluno precisa, e nada do que o treinador precisa.
+        viewModel.fillValidForm()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(CrefError.REQUIRED, viewModel.formState.value.crefError)
+        assertEquals("o treinador é o canal de contato", PhoneError.REQUIRED, viewModel.formState.value.phoneError)
+        assertEquals(0, repository.calls)
+    }
+
+    @Test
+    fun `cadastro de aluno nao pede registro nem celular`() = runTest(testDispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.STUDENT)
+
+        viewModel.fillValidForm()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // A mesma tela, outra régua: exigir do aluno o que só o treinador precisa seria cobrar
+        // por um campo que o formulário dele nem exibe.
+        assertNull(viewModel.formState.value.crefError)
+        assertNull(viewModel.formState.value.phoneError)
+        assertTrue(viewModel.uiState.value.authenticated)
+        assertNull("registro profissional não é dado de aluno", users.lastDetails?.cref)
+    }
+
+    @Test
+    fun `registro do treinador e gravado com separador, mas guardado sem`() = runTest(testDispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.TRAINER)
+
+        viewModel.fillValidTrainerForm()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // O estado guarda o conteúdo, como em qualquer campo mascarado; os separadores entram uma
+        // vez, no caminho da gravação. Duas grafias no banco seriam dois registros ao conferir.
+        assertEquals("012345GSP", viewModel.formState.value.cref)
+        assertEquals("012345-G/SP", users.lastDetails?.cref)
     }
 
     @Test
@@ -352,7 +418,7 @@ class CredentialsViewModelTest {
     }
 
     @Test
-    fun `falha ao gravar o papel nao derruba a conta recem-criada`() = runTest(testDispatcher) {
+    fun `falha ao gravar o papel nao derruba a conta nem repete a pergunta`() = runTest(testDispatcher) {
         val viewModel = SignUpViewModel(
             FakeAuthRepository(),
             FakeUserRepository(failWriting = true),
@@ -366,7 +432,62 @@ class CredentialsViewModelTest {
         // A conta já existe: devolver falha faria a pessoa tentar de novo e ouvir "e-mail em uso".
         assertTrue(viewModel.uiState.value.authenticated)
         assertNull(viewModel.uiState.value.failure)
-        assertNull("sem papel gravado, a escolha acontece na tela seguinte", viewModel.uiState.value.resolvedRole)
+        // E o papel já foi respondido nas boas-vindas: mandá-la escolher de novo trocaria uma
+        // falha de escrita por uma pergunta repetida.
+        assertEquals(ActiveRole.STUDENT, viewModel.uiState.value.resolvedRole)
+    }
+
+    @Test
+    fun `cadastro por formulario nunca cai na conclusao de cadastro`() = runTest(testDispatcher) {
+        val viewModel = SignUpViewModel(FakeAuthRepository(), FakeUserRepository(), ActiveRole.TRAINER)
+
+        viewModel.fillValidTrainerForm()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // O formulário coletou tudo antes de a conta existir: perguntar de novo o que acabou de ser
+        // respondido é o mesmo defeito da escolha de papel duplicada.
+        assertEquals(false, viewModel.uiState.value.profileIncomplete)
+    }
+
+    @Test
+    fun `entrar com conta sem nascimento nem aceite manda concluir o cadastro`() = runTest(testDispatcher) {
+        // É o retrato de quem entrou pela folha do Google: papel escolhido na abertura, conta
+        // autenticada, e nenhum dos dados que só a pessoa tem como informar.
+        val users = FakeUserRepository()
+        val viewModel = SignInViewModel(FakeAuthRepository(), users, ActiveRole.TRAINER)
+
+        viewModel.onEmailChange("valido@exemplo.com")
+        viewModel.onPasswordChange("senha1234")
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.profileIncomplete)
+        assertEquals(
+            "sem papel gravado, vale o que foi escolhido nas boas-vindas",
+            ActiveRole.TRAINER,
+            viewModel.uiState.value.resolvedRole,
+        )
+    }
+
+    @Test
+    fun `entrar com cadastro completo vai direto para o app`() = runTest(testDispatcher) {
+        val complete = UserProfile(
+            uid = "u1",
+            displayName = "Ana Ribeiro",
+            roles = UserRoles(student = true),
+            activeRole = ActiveRole.STUDENT,
+            birthDate = LocalDate.of(1990, 5, 21),
+            acceptedTermsVersion = PrivacyConsent.CURRENT_TERMS_VERSION,
+        )
+        val viewModel = SignInViewModel(FakeAuthRepository(), FakeUserRepository(storedProfile = complete))
+
+        viewModel.onEmailChange("valido@exemplo.com")
+        viewModel.onPasswordChange("senha1234")
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.value.profileIncomplete)
     }
 
     @Test

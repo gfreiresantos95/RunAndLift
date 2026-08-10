@@ -1,5 +1,6 @@
 package com.gabrielfreire.runandlift.feature.auth.recovery
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextField
@@ -150,6 +153,43 @@ internal fun PasswordRecoveryScreen(
             text = stringResource(R.string.auth_recovery_back),
             onClick = onBack,
             enabled = !state.submitting,
+        )
+    }
+}
+
+@Preview(name = "Recuperar senha · claro", showBackground = true, heightDp = 600)
+@Preview(
+    name = "Recuperar senha · escuro",
+    showBackground = true,
+    heightDp = 600,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun PasswordRecoveryPreview() {
+    RunAndLiftTheme {
+        PasswordRecoveryScreen(
+            state = PasswordRecoveryUiState(email = "ana@exemplo.com"),
+            onEmailChange = {},
+            onSubmit = {},
+            onBack = {},
+        )
+    }
+}
+
+/**
+ * A confirmação, que é o ponto da tela: ela diz "se o e-mail estiver cadastrado" e aparece igual
+ * para endereço que existe e para endereço que não existe. Preview para não deixar ninguém
+ * "melhorar" esse texto e transformar a tela num verificador de quem tem conta.
+ */
+@Preview(name = "Recuperar senha · enviado", showBackground = true, heightDp = 600)
+@Composable
+private fun PasswordRecoverySentPreview() {
+    RunAndLiftTheme {
+        PasswordRecoveryScreen(
+            state = PasswordRecoveryUiState(email = "ana@exemplo.com", sent = true),
+            onEmailChange = {},
+            onSubmit = {},
+            onBack = {},
         )
     }
 }

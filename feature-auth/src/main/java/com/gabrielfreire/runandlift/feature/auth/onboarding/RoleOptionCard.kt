@@ -11,12 +11,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
  * Cartão de escolha de papel, usado pelas boas-vindas e pela escolha depois de autenticar.
@@ -71,6 +74,38 @@ internal fun RoleOptionCard(
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXSmall)) {
                 Text(text = title, style = MaterialTheme.typography.titleMedium)
                 Text(text = description, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+/**
+ * Marcado e desmarcado, um sobre o outro.
+ *
+ * É o preview que precisa ser olhado **em escala de cinza**: se a diferença entre os dois cartões
+ * sumir quando a cor sair, os três canais viraram um só e a regra do E0-09 caiu.
+ */
+@LightDarkPreviews
+@Composable
+private fun RoleOptionCardPreview() {
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column(
+                modifier = Modifier.padding(Dimens.SpaceLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpaceMedium),
+            ) {
+                RoleOptionCard(
+                    title = "Sou aluno",
+                    description = "Recebo treinos e registro minhas séries.",
+                    selected = true,
+                    onClick = {},
+                )
+                RoleOptionCard(
+                    title = "Sou treinador",
+                    description = "Prescrevo treinos e acompanho meus alunos.",
+                    selected = false,
+                    onClick = {},
+                )
             }
         }
     }

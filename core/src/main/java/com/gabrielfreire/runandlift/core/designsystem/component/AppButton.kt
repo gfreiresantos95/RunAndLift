@@ -2,10 +2,12 @@ package com.gabrielfreire.runandlift.core.designsystem.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
@@ -13,6 +15,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,6 +26,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
  * Botão de ação principal.
@@ -138,6 +143,29 @@ private fun ButtonContent(text: String, loading: Boolean, leadingContent: (@Comp
                     strokeWidth = PROGRESS_STROKE,
                     color = LocalContentColor.current,
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Os três níveis de ação lado a lado, mais os dois estados que costumam sair errados quando
+ * refeitos à mão: carregando (a caixa não pode encolher) e desabilitado.
+ */
+@LightDarkPreviews
+@Composable
+private fun AppButtonPreview() {
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column(
+                modifier = Modifier.padding(Dimens.SpaceLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpaceMedium),
+            ) {
+                AppButton(text = "Criar conta", onClick = {})
+                AppButton(text = "Criar conta", onClick = {}, loading = true)
+                AppButton(text = "Criar conta", onClick = {}, enabled = false)
+                AppOutlinedButton(text = "Entrar com Google", onClick = {})
+                AppTextButton(text = "Esqueci minha senha", onClick = {})
             }
         }
     }

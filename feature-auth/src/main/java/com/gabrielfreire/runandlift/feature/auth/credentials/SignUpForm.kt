@@ -18,6 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppCheckboxField
 import com.gabrielfreire.runandlift.core.designsystem.component.AppMaskedTextField
@@ -51,6 +53,12 @@ private const val PHONE_MASK = "(##) #####-####"
  * **Não há campo de dado de saúde.** Peso, medidas e restrições são dado sensível (LGPD art. 5º,
  * II) e pertencem à anamnese, com base legal e consentimento próprios. O aviso na tela diz isso em
  * voz alta: o que o cadastro deixa de pedir tranquiliza tanto quanto o que ele explica.
+ *
+ * **É um formulário só para os dois perfis**, e a diferença é deliberadamente pequena: a maior
+ * parte do que se pede — quem é, como entra, quando nasceu, o que aceita — não depende de estar
+ * prescrevendo ou executando treino. O perfil muda três coisas, e só três: a finalidade declarada
+ * em cada campo de apoio, o bloco que vem depois do contato ([HealthDataNotice] para o aluno,
+ * [TrainerFields] para o treinador) e a obrigatoriedade do celular.
  */
 @Composable
 internal fun SignUpForm(
@@ -70,9 +78,22 @@ internal fun SignUpForm(
 
         ContactFields(form = form, formActions = formActions, role = role, enabled = enabled)
 
-        if (role == ActiveRole.STUDENT) {
+        // A mesma vaga do formulário, um bloco por perfil: ao aluno o app conta o que não vai
+        // pedir, ao treinador o que vai fazer com o que pediu. Sem papel definido não há bloco —
+        // exibir os dois seria conversar com duas pessoas ao mesmo tempo.
+        if (role != null) {
             Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
-            HealthDataNotice()
+
+            when (role) {
+                ActiveRole.STUDENT -> HealthDataNotice()
+
+                ActiveRole.TRAINER -> TrainerFields(
+                    cref = form.cref,
+                    onCrefChange = formActions.onCrefChange,
+                    crefError = form.crefError,
+                    enabled = enabled,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
@@ -146,9 +167,12 @@ private fun IdentityFields(
     }
 }
 
-/** Nascimento e contato — os dois campos cuja finalidade muda conforme o perfil. */
+/**
+ * Nascimento e contato — os dois campos cuja finalidade muda conforme o perfil, e o celular, que
+ * muda também de obrigatoriedade: opcional para o aluno, exigido do treinador.
+ */
 @Composable
-private fun ContactFields(form: SignUpFormState, formActions: SignUpFormActions, role: ActiveRole?, enabled: Boolean) {
+internal fun ContactFields(form: SignUpFormState, formActions: SignUpFormActions, role: ActiveRole?, enabled: Boolean) {
     Column(modifier = Modifier.fillMaxWidth()) {
         AppMaskedTextField(
             value = form.birthDate,
@@ -170,7 +194,9 @@ private fun ContactFields(form: SignUpFormState, formActions: SignUpFormActions,
             errorMessage = form.phoneError?.message(),
             supportingText = stringResource(role.phoneSupport()),
             enabled = enabled,
-            imeAction = ImeAction.Done,
+            // `Done` só quando o celular for mesmo o último campo. Para o treinador ainda vem o
+            // registro, e uma tecla "concluir" no meio do formulário fecha o teclado para nada.
+            imeAction = if (role == ActiveRole.TRAINER) ImeAction.Next else ImeAction.Done,
         )
     }
 }
@@ -210,7 +236,7 @@ private fun HealthDataNotice(modifier: Modifier = Modifier) {
  * concordar com o que não dá para ler é assinar em branco.
  */
 @Composable
-private fun ConsentFields(form: SignUpFormState, formActions: SignUpFormActions, enabled: Boolean) {
+internal fun ConsentFields(form: SignUpFormState, formActions: SignUpFormActions, enabled: Boolean) {
     Column(modifier = Modifier.fillMaxWidth()) {
         AppCheckboxField(
             checked = form.acceptedTerms,
@@ -224,18 +250,15 @@ private fun ConsentFields(form: SignUpFormState, formActions: SignUpFormActions,
 
         Spacer(modifier = Modifier.height(Dimens.SpaceSmall))
 
+        // A ressalva entra como texto de apoio do próprio campo, e não como um `Text` solto abaixo
+        // dele: solto, ela recomeçava alinhada com a margem da tela, e um recuo diferente do
+        // rótulo faz a frase parecer de outro item em vez de continuação deste.
         AppCheckboxField(
             checked = form.marketingOptIn,
             onCheckedChange = formActions.onMarketingChange,
             text = stringResource(R.string.auth_marketing_opt_in),
             enabled = enabled,
-        )
-
-        Text(
-            text = stringResource(R.string.auth_marketing_support),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = Dimens.SpaceLarge),
+            supportingText = stringResource(R.string.auth_marketing_support),
         )
     }
 }
@@ -284,4 +307,33 @@ private fun ActiveRole?.birthDateSupport(): Int = when (this) {
 private fun ActiveRole?.phoneSupport(): Int = when (this) {
     ActiveRole.TRAINER -> R.string.auth_phone_support_trainer
     else -> R.string.auth_phone_support_student
+}
+
+/**
+ * Os dois perfis um embaixo do outro, que é a única forma de conferir o que este arquivo afirma:
+ * a estrutura é a mesma, e o que muda é o bloco depois do contato e o texto de apoio dos campos.
+ */
+@LightDarkPreviews
+@Composable
+private fun SignUpFormPreview() {
+    val roles = listOf(ActiveRole.STUDENT to previewStudentForm(), ActiveRole.TRAINER to previewTrainerForm())
+
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column(
+                modifier = Modifier.padding(Dimens.SpaceLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXXLarge),
+            ) {
+                roles.forEach { (role, form) ->
+                    SignUpForm(
+                        state = CredentialsUiState(email = "ana@exemplo.com", password = "senha123"),
+                        form = form,
+                        actions = previewSignUpActions(),
+                        formActions = previewSignUpFormActions(),
+                        role = role,
+                    )
+                }
+            }
+        }
+    }
 }

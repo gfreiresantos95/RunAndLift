@@ -36,3 +36,5 @@ se pensou na época é justamente o que se quer preservar.
 | [0010](0010-escolha-de-papel-antes-do-login.md) | Escolha de papel antes do login | Aceito |
 | [0011](0011-telas-separadas-de-entrada-e-alternador-de-senha-por-icone.md) | Telas separadas de entrada e alternador de senha por ícone | Aceito |
 | [0012](0012-cadastro-de-aluno-e-consentimento.md) | Cadastro de aluno, minimização de dados e consentimento | Aceito |
+| [0013](0013-cadastro-de-treinador-e-registro-profissional.md) | Cadastro de treinador, registro profissional e uma tela para os dois perfis | Aceito |
+| [0014](0014-conclusao-de-cadastro-e-formato-antes-do-erro.md) | Conclusão de cadastro pós-Google, e formato conferido antes do erro | Aceito |

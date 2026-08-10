@@ -74,9 +74,14 @@ service cloud.firestore {
 
     match /trainerProfiles/{uid} {
       // Perfil público só quando o treinador optou pela vitrine (E3-02, consentimento LGPD).
+      //
+      // `get(campo, padrão)` e não `resource.data.showcase.enabled`: o cadastro abre este
+      // documento com o CREF e mais nada, e ler campo ausente em regra é erro de avaliação — a
+      // expressão inteira cairia, inclusive para o dono. Ausente significa fora da vitrine, que é
+      // o padrão certo para opt-in.
       allow read: if isSelf(uid)
         || hasOrHadLink(uid, request.auth.uid)
-        || (isSignedIn() && resource.data.showcase.enabled == true);
+        || (isSignedIn() && resource.data.get('showcase', {}).get('enabled', false) == true);
       allow write: if isSelf(uid);
     }
 

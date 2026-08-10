@@ -1,5 +1,6 @@
 package com.gabrielfreire.runandlift.feature.auth.onboarding
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,9 +13,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
@@ -154,6 +157,43 @@ internal fun RoleSelectionScreen(
             onClick = onConfirm,
             enabled = state.selected != null,
             loading = state.submitting,
+        )
+    }
+}
+
+/**
+ * O estado em que a tela abre — nada escolhido, botão desabilitado. É o que se confere aqui:
+ * "Continuar" só liga depois de existir uma escolha, porque confirmar o vazio não é uma ação.
+ */
+@Preview(name = "Escolha de papel · claro", showBackground = true, heightDp = 600)
+@Preview(
+    name = "Escolha de papel · escuro",
+    showBackground = true,
+    heightDp = 600,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun RoleSelectionPreview() {
+    RunAndLiftTheme {
+        RoleSelectionScreen(
+            state = RoleSelectionUiState(),
+            onSelect = {},
+            onConfirm = {},
+            onConfirmed = {},
+        )
+    }
+}
+
+/** Papel escolhido e gravação que falhou: o erro fica em texto, acima do botão, e não some. */
+@Preview(name = "Escolha de papel · falha", showBackground = true, heightDp = 600)
+@Composable
+private fun RoleSelectionFailurePreview() {
+    RunAndLiftTheme {
+        RoleSelectionScreen(
+            state = RoleSelectionUiState(selected = ActiveRole.TRAINER, failed = true),
+            onSelect = {},
+            onConfirm = {},
+            onConfirmed = {},
         )
     }
 }

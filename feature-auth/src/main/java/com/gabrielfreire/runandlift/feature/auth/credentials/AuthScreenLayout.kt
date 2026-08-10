@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppOutlinedButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
@@ -47,34 +51,33 @@ import com.gabrielfreire.runandlift.feature.auth.message
 /**
  * Moldura das telas de entrada — entrar e criar conta compartilham a estrutura, não o conteúdo.
  *
- * Três faixas com papéis distintos: a barra superior fixa no topo, o miolo centralizado no espaço
- * livre e a saída alternativa ancorada no rodapé. Ancorar a alternativa embaixo tira do caminho do
- * olho a ação que **não** é a desta tela: quem chegou aqui para entrar não deve tropeçar em "criar
- * conta" antes de encontrar o campo de e-mail.
+ * **O conteúdo é ancorado no topo e rola inteiro**, saída alternativa incluída. Duas decisões
+ * dentro disso:
  *
- * O miolo rola por dentro, então o rodapé nunca é empurrado para fora — nem com o teclado aberto,
- * nem com a fonte do sistema no tamanho máximo (E0-09).
+ * - **Ancorado, não centralizado.** Centralizar o que não cabe na tela só muda onde o primeiro
+ *   campo começa em cada aparelho: num telefone pequeno, ou com a fonte do sistema no máximo — que
+ *   é o caso do público mais velho (E0-09) —, o título sai por cima e o primeiro campo desce. Começando
+ *   logo abaixo da barra, a tela abre igual em todo lugar e o resto se alcança rolando.
+ * - **A alternativa rola junto, em vez de ficar presa no rodapé.** Fixa, ela disputa a atenção com
+ *   a ação principal desde o primeiro instante e ainda come altura útil justamente onde ela falta.
+ *   No fim do conteúdo, ela aparece quando a pessoa termina de ler o que a tela pede — que é
+ *   exatamente quando "isto aqui não é para mim" faz sentido como pergunta.
  *
  * **Teclado.** `imePadding` encolhe a faixa rolável em vez de deslizar a tela inteira para cima:
  * com a área de rolagem menor, o campo que recebe foco é trazido para dentro dela pelo próprio
- * `BasicTextField`, e o rodapé continua acima do teclado em vez de sumir atrás dele. O
- * `consumeWindowInsets` antes dele não é detalhe: sem ele o recuo da barra de navegação seria
- * contado duas vezes — uma pelo `Scaffold`, outra pelo teclado — e sobraria uma faixa vazia do
- * tamanho da barra entre o rodapé e o teclado.
+ * `BasicTextField`. O `consumeWindowInsets` antes dele não é detalhe: sem ele o recuo da barra de
+ * navegação seria contado duas vezes — uma pelo `Scaffold`, outra pelo teclado — e sobraria uma
+ * faixa vazia do tamanho da barra acima do teclado.
  *
- * @param anchorTop ancora o miolo logo abaixo da barra superior em vez de centralizá-lo no espaço
- *   livre. Verdadeiro para conteúdo que é uma **sequência a percorrer**, como um formulário longo:
- *   centralizar o que não cabe na tela apenas desalinha o primeiro campo em cada aparelho. Falso
- *   para conteúdo curto, que centralizado fica no alcance do polegar.
- * @param bottom saída alternativa; recebe o rodapé inteiro.
+ * @param onBack `null` na tela que é raiz do fluxo, para não oferecer uma saída que não existe.
+ * @param bottom saída alternativa, desenhada ao fim do conteúdo rolável.
  * @param content miolo da tela, já dentro de uma [Column] rolável.
  */
 @Composable
 internal fun AuthScreenLayout(
-    onBack: () -> Unit,
     bottom: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    anchorTop: Boolean = false,
+    onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -92,20 +95,19 @@ internal fun AuthScreenLayout(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding)
-                .imePadding(),
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.ScreenPadding),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(Dimens.ScreenPadding),
-                verticalArrangement = if (anchorTop) Arrangement.Top else Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                content = content,
-            )
+            content()
 
-            Column(modifier = Modifier.padding(Dimens.ScreenPadding)) { bottom() }
+            // Respiro, e não um divisor: o que separa a ação desta tela da saída para a outra é
+            // distância, não uma linha a mais para o olho processar.
+            Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+
+            bottom()
         }
     }
 }
@@ -289,6 +291,47 @@ internal fun AlternativePrompt(
     }
 
     AppTextButton(text = label, onClick = onClick, enabled = enabled, modifier = modifier.fillMaxWidth())
+}
+
+/**
+ * As peças que entrar e criar conta compartilham, fora da moldura que as posiciona.
+ *
+ * Estão juntas de propósito: é aqui que se vê se a etiqueta de perfil, o cabeçalho, o banner de
+ * falha e o rodapé continuam parecendo do mesmo app depois de alguém mexer num token de cor. A
+ * moldura em si não tem preview próprio — quem a exercita são [SignInScreen] e [SignUpScreen], com
+ * conteúdo real.
+ */
+@LightDarkPreviews
+@Composable
+private fun AuthComponentsPreview() {
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column(
+                modifier = Modifier.padding(Dimens.SpaceLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceSmall)) {
+                    RoleChip(role = ActiveRole.STUDENT)
+                    RoleChip(role = ActiveRole.TRAINER)
+                }
+
+                AuthHeadline(title = "Crie a sua conta", subtitle = "Leva menos de um minuto.")
+
+                FailureBanner(failure = AuthFailure.EMAIL_ALREADY_IN_USE)
+
+                OrSeparator()
+
+                GoogleSignInButton(onClick = {}, enabled = true)
+
+                AlternativePrompt(
+                    prompt = "Ainda não tem conta?",
+                    action = "Crie uma conta",
+                    onClick = {},
+                    enabled = true,
+                )
+            }
+        }
+    }
 }
 
 private val GOOGLE_LOGO_SIZE = 20.dp

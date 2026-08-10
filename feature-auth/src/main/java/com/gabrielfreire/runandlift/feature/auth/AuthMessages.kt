@@ -57,7 +57,16 @@ internal fun BirthDateError.message(): String = when (this) {
 @Composable
 internal fun PhoneError.message(): String = stringResource(
     when (this) {
+        PhoneError.REQUIRED -> R.string.auth_error_phone_required
         PhoneError.INVALID -> R.string.auth_error_phone_invalid
+    },
+)
+
+@Composable
+internal fun CrefError.message(): String = stringResource(
+    when (this) {
+        CrefError.REQUIRED -> R.string.auth_error_cref_required
+        CrefError.INVALID -> R.string.auth_error_cref_invalid
     },
 )
 

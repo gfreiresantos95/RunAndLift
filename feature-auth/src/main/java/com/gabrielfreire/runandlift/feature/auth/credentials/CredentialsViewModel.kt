@@ -31,6 +31,12 @@ internal data class CredentialsUiState(
      * Quando é `null`, o papel ainda é desconhecido e a navegação passa pela tela de escolha.
      */
     val resolvedRole: ActiveRole? = null,
+    /**
+     * A conta existe mas o cadastro está pela metade — o caso de quem entrou pelo Google, que não
+     * fornece nascimento, registro profissional nem aceite dos termos. A navegação desvia para a
+     * tela de conclusão antes de abrir o app.
+     */
+    val profileIncomplete: Boolean = false,
 )
 
 /**
@@ -64,6 +70,14 @@ internal abstract class CredentialsViewModel(
      * ganha `uid` aqui.
      */
     protected open suspend fun resolveRole(account: UserAccount?): ActiveRole? = null
+
+    /**
+     * Se ainda falta alguma coisa para a conta poder ser usada neste papel.
+     *
+     * Falso por padrão porque o cadastro por formulário coleta tudo o que precisa antes de criar a
+     * conta — a pergunta só faz sentido em quem entrou por um provedor que não pergunta nada.
+     */
+    protected open suspend fun profileIncomplete(account: UserAccount?, role: ActiveRole?): Boolean = false
 
     /**
      * Validação dos campos que esta base não conhece — nome, data de nascimento e aceite, no
@@ -129,7 +143,10 @@ internal abstract class CredentialsViewModel(
 
         _uiState.update { it.copy(submitting = true, failure = null) }
 
-        viewModelScope.launch { complete(authenticate(current.email, current.password)) }
+        // Aparado só aqui, e não a cada tecla: apagar espaço enquanto a pessoa digita faz o cursor
+        // parecer travado. O que vai à rede, porém, nunca pode levar o espaço que o teclado do
+        // Android sugere depois do domínio — ele vira "e-mail ou senha incorretos" sem explicação.
+        viewModelScope.launch { complete(authenticate(current.email.trim(), current.password)) }
     }
 
     /** Desfecho comum aos dois caminhos de autenticação. */
@@ -137,8 +154,14 @@ internal abstract class CredentialsViewModel(
         when (result) {
             is AuthResult.Success -> {
                 val role = resolveRole(result.account)
+                val incomplete = profileIncomplete(result.account, role)
                 _uiState.update {
-                    it.copy(submitting = false, authenticated = true, resolvedRole = role)
+                    it.copy(
+                        submitting = false,
+                        authenticated = true,
+                        resolvedRole = role,
+                        profileIncomplete = incomplete,
+                    )
                 }
             }
 

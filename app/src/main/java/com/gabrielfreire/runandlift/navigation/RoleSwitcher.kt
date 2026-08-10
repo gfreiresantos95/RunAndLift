@@ -3,11 +3,15 @@ package com.gabrielfreire.runandlift.navigation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.gabrielfreire.runandlift.R
+import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 
 /**
@@ -31,5 +35,19 @@ internal fun RoleSwitcher(onSwitchRole: (() -> Unit)?, modifier: Modifier = Modi
             text = stringResource(R.string.role_switch_action),
             onClick = onSwitchRole,
         )
+    }
+}
+
+/**
+ * Só o caso visível tem o que mostrar: com `onSwitchRole` nulo o componente não desenha nada, e um
+ * preview em branco não afirma coisa alguma.
+ */
+@LightDarkPreviews
+@Composable
+private fun RoleSwitcherPreview() {
+    RunAndLiftTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            RoleSwitcher(onSwitchRole = {})
+        }
     }
 }

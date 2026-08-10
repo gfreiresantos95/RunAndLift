@@ -8,36 +8,11 @@ import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.model.UserAccount
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
-import com.gabrielfreire.runandlift.feature.auth.BirthDateError
-import com.gabrielfreire.runandlift.feature.auth.NameError
-import com.gabrielfreire.runandlift.feature.auth.PhoneError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
-/**
- * Campos do cadastro que não são credencial.
- *
- * Vive à parte de [CredentialsUiState], e não dentro dele, porque a entrada não tem nenhum deles:
- * juntar os dois faria a tela de entrar carregar um estado de nome, nascimento e aceite que ela
- * nunca preenche nem exibe.
- *
- * [birthDate] e [phone] guardam **só dígitos** — a máscara é apresentação, e o estado que a
- * carregasse obrigaria validação e gravação a limpá-la de novo, cada uma do seu jeito.
- */
-internal data class SignUpFormState(
-    val name: String = "",
-    val birthDate: String = "",
-    val phone: String = "",
-    val acceptedTerms: Boolean = false,
-    val marketingOptIn: Boolean = false,
-    val nameError: NameError? = null,
-    val birthDateError: BirthDateError? = null,
-    val phoneError: PhoneError? = null,
-    /** Aceite obrigatório em falta. Booleano e não enum: só existe um motivo. */
-    val termsMissing: Boolean = false,
-)
+import kotlinx.coroutines.flow.updateAndGet
 
 /**
  * Criar conta, já com o papel escolhido nas boas-vindas.
@@ -46,10 +21,17 @@ internal data class SignUpFormState(
  * perguntaria "aluno ou treinador?" duas vezes, antes e depois do cadastro, para responder a mesma
  * coisa. O que o formulário coleta é gravado na mesma escrita, junto do papel.
  *
+ * O papel também decide **o que é obrigatório**: o cadastro é uma tela só para os dois perfis, e
+ * a diferença entre eles é a régua de [SignUpFormState.validated] mais o registro profissional que
+ * só o treinador informa. Duas telas seriam duas cópias de nome, e-mail, senha, nascimento e
+ * aceite para descrever um campo de diferença.
+ *
  * Três decisões embutidas:
- * - **A gravação falhar não invalida o cadastro.** A conta já existe neste ponto; devolver falha
- *   faria a pessoa tentar de novo e receber "e-mail já em uso". Então [resolveRole] devolve `null`,
- *   e a navegação cai na tela de escolha de papel, que tenta de novo com um botão.
+ * - **A gravação falhar não invalida o cadastro, nem repete a pergunta.** A conta já existe neste
+ *   ponto; devolver falha faria a pessoa tentar de novo e receber "e-mail já em uso". E o papel
+ *   [intendedRole] já foi respondido nas boas-vindas: mandá-la à tela de escolha para responder
+ *   de novo trocaria uma falha de escrita por uma pergunta repetida. [resolveRole] devolve o papel
+ *   pretendido, e a gravação que faltou é problema de sincronização, não da pessoa.
  * - **O perfil é gravado mesmo sem papel conhecido.** Se o cadastro for alcançado sem escolha
  *   prévia, o nome e o consentimento não podem se perder à espera da tela seguinte — consentimento
  *   coletado e não registrado é o mesmo que não ter coletado.
@@ -68,6 +50,9 @@ internal class SignUpViewModel(
 
     private val _formState = MutableStateFlow(SignUpFormState())
     val formState: StateFlow<SignUpFormState> = _formState.asStateFlow()
+
+    /** Decide a régua do formulário e o que vai ser gravado — nada mais depende do papel aqui. */
+    private val isTrainer: Boolean get() = intendedRole == ActiveRole.TRAINER
 
     fun onNameChange(name: String) {
         _formState.update { it.copy(name = name, nameError = null) }
@@ -91,6 +76,15 @@ internal class SignUpViewModel(
         }
     }
 
+    /**
+     * Guarda o que a máscara entregou, sem refiltrar: quem garante dígito onde é dígito, letra
+     * maiúscula onde é letra e o tamanho máximo é o próprio campo. Refiltrar aqui seria uma
+     * segunda regra de formato, que um dia discordaria da primeira.
+     */
+    fun onCrefChange(content: String) {
+        _formState.update { it.copy(cref = content, crefError = null) }
+    }
+
     fun onTermsChange(accepted: Boolean) {
         _formState.update { it.copy(acceptedTerms = accepted, termsMissing = false) }
     }
@@ -99,48 +93,35 @@ internal class SignUpViewModel(
         _formState.update { it.copy(marketingOptIn = optIn) }
     }
 
-    override fun validateExtras(): Boolean {
-        val current = _formState.value
-        val nameError = AuthFormValidation.validateName(current.name)
-        val birthDateError = AuthFormValidation.validateBirthDate(current.birthDate)
-        val phoneError = AuthFormValidation.validatePhone(current.phone)
-        val termsMissing = !current.acceptedTerms
-
-        _formState.update {
-            it.copy(
-                nameError = nameError,
-                birthDateError = birthDateError,
-                phoneError = phoneError,
-                termsMissing = termsMissing,
-            )
-        }
-
-        return nameError == null && birthDateError == null && phoneError == null && !termsMissing
-    }
+    override fun validateExtras(): Boolean = _formState.updateAndGet { it.validated(isTrainer) }.isValid
 
     override suspend fun authenticate(email: String, password: String): AuthResult =
         authRepository.signUpWithEmail(email = email, password = password)
 
     override suspend fun resolveRole(account: UserAccount?): ActiveRole? {
-        if (account == null) return null
+        if (account == null) return intendedRole
 
         return runCatching {
             userRepository.saveProfile(
                 uid = account.uid,
                 role = intendedRole,
-                details = _formState.value.toDetails(account.email),
+                details = _formState.value.toDetails(account.email, isTrainer),
             )
-        }.map { it.activeRole }.getOrNull()
+        }.getOrNull()?.activeRole ?: intendedRole
     }
 }
 
 /**
- * O que vai para o `users/{uid}`.
+ * O que vai para o perfil.
  *
  * O nome cai no prefixo do e-mail quando o formulário não passou por aqui — é o caso da conta
  * criada pela folha do Google, em que a tela de escolha de papel é quem grava.
+ *
+ * O registro só sai daqui **como treinador e em forma canônica**: o que o campo aceita é o que a
+ * pessoa digita, e o que se grava é sempre `012345-G/SP`. Duas grafias do mesmo registro no banco
+ * seriam dois registros na hora de conferir.
  */
-private fun SignUpFormState.toDetails(email: String?) = SignUpDetails(
+private fun SignUpFormState.toDetails(email: String?, isTrainer: Boolean) = SignUpDetails(
     displayName = name.trim().ifEmpty { email?.substringBefore('@') },
     birthDate = AuthFormValidation.parseBirthDate(birthDate),
     phone = phone.ifEmpty { null },
@@ -150,4 +131,5 @@ private fun SignUpFormState.toDetails(email: String?) = SignUpDetails(
         termsVersion = PrivacyConsent.CURRENT_TERMS_VERSION,
         marketingOptIn = marketingOptIn,
     ).takeIf { acceptedTerms },
+    cref = if (isTrainer) AuthFormValidation.formatCref(cref) else null,
 )
