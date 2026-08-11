@@ -52,6 +52,8 @@ All versions go through the version catalog at `gradle/libs.versions.toml` and a
 
 `./gradlew spotlessApply` formats (ktlint), `spotlessCheck` verifies without writing, `detekt` runs static analysis. CI runs `spotlessCheck detekt lint test`; there is deliberately **no detekt baseline**, so the violation count must stay at zero — fix the cause rather than suppress.
 
+`main` is protected by a GitHub ruleset: work enters through a branch and a Pull Request, the `verify` and `firestore-rules` checks must pass before merging, history is linear (squash only), and force-push and deletion are blocked. Those two check names are the **job ids** in `ci.yml` — renaming a job without updating the ruleset stalls every later PR. See `docs/adr/0015`.
+
 Write new code inside these limits instead of discovering them at commit time: **6 parameters** per function and **7** per constructor (defaults don't count, so Compose slot APIs are fine), **11 functions** per file and per class, **60 lines** per function, **120 columns**.
 
 Rule exceptions live in `config/detekt/detekt.yml` with the reason in a comment — mostly Compose frictions (`@Composable` PascalCase, unused private `@Preview`, colour tokens as magic numbers).
