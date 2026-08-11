@@ -75,7 +75,7 @@ Room schemas are exported to `data/schemas/` and committed — migrations (E0-13
 
 ## Firebase
 
-`google-services.json` is gitignored (public repo — see `docs/adr/0004`). The `google-services` and `crashlytics` plugins are therefore applied **conditionally** in `app/build.gradle.kts`: present file → Firebase on; absent → loud warning and a build that still succeeds. Never make that unconditional without also solving CI, which builds without the file. Firestore and Auth belong to `:data`; Crashlytics, Analytics, Remote Config and Performance to `:app`. Debug builds disable Crashlytics/Analytics collection via `app/src/debug/AndroidManifest.xml` so development noise stays out of the crash-free rate and the funnel.
+`google-services.json` is gitignored (public repo — see `docs/adr/0004`). The `google-services` and `crashlytics` plugins are therefore applied **conditionally** in `app/build.gradle.kts`: present file → Firebase on; absent → loud warning and a build that still succeeds. Never make that unconditional without also solving CI, which builds without the file. **Any `R.string` the plugin generates needs a placeholder for the plugin-absent path** — `default_web_client_id` is declared as an empty `resValue` in `defaultConfig` when the file is missing, because `RunAndLiftNavHost` references it and CI would otherwise fail to compile. That is also why `buildFeatures { resValues = true }` is on; AGP 9 disables it by default. Firestore and Auth belong to `:data`; Crashlytics, Analytics, Remote Config and Performance to `:app`. Debug builds disable Crashlytics/Analytics collection via `app/src/debug/AndroidManifest.xml` so development noise stays out of the crash-free rate and the funnel.
 
 ## Firestore Security Rules
 

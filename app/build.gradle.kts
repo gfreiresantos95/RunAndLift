@@ -36,6 +36,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Sem o google-services.json o plugin não roda, e `default_web_client_id` — que ele
+        // geraria — não existe. Como RunAndLiftNavHost referencia esse R.string, o build quebrava
+        // em compileDebugKotlin justamente onde o arquivo nunca está: o CI.
+        //
+        // O espaço reservado entra só quando o plugin está ausente; declarar sempre daria recurso
+        // duplicado. Vazio de propósito: um build sem google-services.json não tem Firebase para
+        // autenticar de qualquer forma, e valor falso plausível só adiaria o erro para o runtime.
+        if (!firebaseConfigured) {
+            resValue("string", "default_web_client_id", "")
+        }
     }
 
     buildTypes {
@@ -62,6 +73,10 @@ android {
     }
     buildFeatures {
         compose = true
+
+        // Desligado por padrão no AGP 9: sem isto, o `resValue` do defaultConfig falha na
+        // configuração com "contains custom resource values, but the feature is disabled".
+        resValues = true
     }
 }
 
