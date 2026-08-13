@@ -1,7 +1,7 @@
 package com.gabrielfreire.runandlift
 
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.feature.auth.AuthRoutes
+import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 
 /**
  * O que a abertura precisa saber antes de compor qualquer tela.

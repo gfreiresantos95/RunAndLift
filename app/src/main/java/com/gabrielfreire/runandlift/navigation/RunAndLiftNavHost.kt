@@ -10,8 +10,8 @@ import com.gabrielfreire.runandlift.R
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
-import com.gabrielfreire.runandlift.feature.auth.AuthRoutes
-import com.gabrielfreire.runandlift.feature.auth.authGraph
+import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
+import com.gabrielfreire.runandlift.feature.auth.navigation.authGraph
 
 /**
  * Grafo raiz (backlog E0-08).

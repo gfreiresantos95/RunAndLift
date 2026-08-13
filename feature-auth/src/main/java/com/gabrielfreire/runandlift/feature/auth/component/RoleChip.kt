@@ -18,7 +18,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.feature.auth.chipLabel
+import com.gabrielfreire.runandlift.feature.auth.text.chipLabel
 
 /**
  * Etiqueta do perfil em que a pessoa está — aluno ou treinador.

@@ -13,7 +13,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.data.auth.AuthFailure
-import com.gabrielfreire.runandlift.feature.auth.message
+import com.gabrielfreire.runandlift.feature.auth.text.message
 
 /**
  * Falha do servidor, acima do botão e não em snackbar: mensagem que some sozinha é mensagem que o
