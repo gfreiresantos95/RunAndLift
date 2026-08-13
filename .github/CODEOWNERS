@@ -1,0 +1,14 @@
+# Dono de tudo, e o motivo é a revisão do que não é escrito por uma pessoa: os PRs do
+# Dependabot chegam sem revisor, e sem CODEOWNERS ninguém é chamado para olhá-los.
+#
+# Com este arquivo, o GitHub pede revisão do dono em todo PR que toca os caminhos abaixo, e a
+# ruleset da main exige essa aprovação para o merge.
+#
+# O que este arquivo não faz: chamar o dono para revisar o PR do próprio dono. O GitHub não
+# permite ser revisor do que você mesmo abriu, nem aprovar o próprio PR — nesses casos a
+# exigência continua de pé e a saída é o bypass de administrador, que a ruleset já concede.
+#
+# Preferimos CODEOWNERS à chave "reviewers" do dependabot.yml: aquela é específica do
+# Dependabot e foi depreciada pelo GitHub; esta vale para qualquer PR, de bot ou de gente.
+
+* @gfreiresantos95
