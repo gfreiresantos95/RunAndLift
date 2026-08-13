@@ -12,6 +12,8 @@ import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 import com.gabrielfreire.runandlift.feature.auth.navigation.authGraph
+import com.gabrielfreire.runandlift.feature.student.navigation.studentGraph
+import com.gabrielfreire.runandlift.feature.trainer.navigation.trainerGraph
 
 /**
  * Grafo raiz (backlog E0-08).
@@ -20,6 +22,10 @@ import com.gabrielfreire.runandlift.feature.auth.navigation.authGraph
  * fora, por [startDestination], porque quem sabe se há sessão e qual é o papel ativo é o
  * `MainViewModel` — e ele decide isso **antes** da primeira composição, para a splash não sair
  * mostrando a tela errada por um frame.
+ *
+ * Cada grafo de papel agora mora no seu módulo. `:app` continua sendo quem os costura e quem sabe
+ * para onde ir ao sair da conta ou ao trocar de papel: as features não conhecem uma à outra nem a
+ * rota de entrada.
  */
 @Composable
 fun RunAndLiftNavHost(
@@ -38,6 +44,9 @@ fun RunAndLiftNavHost(
     // verificável pelo servidor. Vem de :app porque só aqui o plugin está aplicado.
     val webClientId = stringResource(R.string.default_web_client_id)
 
+    // `null` some com o alternador do menu, em vez de deixá-lo lá sem efeito.
+    val switchRole = onSwitchRole.takeIf { canSwitchRole }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -53,8 +62,21 @@ fun RunAndLiftNavHost(
             },
         )
 
-        trainerGraph(onSwitchRole = onSwitchRole, canSwitchRole = canSwitchRole)
-        studentGraph(onSwitchRole = onSwitchRole, canSwitchRole = canSwitchRole)
+        trainerGraph(
+            navController = navController,
+            authRepository = authRepository,
+            userRepository = userRepository,
+            onSignedOut = { navController.navigateToAuth() },
+            onSwitchRole = switchRole,
+        )
+
+        studentGraph(
+            navController = navController,
+            authRepository = authRepository,
+            userRepository = userRepository,
+            onSignedOut = { navController.navigateToAuth() },
+            onSwitchRole = switchRole,
+        )
     }
 }
 
@@ -74,5 +96,19 @@ internal fun NavHostController.navigateToRole(role: ActiveRole, clearAuth: Boole
             // de um papel para o outro.
             popUpTo(graph.id) { inclusive = true }
         }
+    }
+}
+
+/**
+ * Volta ao fluxo de entrada depois de sair da conta.
+ *
+ * Esvazia a pilha inteira (`popUpTo(graph.id) { inclusive = true }`): sem isso, o botão voltar na
+ * tela de boas-vindas devolveria a home do papel — uma tela de quem acabou de sair, montada com o
+ * estado que ainda estivesse em memória.
+ */
+internal fun NavHostController.navigateToAuth() {
+    navigate(AuthRoutes.GRAPH) {
+        launchSingleTop = true
+        popUpTo(graph.id) { inclusive = true }
     }
 }

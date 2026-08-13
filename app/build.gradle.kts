@@ -85,6 +85,8 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":data"))
     implementation(project(":feature-auth"))
+    implementation(project(":feature-student"))
+    implementation(project(":feature-trainer"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))

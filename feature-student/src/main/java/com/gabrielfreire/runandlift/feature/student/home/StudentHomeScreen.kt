@@ -1,0 +1,79 @@
+package com.gabrielfreire.runandlift.feature.student.home
+
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import com.gabrielfreire.runandlift.core.designsystem.Dimens
+import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
+import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
+import com.gabrielfreire.runandlift.core.designsystem.component.AppIdentityCard
+import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
+import com.gabrielfreire.runandlift.feature.student.R
+import com.gabrielfreire.runandlift.feature.student.navigation.StudentTab
+import com.gabrielfreire.runandlift.feature.student.navigation.previewTabs
+
+/**
+ * Início do aluno: o nome do app na barra superior e, logo abaixo, quem está usando o app.
+ *
+ * A barra superior mostra o **nome do app**, e não "Início". É a tela de abertura do papel, e
+ * repetir ali o rótulo da aba que já está destacada logo abaixo gastaria a única linha em que a
+ * marca aparece.
+ *
+ * O card é a única coisa por enquanto. O que vem depois — treino do dia e aviso de cadastro
+ * incompleto — entra abaixo dele, nesta mesma coluna.
+ */
+@Composable
+internal fun StudentHomeScreen(
+    state: StudentHomeUiState,
+    tabs: List<AppBottomBarItem>,
+    modifier: Modifier = Modifier,
+) {
+    AppTabScaffold(
+        title = stringResource(R.string.student_app_name),
+        tabs = tabs,
+        modifier = modifier,
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues = innerPadding)
+                .padding(paddingValues = Dimens.ScreenPadding),
+            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
+        ) {
+            AppIdentityCard(
+                greeting = state.displayName
+                    ?.let { stringResource(R.string.student_home_greeting, it) }
+                    ?: stringResource(R.string.student_home_greeting_anonymous),
+                subtitle = stringResource(R.string.student_home_role),
+                monogram = state.monogram,
+            )
+        }
+    }
+}
+
+/**
+ * Com nome, que é o caso de quem criou a conta pelo formulário. O estado sem nome está no preview
+ * do próprio [AppIdentityCard], onde o que se confere é o card e não a tela.
+ */
+@Preview(name = "Início do aluno · claro", showBackground = true, heightDp = 640)
+@Preview(
+    name = "Início do aluno · escuro",
+    showBackground = true,
+    heightDp = 640,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun StudentHomeScreenPreview() {
+    RunAndLiftTheme {
+        StudentHomeScreen(
+            state = StudentHomeUiState(loading = false, displayName = "Ana Ribeiro"),
+            tabs = previewTabs(StudentTab.HOME),
+        )
+    }
+}
