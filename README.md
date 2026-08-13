@@ -2,29 +2,105 @@
 
 Aplicativo Android nativo para prescrição e acompanhamento de treinos de musculação, com **papel duplo na mesma instalação**: a mesma conta pode atuar como treinador, como aluno, ou como ambos — o papel ativo determina o grafo de navegação inteiro.
 
-> **Status:** em desenvolvimento inicial. O repositório está na fase de fundação técnica — o que existe hoje é o esqueleto do projeto Android. A arquitetura descrita abaixo é o alvo, não o estado atual.
+> **Status:** em desenvolvimento. A fundação técnica está de pé — design system, camada de dados
+> offline-first, fluxo de autenticação completo, Security Rules testadas no emulador e CI com a
+> `main` protegida. O produto em si — prescrição, execução e acompanhamento de treino — ainda não
+> foi escrito. O que existe está listado em [O que já existe hoje](#o-que-já-existe-hoje); o
+> restante desta página descreve o alvo, e diz quando o item ainda é alvo.
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
-|---|---|
-| Linguagem / UI | Kotlin · Jetpack Compose · Material 3 |
-| Arquitetura | MVVM com repositórios |
-| Persistência local | Room (**fonte de verdade da UI**) |
-| Backend | Cloud Firestore · Firebase Auth |
-| Sincronização | WorkManager |
-| Mídia de exercício | Cloudflare R2 |
-| Arquivos privados do usuário | Firebase Cloud Storage |
-| Push | Firebase Cloud Messaging |
-| Observabilidade | Crashlytics · Analytics |
-| Configuração remota / kill-switch | Firebase Remote Config |
-| Antiabuso | Firebase App Check (Play Integrity) |
-| Backend sob demanda | Cloud Functions |
-| CI | GitHub Actions |
+| Camada | Tecnologia | Situação |
+|---|---|---|
+| Linguagem / UI | Kotlin · Jetpack Compose · Material 3 | Em uso |
+| Arquitetura | MVVM com repositórios | Em uso |
+| Persistência local | Room (**fonte de verdade da UI**) | Em uso |
+| Backend | Cloud Firestore · Firebase Auth | Em uso |
+| Observabilidade | Crashlytics · Analytics | Em uso |
+| Configuração remota / kill-switch | Firebase Remote Config | Em uso |
+| CI | GitHub Actions | Em uso |
+| Sincronização | WorkManager | Planejado |
+| Mídia de exercício | Cloudflare R2 | Planejado |
+| Arquivos privados do usuário | Firebase Cloud Storage | Planejado |
+| Push | Firebase Cloud Messaging | Planejado |
+| Antiabuso | Firebase App Check (Play Integrity) | Planejado |
+| Backend sob demanda | Cloud Functions | Planejado |
 
-**Build:** Gradle 9.5 · AGP 9.3.1 · Kotlin 2.4.10 · compileSdk 37 · minSdk 26 · toolchain JDK 21 provisionada automaticamente.
+**Build:** Gradle 9.7 · AGP 9.3.1 · Kotlin 2.4.10 · compileSdk 37 · targetSdk 37 · minSdk 26 ·
+toolchain JDK 21 provisionada automaticamente.
+
+---
+
+## O que já existe hoje
+
+Quatro módulos, com a dependência andando em um sentido só.
+
+### `:core` — design system
+
+Tokens de marca `internal` (`Color.kt`), os dois `ColorScheme` espelhados entre claro e escuro, e
+`ExtendedColorScheme` com os papéis que o Material 3 não tem: `ok` / `attention` / `critical` — o
+semáforo de aderência — e `highlight`, para recordes. Mais `AppTypography`, `AppShapes`, a grade de
+espaçamento em `Dimens` e o alvo de toque mínimo de 48 dp.
+
+Seis componentes: `AppButton`, `AppTextField`, `AppMaskedTextField`, `AppCheckboxField`,
+`AppNoticeCard` e `AppTopBar`. A máscara do campo mascarado é **posicional** — `#` é dígito, `A` é
+letra, e uma letra digitada onde vai dígito não entra —, e o estado guarda só o conteúdo, nunca os
+separadores.
+
+`:core` não tem `strings.xml` por decisão: todo componente recebe o texto por parâmetro, então o
+design system nunca escolhe idioma. As regras que regem essa camada estão em
+[Design system](#design-system), mais abaixo.
+
+### `:data` — Room como fonte de verdade
+
+Banco Room com o catálogo de exercícios e a versão da última sincronização, fonte remota do
+catálogo no Firestore, e `OfflineFirstExerciseRepository` como implementação de referência das
+quatro regras da camada: leitura nunca toca a rede, sincronização é chamada explícita, falha de
+rede é valor de retorno e não exceção, e todo acesso à rede declara seu custo de leitura no KDoc.
+
+Também aqui: `FirebaseAuthRepository` e `FirestoreUserRepository`, os tipos de domínio (`UserProfile`,
+`UserRoles`, `ActiveRole`, `PrivacyConsent`, `Exercise`) e o `DataContainer`, que é o único jeito de
+construir um repositório de fora. Entidades, DAOs e fontes de dados são `internal`. Detalhes em
+[`data/README.md`](data/README.md).
+
+### `:feature-auth` — autenticação completa
+
+Seis fluxos, um pacote cada: boas-vindas, entrar, criar conta, recuperar senha, concluir cadastro e
+escolher papel. O caminho é linear — boas-vindas → entrar → criar conta —, e **o papel é escolhido
+antes de autenticar**, viaja como argumento de navegação e é gravado pelo cadastro, para ninguém ser
+perguntado duas vezes.
+
+Uma única tela de cadastro serve aos dois papéis, e o papel muda exatamente três coisas: a
+finalidade declarada no texto de apoio de cada campo, o bloco entre contato e aceite (aviso de dado
+de saúde para o aluno, registro CREF para o treinador) e se o telefone é obrigatório — é, para
+treinador. O CREF é exigido porque prescrever exercício é atividade privativa de profissional
+registrado (Lei 9.696/1998).
+
+Contas criadas pelo Google chegam autenticadas e **incompletas** — sem nascimento, sem CREF, sem
+aceite. `ProfileCompletion` diz o que falta, e a mesma checagem roda na abertura do app, então
+fechar à força não é atalho para pular a conclusão.
+
+Cadastro **não coleta dado de saúde**: isso é a anamnese, e vive em `students/{uid}`.
+
+### `:app` — navegação e composição
+
+`MainActivity` com Splash Screen API, `MainViewModel` resolvendo o destino inicial **antes** de o
+`NavHost` ser composto (para o app nunca abrir na tela errada por um frame), `AppContainer` com
+injeção manual e o grafo raiz com os três grafos irmãos: `auth`, `trainer` e `student`.
+
+### Security Rules
+
+`firestore/firestore.rules` nega por padrão, com **27 testes** cobrindo acesso do treinador ao
+aluno, sessões de treino, máquina de estados do vínculo, catálogo, painel, trilha de auditoria,
+perfil profissional e coleção não declarada.
+
+### O que ainda não existe
+
+Nada do produto em si: catálogo navegável, montagem de programa, atribuição, execução de treino,
+histórico, painel do treinador, mensagens e avaliações. Junto com eles vêm a fila durável de
+escrita (WorkManager), o App Check, o push e as Cloud Functions.
 
 ---
 
@@ -35,9 +111,9 @@ Requer Android Studio recente e um dispositivo ou emulador com API 26+. Não é 
 ```powershell
 .\gradlew.bat assembleDebug      # gera o APK de debug
 .\gradlew.bat installDebug       # instala no dispositivo conectado
-.\gradlew.bat test               # testes unitários (JVM)
-.\gradlew.bat connectedAndroidTest   # testes instrumentados e de UI
-.\gradlew.bat lint               # Android Lint
+.\gradlew.bat test               # testes unitários (JVM) — 121 hoje
+.\gradlew.bat lint               # Android Lint + compose-lints
+.\gradlew.bat koverHtmlReport    # cobertura do :data, sem mínimo exigido por decisão
 ```
 
 Em Linux/macOS, use `./gradlew` no lugar de `.\gradlew.bat`.
@@ -45,9 +121,12 @@ Em Linux/macOS, use `./gradlew` no lugar de `.\gradlew.bat`.
 Rodar um teste específico:
 
 ```powershell
-.\gradlew.bat testDebugUnitTest --tests "com.gabrielfreire.runandlift.ExampleUnitTest"
-.\gradlew.bat testDebugUnitTest --tests "*.ExampleUnitTest.addition_isCorrect"
+.\gradlew.bat testDebugUnitTest --tests "*.SignUpViewModelTest"
+.\gradlew.bat testDebugUnitTest --tests "*.feature.auth.recovery.*"
 ```
+
+Os nomes de método são frases entre crases (`fun \`aluno nao precisa de celular nem de registro\`()`),
+então filtrar por método exige aspas em volta do padrão inteiro — na dúvida, filtre pela classe.
 
 ### Firebase
 
@@ -112,7 +191,13 @@ Não há baseline do detekt: a contagem de violações é zero e deve continuar 
 
 As regras de formatação ficam no `.editorconfig`, que é lido tanto pela IDE quanto pelo build —
 não há chave duplicada em `build.gradle.kts`. As regras de complexidade ficam em
-`config/detekt/detekt.yml`, e as exceções do Android Lint e do compose-lints em `app/lint.xml`.
+`config/detekt/detekt.yml`, e as exceções do Android Lint e do compose-lints em `core/lint.xml`,
+escopadas por caminho em vez de desligadas globalmente: uma regra que atrapalha dentro do design
+system em geral continua certa no código de tela.
+
+Os limites que o detekt cobra em código novo: **6 parâmetros** por função e **7** por construtor
+(padrões não contam, então API de slot do Compose passa), **11 funções** por arquivo e por classe,
+**60 linhas** por função e **120 colunas**.
 
 ### Security Rules do Firestore
 
@@ -130,23 +215,42 @@ testes em job próprio, em paralelo ao build Android.
 
 Para publicar as regras no projeto real: `npx firebase deploy --only firestore:rules`.
 
-### Proteção da branch main
+### Proteção da branch main e fluxo de trabalho
 
-O CI só vira garantia se não puder ser contornado. Isso não é configurável por código — faça uma
-vez, em **Settings › Rules › Rulesets › New branch ruleset**:
+O CI só vira garantia se não puder ser contornado. A ruleset **já está ativa** sobre a `main` (o
+porquê está no [ADR-0015](docs/adr/0015-protecao-da-branch-principal.md)) e exige:
 
-1. Target branches: `main`.
-2. Marque **Require a pull request before merging** (com 0 aprovações, se você trabalha sozinho).
-3. Marque **Require status checks to pass** e selecione o check `verify` do workflow CI. Ele só
-   aparece na lista depois que o workflow tiver rodado ao menos uma vez.
-4. Marque **Block force pushes**.
-5. Deixe **Do not allow bypassing the above settings** desmarcado se quiser poder destravar você
-   mesmo em emergência — marcado, nem você passa por cima.
+| Regra | Efeito |
+|---|---|
+| Pull request obrigatório | Nada entra na `main` por push direto |
+| Checks `verify` e `firestore-rules` | Os dois **job ids** do `ci.yml` — renomear um job sem atualizar a ruleset trava todo PR seguinte |
+| Uma aprovação de code owner | `.github/CODEOWNERS` dá o dono a todos os caminhos |
+| Histórico linear | Merge por squash |
+| Sem force push e sem deleção | Vale para todo mundo |
+
+A exigência de revisão existe pelos PRs que ninguém está olhando — os do **Dependabot**, que
+chegam sem revisor. O GitHub não pede revisão ao autor do próprio PR nem deixa aprová-lo, então
+nos PRs do dono a exigência fica sem como ser cumprida e o merge sai pelo bypass de administrador,
+que a ruleset concede. Isso é intencional: tirar a exigência devolveria os PRs de bot ao estado de
+ninguém ser chamado.
+
+O ciclo de trabalho, então, é sempre: branch a partir da `main` atualizada → commits → PR → volta
+para a `main`. As labels são um vocabulário fixo, e um PR leva quantas couberem:
+
+`refactor` · `feature` · `fix` · `tests` · `docs` · `build` · `security`
+
+Mensagens de commit e descrições de PR são escritas em **português**, como o KDoc; código e
+identificadores ficam em inglês.
 
 ### Atualização de dependências
 
 `.github/dependabot.yml` abre PRs semanais agrupados (toolchain, Compose, androidx, ferramentas de
-qualidade) e mensais para as actions. Quem valida é o CI. Nada é mesclado automaticamente.
+qualidade) e mensais para as actions. Eles chegam com a label `build` e pedindo revisão do dono via
+CODEOWNERS. Quem valida é o CI. Nada é mesclado automaticamente.
+
+Duas armadilhas do arquivo, já resolvidas nele: a chave `labels:` **substitui** as labels padrão em
+vez de somar a elas, e exige que a label já exista — o Dependabot não cria as customizadas. E ele lê
+a configuração sempre do branch padrão, então mudança em `dependabot.yml` só vale depois do merge.
 
 ---
 
@@ -158,9 +262,18 @@ qualidade) e mensais para as actions. Quem valida é o CI. Nada é mesclado auto
 :app           — aplicação, grafo raiz de navegação, AppContainer (injeção manual)
 :core          — design system: tema, tipografia, componentes
 :data          — Room, Firestore, repositórios
-:feature-auth  — boas-vindas, entrar, criar conta, recuperar senha, escolher papel
+:feature-auth  — boas-vindas, entrar, criar conta, recuperar senha, concluir cadastro, escolher papel
 :feature-*     — demais funcionalidades, criadas sob demanda
 ```
+
+Dentro de um módulo de feature, **um pacote por contexto**: cada fluxo é dono do seu, incluindo o
+`…Destination.kt` que liga a tela ao ViewModel, de modo que o arquivo do grafo continue sendo só um
+mapa de rotas. Pacote compartilhado existe quando dois fluxos de fato compartilham — e o nome diz
+quais, como `credentials/` (entrar + criar conta) e `profileform/` (criar conta + concluir cadastro).
+
+A preferência geral é por **muitos arquivos pequenos em vez de poucos misturados**: um tipo público
+por arquivo, um composable por arquivo com o seu próprio `@Preview`, e a extensão de um tipo dentro
+do arquivo do tipo que ela estende.
 
 A dependência anda em um sentido só: `:app` e `:feature-*` dependem de `:core` e `:data`; `:core`
 não depende de ninguém. Módulo de feature nunca depende do `:app` — os repositórios chegam por
@@ -200,7 +313,7 @@ o lugar para conferir antes e depois de mexer em qualquer token.
 O aplicativo é usado dentro de academias, onde a rede frequentemente não existe. Três decisões sustentam isso e não devem ser contornadas:
 
 1. **Room é a fonte de verdade da UI.** Nenhuma tela lê o Firestore diretamente; o Firestore sincroniza, o Room é lido. Cache que "às vezes funciona" não atende ao requisito.
-2. **Toda escrita passa por uma fila durável** (WorkManager) com `clientWriteId` idempotente e retry exponencial. Um treino registrado sem rede não pode se perder.
+2. **Toda escrita passa por uma fila durável** (WorkManager) com `clientWriteId` idempotente e retry exponencial. Um treino registrado sem rede não pode se perder. *Ainda não implementada — chega junto da primeira escrita de treino.*
 3. **Resolução de conflito é last-write-wins por campo, com uma exceção:** séries executadas pelo aluno nunca são sobrescritas por sincronização.
 
 ### Orçamento de leitura do Firestore
@@ -223,6 +336,13 @@ O papel duplo é resolvido no modelo: um mesmo `uid` pode ter documento em `trai
 
 O vínculo entre treinador e aluno vive em `links`, uma coleção de topo (consultável pelos dois lados), com máquina de estados `invited | requested | active | paused | ended`. Encerrar um vínculo nunca apaga dados: o aluno mantém acesso permanente ao próprio histórico.
 
+O documento de vínculo tem **id obrigatoriamente no formato `{trainerId}_{studentId}`**. Não é
+estética: Security Rule não consulta, só faz `get()` por caminho exato, e é esse formato que torna
+"treinador só lê aluno com vínculo ativo" expressável ([ADR-0007](docs/adr/0007-security-rules-e-id-de-vinculo-deterministico.md)).
+
+Dessas coleções, as que já têm código escrevendo ou lendo são `users`, `trainerProfiles` e
+`exercises`; as demais existem hoje como Security Rules e seus testes, à espera das telas.
+
 ### Acesso e privacidade
 
 - Security Rules por papel **e** por estado do vínculo — um treinador só lê dados de aluno com `link.status == active`.
@@ -234,13 +354,22 @@ O vínculo entre treinador e aluno vive em `links`, uma coleção de topo (consu
 
 ## Testes
 
-| Camada | O que cobre | Ferramenta |
-|---|---|---|
-| Unitário | Repositórios, fila de sincronização, cálculo de aderência | JUnit + Turbine |
-| Integração | Room ↔ Firestore, resolução de conflito | Firebase Emulator Suite |
-| Regras | Security Rules por papel e estado de vínculo | `@firebase/rules-unit-testing` |
-| Instrumentação | Fluxos de execução de treino | Compose UI Test |
-| Manual | Cenários de rede ruim e perda de conexão | Dispositivo real |
+| Camada | O que cobre | Ferramenta | Situação |
+|---|---|---|---|
+| Unitário | Transições de estado dos ViewModels, regras de validação, montagem de rota, mapeamento formulário → armazenamento, repositório cache-first | JUnit | **121 testes** |
+| Regras | Security Rules por papel e estado de vínculo | `@firebase/rules-unit-testing` | **27 testes** |
+| Integração | Room ↔ Firestore, resolução de conflito | Firebase Emulator Suite | Planejado |
+| Manual | Cenários de rede ruim e perda de conexão | Dispositivo real | Planejado |
+
+**Não há teste de UI, e isso é decisão.** Layout se confere abrindo o `@Preview` — é para isso que
+todo arquivo de Compose carrega um. O que ganha teste é o que o preview não mostra. Os fakes são
+escritos à mão, não gerados por MockK, e ficam em `feature-auth/src/test/…/fake/` para serem
+reusados em vez de reescritos dentro de cada teste.
+
+Os testes que mais importam são os de regra invisível na tela e fácil de desfazer sem querer: a
+recuperação de senha respondendo **igual** para e-mail que existe e que não existe, a conclusão de
+cadastro respondendo "não falta nada" quando a leitura falha — ninguém fica bloqueado por um palpite
+— e os quatro destinos iniciais do app, em ordem.
 
 ### Definição de pronto
 
@@ -263,6 +392,10 @@ O vínculo entre treinador e aluno vive em `links`, uma coleção de topo (consu
 - **Sem anúncios**, em nenhuma tela, em nenhuma versão — nem SDK de rede de anúncios desativado
   atrás de flag. Decisão registrada em [`docs/adr/0008`](docs/adr/0008-zero-anuncio.md), com as
   alternativas descartadas e o único cenário que justifica reabrir.
+
+As decisões cujo motivo o código não carrega estão em [`docs/adr/`](docs/adr/README.md) — hoje são
+quinze, da escolha das ferramentas de qualidade à proteção da `main`, passando pela navegação por
+papel e pelo cadastro de treinador. ADR não se reescreve: decisão revista vira um ADR novo.
 
 Orientações para agentes de IA que trabalham neste repositório estão em [`CLAUDE.md`](CLAUDE.md).
 
