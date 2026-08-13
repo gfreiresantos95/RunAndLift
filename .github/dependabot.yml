@@ -20,6 +20,12 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+    # Sem esta chave o Dependabot aplica as labels dele — "dependencies" e "java" —, que estão fora
+    # do vocabulário do projeto. Declarar "labels" substitui as padrão em vez de somar a elas. A
+    # label precisa existir no repositório antes: o Dependabot não cria as customizadas, ignora as
+    # que não encontra.
+    labels:
+      - build
     groups:
       # AGP e Kotlin andam juntos na prática: o plugin do Compose segue a versão do Kotlin, e
       # subir um sem o outro costuma quebrar a compilação.
@@ -51,6 +57,8 @@ updates:
     open-pull-requests-limit: 2
     commit-message:
       prefix: "ci"
+    labels:
+      - build
     groups:
       actions:
         patterns:
