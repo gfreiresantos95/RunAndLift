@@ -17,6 +17,10 @@ import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.feature.auth.R
+import com.gabrielfreire.runandlift.feature.auth.component.AuthHeadline
+import com.gabrielfreire.runandlift.feature.auth.component.AuthScreenLayout
+import com.gabrielfreire.runandlift.feature.auth.component.FailureBanner
+import com.gabrielfreire.runandlift.feature.auth.component.RoleChip
 
 /**
  * Concluir cadastro — a tela que existe porque o Google não pergunta.
@@ -32,7 +36,9 @@ import com.gabrielfreire.runandlift.feature.auth.R
  * numa folha do sistema, e dizer qual foi é mais barato que deixá-la em dúvida.
  *
  * A ordem é a mesma do cadastro por formulário — o que o produto precisa, depois o que a lei exige
- * — porque é a mesma conversa, retomada de onde o provedor parou.
+ * — porque é a mesma conversa, retomada de onde o provedor parou. Os blocos também são os mesmos,
+ * e não cópias: [SignUpContactFields], [TrainerFields] e [SignUpConsentFields] são exatamente os
+ * do cadastro.
  */
 @Composable
 internal fun CompleteProfileScreen(
@@ -67,7 +73,7 @@ internal fun CompleteProfileScreen(
 
         val enabled = !state.submitting
 
-        ContactFields(form = form, formActions = actions, role = state.role, enabled = enabled)
+        SignUpContactFields(form = form, formActions = actions, role = state.role, enabled = enabled)
 
         if (state.role == ActiveRole.TRAINER) {
             Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
@@ -81,7 +87,7 @@ internal fun CompleteProfileScreen(
 
         if (state.askConsent) {
             Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
-            ConsentFields(form = form, formActions = actions, enabled = enabled)
+            SignUpConsentFields(form = form, formActions = actions, enabled = enabled)
         }
 
         if (state.failed) {

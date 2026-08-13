@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.feature.auth
+package com.gabrielfreire.runandlift.feature.auth.validation
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

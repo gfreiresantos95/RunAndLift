@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.feature.auth
+package com.gabrielfreire.runandlift.feature.auth.validation
 
 import java.time.LocalDate
 import java.time.Period
@@ -10,6 +10,15 @@ import java.util.Locale
  * Valida apenas o que dá para saber sem ir ao servidor: campo vazio, formato e coerência de data.
  * Se a senha está correta ou o e-mail existe, quem responde é o servidor — validar isso aqui seria
  * adivinhar.
+ *
+ * Cada função devolve o enum de erro do seu campo — [EmailError], [BirthDateError] e os demais,
+ * cada um no arquivo vizinho junto da frase que ele vira na tela. Aqui fica só a régua; nenhuma
+ * função deste objeto conhece recurso de string.
+ *
+ * **As três máscaras do cadastro também moram aqui**, e não no arquivo do campo que as usa. Máscara
+ * e validação são a mesma regra de formato dita duas vezes — uma para o teclado, outra para o
+ * envio: [CREF_MASK] garante letra onde é letra e [validateCref] confere o que sobrou. Separá-las
+ * é como as duas acabariam discordando.
  */
 internal object AuthFormValidation {
 
@@ -37,8 +46,14 @@ internal object AuthFormValidation {
     /** Dígitos de uma data completa, `DDMMAAAA`. */
     const val BIRTH_DATE_DIGITS = 8
 
+    /** Máscara da data de nascimento. Oito dígitos, dois separadores, nenhum seletor de calendário. */
+    const val BIRTH_DATE_MASK = "##/##/####"
+
     /** Celular brasileiro com DDD: 10 dígitos em fixo, 11 em móvel com o nono. */
     const val MAX_PHONE_DIGITS = 11
+
+    /** Máscara de celular brasileiro. O nono dígito cabe; número de dez dígitos para antes dele. */
+    const val PHONE_MASK = "(##) #####-####"
 
     /**
      * Máscara do registro no CREF: seis dígitos, categoria e sigla do estado.
@@ -216,15 +231,3 @@ internal object AuthFormValidation {
             .split(' ')
             .toSet()
 }
-
-internal enum class EmailError { REQUIRED, INVALID }
-
-internal enum class PasswordError { REQUIRED, TOO_SHORT }
-
-internal enum class NameError { REQUIRED, INCOMPLETE }
-
-internal enum class BirthDateError { REQUIRED, INCOMPLETE, INVALID, TOO_YOUNG }
-
-internal enum class PhoneError { REQUIRED, INVALID }
-
-internal enum class CrefError { REQUIRED, INVALID }

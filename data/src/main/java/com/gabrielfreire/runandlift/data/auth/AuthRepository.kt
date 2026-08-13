@@ -39,35 +39,3 @@ interface AuthRepository {
 
     suspend fun signOut()
 }
-
-/** Desfecho de uma operação de autenticação. */
-sealed interface AuthResult {
-
-    data class Success(val account: UserAccount?) : AuthResult
-
-    /**
-     * Falha esperada, com causa identificada — a UI escolhe a mensagem a partir de [reason].
-     * [cause] guarda a exceção original para a telemetria de E0-11; a tela não deve usá-la.
-     */
-    data class Failure(val reason: AuthFailure, val cause: Throwable? = null) : AuthResult
-}
-
-/**
- * Por que a autenticação falhou.
- *
- * O repositório traduz os códigos do Firebase para este conjunto fechado: assim a UI não precisa
- * conhecer strings de erro do SDK, e trocar de provedor de autenticação não alcança as telas.
- */
-enum class AuthFailure {
-    INVALID_CREDENTIALS,
-    EMAIL_ALREADY_IN_USE,
-    WEAK_PASSWORD,
-    INVALID_EMAIL,
-    NO_NETWORK,
-    TOO_MANY_ATTEMPTS,
-    NOT_SIGNED_IN,
-
-    /** Nenhuma conta Google utilizável no aparelho. Tem mensagem própria porque tem solução própria. */
-    NO_GOOGLE_ACCOUNT,
-    UNKNOWN,
-}

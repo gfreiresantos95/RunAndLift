@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.PreviewSamples
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /** Posição da máscara que aceita dígito. */
@@ -163,33 +164,33 @@ private fun AppMaskedTextFieldPreview() {
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
             ) {
                 AppMaskedTextField(
-                    value = "21051990",
+                    value = PreviewSamples.Value.BIRTH_DATE_DIGITS,
                     onValueChange = {},
-                    label = "Data de nascimento",
-                    mask = "##/##/####",
-                    supportingText = "Ajusta as faixas de esforço do seu treino.",
+                    label = PreviewSamples.Label.BIRTH_DATE,
+                    mask = PreviewSamples.Mask.BIRTH_DATE,
+                    supportingText = PreviewSamples.Support.BIRTH_DATE,
                 )
 
                 AppMaskedTextField(
-                    value = "2105",
+                    value = PreviewSamples.Value.BIRTH_DATE_PARTIAL,
                     onValueChange = {},
-                    label = "Data de nascimento",
-                    mask = "##/##/####",
-                    errorMessage = "Complete a data no formato DD/MM/AAAA.",
+                    label = PreviewSamples.Label.BIRTH_DATE,
+                    mask = PreviewSamples.Mask.BIRTH_DATE,
+                    errorMessage = PreviewSamples.Error.BIRTH_DATE_INCOMPLETE,
                 )
 
                 AppMaskedTextField(
-                    value = "11987654321",
+                    value = PreviewSamples.Value.PHONE_DIGITS,
                     onValueChange = {},
-                    label = "Celular (WhatsApp)",
-                    mask = "(##) #####-####",
+                    label = PreviewSamples.Label.PHONE,
+                    mask = PreviewSamples.Mask.PHONE,
                 )
 
                 AppMaskedTextField(
-                    value = "012345GSP",
+                    value = PreviewSamples.Value.CREF_CONTENT,
                     onValueChange = {},
-                    label = "Registro no CREF",
-                    mask = "######-A/AA",
+                    label = PreviewSamples.Label.CREF,
+                    mask = PreviewSamples.Mask.CREF,
                 )
             }
         }

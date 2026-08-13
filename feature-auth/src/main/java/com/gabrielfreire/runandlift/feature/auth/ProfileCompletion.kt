@@ -54,18 +54,3 @@ object ProfileCompletion {
         )
     }
 }
-
-/**
- * Lacunas do cadastro, uma por campo.
- *
- * Campo a campo, e não um booleano só, porque a tela que as preenche mostra apenas o que falta:
- * pedir de novo o que já foi respondido é o mesmo defeito que a escolha de papel repetida.
- */
-data class MissingProfileData(
-    val birthDate: Boolean = false,
-    val phone: Boolean = false,
-    val cref: Boolean = false,
-    val consent: Boolean = false,
-) {
-    val any: Boolean get() = birthDate || phone || cref || consent
-}

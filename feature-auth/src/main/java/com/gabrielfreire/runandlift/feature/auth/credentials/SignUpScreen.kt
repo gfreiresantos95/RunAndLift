@@ -1,7 +1,6 @@
 package com.gabrielfreire.runandlift.feature.auth.credentials
 
 import android.content.res.Configuration
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +15,14 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.feature.auth.CrefError
-import com.gabrielfreire.runandlift.feature.auth.PhoneError
 import com.gabrielfreire.runandlift.feature.auth.R
+import com.gabrielfreire.runandlift.feature.auth.component.AlternativePrompt
+import com.gabrielfreire.runandlift.feature.auth.component.AuthHeadline
+import com.gabrielfreire.runandlift.feature.auth.component.AuthScreenLayout
+import com.gabrielfreire.runandlift.feature.auth.component.RoleChip
+import com.gabrielfreire.runandlift.feature.auth.signUpSubtitle
+import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
+import com.gabrielfreire.runandlift.feature.auth.validation.PhoneError
 
 /**
  * Criar conta.
@@ -80,7 +84,7 @@ internal fun SignUpScreen(
 
         AuthHeadline(
             title = stringResource(id = R.string.auth_sign_up_title),
-            subtitle = stringResource(id = role.subtitle()),
+            subtitle = stringResource(id = role.signUpSubtitle()),
         )
 
         Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
@@ -95,14 +99,6 @@ internal fun SignUpScreen(
     }
 }
 
-/** O que a conta vai fazer, na voz de quem vai usá-la — é a promessa que justifica pedir os dados. */
-@StringRes
-private fun ActiveRole?.subtitle(): Int = when (this) {
-    ActiveRole.STUDENT -> R.string.auth_sign_up_subtitle_student
-    ActiveRole.TRAINER -> R.string.auth_sign_up_subtitle_trainer
-    null -> R.string.auth_sign_up_subtitle
-}
-
 @Preview(name = "Criar conta · aluno, claro", showBackground = true, heightDp = 1500)
 @Preview(
     name = "Criar conta · aluno, escuro",
@@ -114,7 +110,7 @@ private fun ActiveRole?.subtitle(): Int = when (this) {
 private fun SignUpPreview() {
     RunAndLiftTheme {
         SignUpScreen(
-            state = CredentialsUiState(email = "ana@exemplo.com", password = "123456"),
+            state = previewCredentialsState(),
             form = previewStudentForm(),
             actions = previewSignUpActions(),
             formActions = previewSignUpFormActions(),
@@ -138,7 +134,7 @@ private fun SignUpPreview() {
 private fun SignUpTrainerPreview() {
     RunAndLiftTheme {
         SignUpScreen(
-            state = CredentialsUiState(email = "bruno@exemplo.com", password = "123456"),
+            state = previewCredentialsState(),
             form = previewTrainerForm(),
             actions = previewSignUpActions(),
             formActions = previewSignUpFormActions(),
@@ -153,12 +149,12 @@ private fun SignUpTrainerPreview() {
 private fun SignUpFailurePreview() {
     RunAndLiftTheme {
         SignUpScreen(
-            state = CredentialsUiState(
-                email = "bruno@exemplo.com",
+            state = previewCredentialsState().copy(
+                password = "",
                 failure = AuthFailure.EMAIL_ALREADY_IN_USE,
             ),
             form = SignUpFormState(
-                cref = "012345",
+                cref = PREVIEW_CREF_INCOMPLETE,
                 crefError = CrefError.INVALID,
                 phoneError = PhoneError.REQUIRED,
                 termsMissing = true,

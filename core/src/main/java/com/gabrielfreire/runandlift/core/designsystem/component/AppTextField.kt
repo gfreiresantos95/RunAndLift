@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import com.gabrielfreire.runandlift.core.R
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.PreviewSamples
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import kotlinx.coroutines.launch
 
@@ -216,31 +217,40 @@ private fun AppTextFieldPreview() {
                 modifier = Modifier.padding(Dimens.SpaceLarge),
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
             ) {
-                AppTextField(value = "ana@exemplo.com", onValueChange = {}, label = "E-mail")
-
                 AppTextField(
-                    value = "Ana Ribeiro",
+                    value = PreviewSamples.Value.EMAIL,
                     onValueChange = {},
-                    label = "Nome completo",
-                    supportingText = "É assim que o seu treinador vai te encontrar na lista de alunos.",
+                    label = PreviewSamples.Label.EMAIL,
                 )
 
                 AppTextField(
-                    value = "ana",
+                    value = PreviewSamples.Value.NAME,
                     onValueChange = {},
-                    label = "E-mail",
-                    errorMessage = "Esse e-mail não parece válido.",
+                    label = PreviewSamples.Label.NAME,
+                    supportingText = PreviewSamples.Support.NAME,
                 )
 
-                AppTextField(value = "", onValueChange = {}, label = "Celular", enabled = false)
+                AppTextField(
+                    value = PreviewSamples.Value.EMAIL_INCOMPLETE,
+                    onValueChange = {},
+                    label = PreviewSamples.Label.EMAIL,
+                    errorMessage = PreviewSamples.Error.EMAIL_INVALID,
+                )
+
+                AppTextField(
+                    value = "",
+                    onValueChange = {},
+                    label = PreviewSamples.Label.PHONE_SHORT,
+                    enabled = false,
+                )
 
                 AppPasswordField(
-                    value = "senha123",
+                    value = PreviewSamples.Value.PASSWORD,
                     onValueChange = {},
-                    label = "Senha",
-                    showLabel = "Mostrar senha",
-                    hideLabel = "Ocultar senha",
-                    supportingText = "Mínimo de 6 caracteres.",
+                    label = PreviewSamples.Label.PASSWORD,
+                    showLabel = PreviewSamples.Action.SHOW_PASSWORD,
+                    hideLabel = PreviewSamples.Action.HIDE_PASSWORD,
+                    supportingText = PreviewSamples.Support.PASSWORD_MIN,
                 )
             }
         }

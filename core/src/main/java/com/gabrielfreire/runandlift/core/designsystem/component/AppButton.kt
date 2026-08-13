@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.PreviewSamples
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
@@ -161,11 +162,11 @@ private fun AppButtonPreview() {
                 modifier = Modifier.padding(Dimens.SpaceLarge),
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpaceMedium),
             ) {
-                AppButton(text = "Criar conta", onClick = {})
-                AppButton(text = "Criar conta", onClick = {}, loading = true)
-                AppButton(text = "Criar conta", onClick = {}, enabled = false)
-                AppOutlinedButton(text = "Entrar com Google", onClick = {})
-                AppTextButton(text = "Esqueci minha senha", onClick = {})
+                AppButton(text = PreviewSamples.Action.SIGN_UP, onClick = {})
+                AppButton(text = PreviewSamples.Action.SIGN_UP, onClick = {}, loading = true)
+                AppButton(text = PreviewSamples.Action.SIGN_UP, onClick = {}, enabled = false)
+                AppOutlinedButton(text = PreviewSamples.Action.GOOGLE, onClick = {})
+                AppTextButton(text = PreviewSamples.Action.FORGOT_PASSWORD, onClick = {})
             }
         }
     }

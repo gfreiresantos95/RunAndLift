@@ -3,11 +3,9 @@ package com.gabrielfreire.runandlift.feature.auth.credentials
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.AuthResult
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.data.model.PrivacyConsent
-import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.model.UserAccount
 import com.gabrielfreire.runandlift.data.user.UserRepository
-import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
+import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -105,31 +103,8 @@ internal class SignUpViewModel(
             userRepository.saveProfile(
                 uid = account.uid,
                 role = intendedRole,
-                details = _formState.value.toDetails(account.email, isTrainer),
+                details = _formState.value.toSignUpDetails(account.email, isTrainer),
             )
         }.getOrNull()?.activeRole ?: intendedRole
     }
 }
-
-/**
- * O que vai para o perfil.
- *
- * O nome cai no prefixo do e-mail quando o formulário não passou por aqui — é o caso da conta
- * criada pela folha do Google, em que a tela de escolha de papel é quem grava.
- *
- * O registro só sai daqui **como treinador e em forma canônica**: o que o campo aceita é o que a
- * pessoa digita, e o que se grava é sempre `012345-G/SP`. Duas grafias do mesmo registro no banco
- * seriam dois registros na hora de conferir.
- */
-private fun SignUpFormState.toDetails(email: String?, isTrainer: Boolean) = SignUpDetails(
-    displayName = name.trim().ifEmpty { email?.substringBefore('@') },
-    birthDate = AuthFormValidation.parseBirthDate(birthDate),
-    phone = phone.ifEmpty { null },
-    // Só existe consentimento se a caixa foi marcada. Registrar um aceite que não aconteceu é
-    // pior do que não registrar nada.
-    consent = PrivacyConsent(
-        termsVersion = PrivacyConsent.CURRENT_TERMS_VERSION,
-        marketingOptIn = marketingOptIn,
-    ).takeIf { acceptedTerms },
-    cref = if (isTrainer) AuthFormValidation.formatCref(cref) else null,
-)

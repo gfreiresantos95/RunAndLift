@@ -5,19 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
-
-/**
- * Um papel de cor completo, no mesmo formato dos papéis do Material 3.
- *
- * - [color] / [onColor] — para preenchimento sólido (ícone, badge, barra de progresso).
- * - [container] / [onContainer] — para fundo suave (chip, card de alerta, linha de lista).
- */
-@Immutable
-data class ColorRole(val color: Color, val onColor: Color, val container: Color, val onContainer: Color)
 
 /**
  * Papéis de cor que o Material 3 não define e que o domínio exige.
+ *
+ * A forma de um papel é [ColorRole], no arquivo vizinho; aqui fica a lista de papéis que este
+ * produto tem, e os dois esquemas que os preenchem.
  *
  * O semáforo de aderência ([ok], [attention], [critical]) é conceito central do produto: o
  * treinador precisa distinguir, de relance, quem está treinando de quem parou. Por isso vive

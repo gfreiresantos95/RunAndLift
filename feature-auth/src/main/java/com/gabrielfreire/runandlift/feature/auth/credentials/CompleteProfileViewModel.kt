@@ -4,11 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.data.model.PrivacyConsent
-import com.gabrielfreire.runandlift.data.model.SignUpDetails
-import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.user.UserRepository
-import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
 import com.gabrielfreire.runandlift.feature.auth.ProfileCompletion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,27 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-
-/**
- * Estado da conclusão de cadastro.
- *
- * @param role papel com que a conta segue. Vive no estado, e não num parâmetro da tela, porque é
- *   dado de exibição como qualquer outro: decide a etiqueta, os campos exigidos e o texto de apoio.
- * @param loading enquanto se descobre o que falta. A tela não pode desenhar campos antes disso, ou
- *   pediria o que já existe por um instante e depois se corrigiria sozinha.
- * @param askConsent aceite dos termos ainda não registrado. Falso para conta que já consentiu.
- * @param name nome vindo do provedor, exibido como confirmação de quem está sendo completado — a
- *   pessoa acabou de escolher uma conta Google numa folha do sistema, e vale dizer qual foi.
- */
-internal data class CompleteProfileUiState(
-    val role: ActiveRole,
-    val loading: Boolean = true,
-    val submitting: Boolean = false,
-    val failed: Boolean = false,
-    val askConsent: Boolean = true,
-    val name: String = "",
-    val completedRole: ActiveRole? = null,
-)
 
 /**
  * Conclusão do cadastro de quem entrou pelo Google (backlog E1-02, E1-08).
@@ -141,7 +116,7 @@ internal class CompleteProfileViewModel(
 
         val profile = uid?.let {
             runCatching {
-                userRepository.saveProfile(uid = it, role = role, details = form.toDetails(isTrainer))
+                userRepository.saveProfile(uid = it, role = role, details = form.toCompletionDetails(isTrainer))
             }.getOrNull()
         }
 
@@ -154,24 +129,3 @@ internal class CompleteProfileViewModel(
         }
     }
 }
-
-/** O que já está gravado volta para o campo, na forma que o campo mascarado entende. */
-private fun SignUpFormState.prefilledFrom(profile: UserProfile?, registration: String?) = copy(
-    birthDate = profile?.birthDate?.let(AuthFormValidation::birthDateDigits).orEmpty(),
-    phone = profile?.phone.orEmpty(),
-    cref = registration?.let(AuthFormValidation::crefContent).orEmpty(),
-)
-
-/**
- * O que vai para o perfil. Sem `displayName`: quem o forneceu foi o provedor, e o repositório já
- * preserva o nome que existe — reenviá-lo daqui não acrescentaria nada e arriscaria sobrescrever.
- */
-private fun SignUpFormState.toDetails(isTrainer: Boolean) = SignUpDetails(
-    birthDate = AuthFormValidation.parseBirthDate(birthDate),
-    phone = phone.ifEmpty { null },
-    consent = PrivacyConsent(
-        termsVersion = PrivacyConsent.CURRENT_TERMS_VERSION,
-        marketingOptIn = marketingOptIn,
-    ).takeIf { acceptedTerms },
-    cref = if (isTrainer) AuthFormValidation.formatCref(cref) else null,
-)

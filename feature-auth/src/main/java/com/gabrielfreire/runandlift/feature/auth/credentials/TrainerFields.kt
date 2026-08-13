@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,17 +15,17 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppMaskedTextField
-import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
-import com.gabrielfreire.runandlift.feature.auth.CrefError
 import com.gabrielfreire.runandlift.feature.auth.R
-import com.gabrielfreire.runandlift.feature.auth.message
+import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
+import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
+import com.gabrielfreire.runandlift.feature.auth.validation.message
 
 /**
  * O que só o treinador informa: o registro profissional.
  *
- * Ocupa no formulário **a mesma vaga** que o aviso de dado de saúde ocupa no cadastro de aluno —
- * depois do contato, antes do aceite. Cada perfil tem um bloco próprio no mesmo lugar, então a
- * tela continua sendo a mesma tela: muda o conteúdo de um bloco, não a estrutura.
+ * Ocupa no formulário **a mesma vaga** que [HealthDataNotice] ocupa no cadastro de aluno — depois
+ * do contato, antes do aceite. Cada perfil tem um bloco próprio no mesmo lugar, então a tela
+ * continua sendo a mesma tela: muda o conteúdo de um bloco, não a estrutura.
  *
  * **É obrigatório, e não "recomendado".** Prescrever exercício físico é atividade privativa de
  * profissional registrado (Lei 9.696/1998), e prescrever é exatamente o que a próxima tela oferece
@@ -70,29 +69,7 @@ internal fun TrainerFields(
     }
 }
 
-/**
- * Por que o registro é pedido e o que vai ser feito com ele.
- *
- * É a contraparte do aviso de dado de saúde do aluno, no mesmo desenho e na mesma vaga: lá o app
- * conta o que **não** pede, aqui conta o que **faz** com o que pediu. Nos dois casos a pergunta é
- * respondida antes de ser feita — e a que o treinador faz é "vocês vão publicar isso?".
- */
-@Composable
-private fun CrefNotice(modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        shape = MaterialTheme.shapes.medium,
-    ) {
-        Text(
-            text = stringResource(id = R.string.auth_cref_notice),
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(all = Dimens.SpaceLarge),
-        )
-    }
-}
-
+/** Registro completo e registro pela metade: o segundo é o que exercita a mensagem de erro. */
 @LightDarkPreviews
 @Composable
 private fun TrainerFieldsPreview() {
@@ -100,7 +77,7 @@ private fun TrainerFieldsPreview() {
         Surface(color = MaterialTheme.colorScheme.background) {
             Column(modifier = Modifier.padding(all = Dimens.SpaceLarge)) {
                 TrainerFields(
-                    cref = "012345GSP",
+                    cref = PREVIEW_CREF_CONTENT,
                     onCrefChange = {},
                     crefError = null,
                     enabled = true,
@@ -109,7 +86,7 @@ private fun TrainerFieldsPreview() {
                 Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
 
                 TrainerFields(
-                    cref = "012345",
+                    cref = PREVIEW_CREF_INCOMPLETE,
                     onCrefChange = {},
                     crefError = CrefError.INVALID,
                     enabled = true,

@@ -1,10 +1,10 @@
 package com.gabrielfreire.runandlift.feature.auth.credentials
 
-import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
-import com.gabrielfreire.runandlift.feature.auth.BirthDateError
-import com.gabrielfreire.runandlift.feature.auth.CrefError
-import com.gabrielfreire.runandlift.feature.auth.NameError
-import com.gabrielfreire.runandlift.feature.auth.PhoneError
+import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
+import com.gabrielfreire.runandlift.feature.auth.validation.BirthDateError
+import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
+import com.gabrielfreire.runandlift.feature.auth.validation.NameError
+import com.gabrielfreire.runandlift.feature.auth.validation.PhoneError
 
 /**
  * Campos do cadastro que não são credencial.
@@ -19,6 +19,9 @@ import com.gabrielfreire.runandlift.feature.auth.PhoneError
  * O estado é **um só para os dois perfis**, e não um por papel. O que muda entre aluno e treinador
  * é quais campos a tela mostra e quais são exigidos, não a natureza do que se coleta; dois estados
  * paralelos duplicariam nome, nascimento e aceite para descrever essa diferença.
+ *
+ * A régua que o confere é [validated], no arquivo vizinho; a conversão para o que se grava é
+ * `SignUpFormDetails`.
  *
  * @param cref registro profissional. Preenchido apenas no cadastro de treinador — o campo nem
  *   aparece para o aluno, e a validação o ignora.

@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.gabrielfreire.runandlift.core.R
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.PreviewSamples
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
@@ -73,8 +74,12 @@ private fun AppTopBarPreview() {
     RunAndLiftTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             Column {
-                AppTopBar(title = "Run & Lift", onBack = {}, backContentDescription = "Voltar")
-                AppTopBar(title = "Run & Lift")
+                AppTopBar(
+                    title = PreviewSamples.Label.APP_NAME,
+                    onBack = {},
+                    backContentDescription = PreviewSamples.Action.BACK,
+                )
+                AppTopBar(title = PreviewSamples.Label.APP_NAME)
             }
         }
     }

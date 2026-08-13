@@ -62,6 +62,15 @@ Compose-specific checks come from `compose-lint-checks` (Slack), wired through `
 
 ktlint settings live in `.editorconfig` and nowhere else. Note the plumbing: Spotless hands ktlint an in-memory string, so ktlint can't discover `.editorconfig` on disk and `setEditorConfigPath` doesn't help either. `editorConfigProperties()` in `build.gradle.kts` therefore parses the `[*]` and `[*.{kt,kts}]` sections and feeds them to `editorConfigOverride`, which is the only channel ktlint honours. Don't add ktlint keys directly to that map — put them in `.editorconfig` so the IDE and the build stay on one source.
 
+## One context per file
+
+The project prefers **many small files over few mixed ones**. File count is not a cost; opening three files to answer one question is. Four rules follow from that:
+
+- **An extension goes in the file of the type it extends.** Each form-error enum in `feature-auth/validation/` carries its own `@Composable message()`, so adding a case breaks the `when` on the next line instead of in a distant messages file. The **one** exception is `AuthFailure.message()`, which can't follow the rule: `AuthFailure` lives in `:data`, which has no string resources and no Compose — it sits in `AuthFailureMessage.kt` and says why. Same reason puts every `ActiveRole`-to-text mapping in `ActiveRoleText.kt` rather than in the enum.
+- **One top-level type per file**, named after it — detekt's `MatchingDeclarationName` enforces this on files that hold exactly one. A UI state, its ViewModel, and its screen are three files, not one.
+- **One composable per file, each with its own `@Preview`.** A shared gallery preview hides which component broke; a per-file preview is what the "every file holding Compose layout carries a `@Preview`" rule is actually for.
+- **Screen-agnostic auth UI lives in `feature/auth/component/`**, not inside `credentials/`. The layout frame, headline, role chip, failure banner and legal links are used by sign-in, sign-up, recovery *and* complete-profile; owning them from one screen's package is how the recovery screen ended up not using them at all.
+
 ## Data layer rules
 
 Four rules every repository follows — they are what makes offline real rather than "a cache that sometimes works" (`OfflineFirstExerciseRepository` is the reference implementation):
@@ -91,8 +100,10 @@ Four layers, and code should always consume the highest one:
 
 - `Color.kt` — brand tonal ramps (Cobalto/Aço/Brasa + state families) as `internal` tokens. **Never referenced from a screen.**
 - `ColorScheme.kt` — maps those tokens onto Material 3 roles for light and dark. The two schemes are mirrored (tone 40 in light ↔ tone 80 in dark); keep that symmetry or screens stop working in one theme.
-- `ExtendedColors.kt` — the roles M3 lacks: `ok` / `attention` / `critical` (the adherence semaphore) and `highlight` (records). Read via `MaterialTheme.extendedColors`. Each is a `ColorRole` with `color`/`onColor`/`container`/`onContainer`.
+- `ExtendedColorScheme.kt` — the roles M3 lacks: `ok` / `attention` / `critical` (the adherence semaphore) and `highlight` (records). Read via `MaterialTheme.extendedColors`. Each is a `ColorRole` (`ColorRole.kt`) with `color`/`onColor`/`container`/`onContainer`.
 - `Type.kt`, `Shape.kt`, `Dimens.kt` — `AppTypography`, `AppShapes`, plus the spacing grid and `Dimens.MinTouchTarget` (48 dp) with the `Modifier.minimumTouchTarget()` helper.
+
+`:core` has **no `strings.xml` by design** — every component takes its text as a parameter, so the design system never decides language. Preview sample copy therefore can't come from `stringResource`; it lives in `PreviewSamples.kt`, one file for the whole module. Modules that *do* have string resources (`:feature-auth`) must use `stringResource` in previews instead — a literal there is a second copy of a string that already exists.
 
 `AppMaskedTextField` masks take `#` for a digit and `A` for a letter; anything else is a separator. The filter is **positional** — a letter typed where a digit belongs never enters — and the state holds content only, never separators. Formatting for storage happens once, in the feature layer.
 

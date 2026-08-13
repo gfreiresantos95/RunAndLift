@@ -2,42 +2,17 @@ package com.gabrielfreire.runandlift.feature.auth.credentials
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.AuthResult
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.model.UserAccount
-import com.gabrielfreire.runandlift.feature.auth.AuthFormValidation
-import com.gabrielfreire.runandlift.feature.auth.EmailError
-import com.gabrielfreire.runandlift.feature.auth.PasswordError
 import com.gabrielfreire.runandlift.feature.auth.google.GoogleSignInResult
+import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-/** Estado do formulário de e-mail e senha. Sem tipo de UI e sem recurso de string. */
-internal data class CredentialsUiState(
-    val email: String = "",
-    val password: String = "",
-    val emailError: EmailError? = null,
-    val passwordError: PasswordError? = null,
-    val failure: AuthFailure? = null,
-    val submitting: Boolean = false,
-    val authenticated: Boolean = false,
-    /**
-     * Papel com que a conta segue: gravado agora, no cadastro, ou lido do perfil, ao entrar.
-     * Quando é `null`, o papel ainda é desconhecido e a navegação passa pela tela de escolha.
-     */
-    val resolvedRole: ActiveRole? = null,
-    /**
-     * A conta existe mas o cadastro está pela metade — o caso de quem entrou pelo Google, que não
-     * fornece nascimento, registro profissional nem aceite dos termos. A navegação desvia para a
-     * tela de conclusão antes de abrir o app.
-     */
-    val profileIncomplete: Boolean = false,
-)
 
 /**
  * Base de entrar e criar conta: o formulário é o mesmo, muda o que o botão faz.

@@ -16,6 +16,7 @@ import androidx.navigation.compose.navigation
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
+import com.gabrielfreire.runandlift.feature.auth.component.rememberLegalDocumentOpener
 import com.gabrielfreire.runandlift.feature.auth.credentials.CompleteProfileScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.CompleteProfileViewModel
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignInActions
@@ -25,7 +26,6 @@ import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpActions
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpFormActions
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpScreen
 import com.gabrielfreire.runandlift.feature.auth.credentials.SignUpViewModel
-import com.gabrielfreire.runandlift.feature.auth.credentials.rememberLegalDocumentOpener
 import com.gabrielfreire.runandlift.feature.auth.google.GoogleSignInRequester
 import com.gabrielfreire.runandlift.feature.auth.onboarding.RoleSelectionScreen
 import com.gabrielfreire.runandlift.feature.auth.onboarding.RoleSelectionViewModel

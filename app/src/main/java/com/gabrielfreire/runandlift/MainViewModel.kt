@@ -86,11 +86,3 @@ class MainViewModel(private val authRepository: AuthRepository, private val user
         else -> RoleRoutes.graphFor(role)
     }
 }
-
-data class MainUiState(
-    /** Enquanto for `false`, a splash permanece na tela. */
-    val ready: Boolean = false,
-    val startDestination: String = AuthRoutes.GRAPH,
-    val activeRole: ActiveRole? = null,
-    val canSwitchRole: Boolean = false,
-)

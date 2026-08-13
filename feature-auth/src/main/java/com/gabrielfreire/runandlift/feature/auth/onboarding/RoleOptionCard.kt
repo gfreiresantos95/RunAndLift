@@ -16,10 +16,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
+import com.gabrielfreire.runandlift.feature.auth.R
 
 /**
  * Cartão de escolha de papel, usado pelas boas-vindas e pela escolha depois de autenticar.
@@ -95,14 +97,14 @@ private fun RoleOptionCardPreview() {
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpaceMedium),
             ) {
                 RoleOptionCard(
-                    title = "Sou aluno",
-                    description = "Recebo treinos e registro minhas séries.",
+                    title = stringResource(id = R.string.onboarding_student),
+                    description = stringResource(id = R.string.onboarding_student_description),
                     selected = true,
                     onClick = {},
                 )
                 RoleOptionCard(
-                    title = "Sou treinador",
-                    description = "Prescrevo treinos e acompanho meus alunos.",
+                    title = stringResource(id = R.string.onboarding_trainer),
+                    description = stringResource(id = R.string.onboarding_trainer_description),
                     selected = false,
                     onClick = {},
                 )
