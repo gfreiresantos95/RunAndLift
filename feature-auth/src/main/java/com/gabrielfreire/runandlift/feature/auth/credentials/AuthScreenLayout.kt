@@ -84,20 +84,20 @@ internal fun AuthScreenLayout(
         modifier = modifier,
         topBar = {
             AppTopBar(
-                title = stringResource(R.string.auth_app_name),
+                title = stringResource(id = R.string.auth_app_name),
                 onBack = onBack,
-                backContentDescription = stringResource(R.string.auth_back),
+                backContentDescription = stringResource(id = R.string.auth_back),
             )
         },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
+                .padding(paddingValues = innerPadding)
+                .consumeWindowInsets(paddingValues = innerPadding)
                 .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(Dimens.ScreenPadding),
+                .verticalScroll(state = rememberScrollState())
+                .padding(paddingValues = Dimens.ScreenPadding),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -105,7 +105,7 @@ internal fun AuthScreenLayout(
 
             // Respiro, e não um divisor: o que separa a ação desta tela da saída para a outra é
             // distância, não uma linha a mais para o olho processar.
-            Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+            Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
             bottom()
         }
@@ -122,7 +122,7 @@ internal fun AuthScreenLayout(
 @Composable
 internal fun RoleChip(role: ActiveRole, modifier: Modifier = Modifier) {
     val label = stringResource(
-        when (role) {
+        id = when (role) {
             ActiveRole.STUDENT -> R.string.auth_role_student
             ActiveRole.TRAINER -> R.string.auth_role_trainer
         },
@@ -181,7 +181,7 @@ internal fun FailureBanner(failure: AuthFailure, modifier: Modifier = Modifier) 
         Text(
             text = failure.message(),
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(Dimens.SpaceLarge),
+            modifier = Modifier.padding(all = Dimens.SpaceLarge),
         )
     }
 }
@@ -198,8 +198,8 @@ internal fun FailureBanner(failure: AuthFailure, modifier: Modifier = Modifier) 
 @Composable
 internal fun rememberLegalDocumentOpener(): (LegalDocument) -> Unit {
     val uriHandler = LocalUriHandler.current
-    val terms = stringResource(R.string.auth_terms_url)
-    val privacy = stringResource(R.string.auth_privacy_url)
+    val terms = stringResource(id = R.string.auth_terms_url)
+    val privacy = stringResource(id = R.string.auth_privacy_url)
 
     return remember(uriHandler, terms, privacy) {
         { document ->
@@ -223,7 +223,7 @@ internal fun OrSeparator(modifier: Modifier = Modifier) {
     ) {
         HorizontalDivider(modifier = Modifier.weight(1f))
         Text(
-            text = stringResource(R.string.auth_or),
+            text = stringResource(id = R.string.auth_or),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -241,13 +241,13 @@ internal fun OrSeparator(modifier: Modifier = Modifier) {
 @Composable
 internal fun GoogleSignInButton(onClick: () -> Unit, enabled: Boolean, modifier: Modifier = Modifier) {
     AppOutlinedButton(
-        text = stringResource(R.string.auth_google_action),
+        text = stringResource(id = R.string.auth_google_action),
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
         leadingContent = {
             Image(
-                painter = painterResource(R.drawable.ic_google),
+                painter = painterResource(id = R.drawable.ic_google),
                 contentDescription = null,
                 modifier = Modifier.size(GOOGLE_LOGO_SIZE),
             )
@@ -307,7 +307,7 @@ private fun AuthComponentsPreview() {
     RunAndLiftTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             Column(
-                modifier = Modifier.padding(Dimens.SpaceLarge),
+                modifier = Modifier.padding(all = Dimens.SpaceLarge),
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceSmall)) {

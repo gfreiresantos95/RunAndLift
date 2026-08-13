@@ -65,8 +65,8 @@ internal fun SignUpScreen(
         onBack = actions.onBack,
         bottom = {
             AlternativePrompt(
-                prompt = stringResource(R.string.auth_prompt_has_account),
-                action = stringResource(R.string.auth_go_to_sign_in),
+                prompt = stringResource(id = R.string.auth_prompt_has_account),
+                action = stringResource(id = R.string.auth_go_to_sign_in),
                 onClick = actions.onSignIn,
                 enabled = !state.submitting,
             )
@@ -75,16 +75,15 @@ internal fun SignUpScreen(
         role?.let {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 RoleChip(role = it)
-                Spacer(modifier = Modifier.height(Dimens.SpaceSmall))
             }
         }
 
         AuthHeadline(
-            title = stringResource(R.string.auth_sign_up_title),
-            subtitle = stringResource(role.subtitle()),
+            title = stringResource(id = R.string.auth_sign_up_title),
+            subtitle = stringResource(id = role.subtitle()),
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         SignUpForm(
             state = state,

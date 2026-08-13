@@ -73,24 +73,26 @@ fun AppCheckboxField(
             // tela anunciaria dois controles para uma decisão só.
             Checkbox(checked = checked, onCheckedChange = null, enabled = enabled)
 
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(
-                    start = Dimens.SpaceSmall,
-                    top = Dimens.SpaceSmall,
-                    bottom = Dimens.SpaceSmall,
-                ),
-            )
-        }
+            Column {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(
+                        start = Dimens.SpaceSmall,
+                        top = Dimens.SpaceSmall,
+                        bottom = Dimens.SpaceSmall,
+                    ),
+                )
 
-        supportingText?.let { message ->
-            Footnote(text = message, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+                supportingText?.let { message ->
+                    Footnote(text = message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
 
-        errorMessage?.let { message ->
-            Footnote(text = message, color = MaterialTheme.colorScheme.error)
+                errorMessage?.let { message ->
+                    Footnote(text = message, color = MaterialTheme.colorScheme.error)
+                }
+            }
         }
     }
 }
@@ -108,7 +110,7 @@ private fun Footnote(text: String, color: Color) {
         text = text,
         style = MaterialTheme.typography.bodySmall,
         color = color,
-        modifier = Modifier.padding(start = Dimens.MinTouchTarget + Dimens.SpaceSmall),
+        modifier = Modifier.padding(start = Dimens.SpaceSmall),
     )
 }
 

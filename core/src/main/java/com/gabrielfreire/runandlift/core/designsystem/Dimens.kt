@@ -33,7 +33,7 @@ object Dimens {
     val SpaceXXLarge = 32.dp
 
     /** Padding horizontal padrão de conteúdo de tela. */
-    val ScreenPadding = PaddingValues(horizontal = SpaceLarge, vertical = SpaceMedium)
+    val ScreenPadding = PaddingValues(horizontal = SpaceLarge, vertical = SpaceSmall)
 
     // --- Alvos de toque ---
 

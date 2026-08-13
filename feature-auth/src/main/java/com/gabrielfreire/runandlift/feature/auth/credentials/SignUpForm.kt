@@ -74,7 +74,7 @@ internal fun SignUpForm(
     Column(modifier = modifier.fillMaxWidth()) {
         IdentityFields(state = state, form = form, actions = actions, formActions = formActions, role = role)
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         ContactFields(form = form, formActions = formActions, role = role, enabled = enabled)
 
@@ -82,7 +82,7 @@ internal fun SignUpForm(
         // pedir, ao treinador o que vai fazer com o que pediu. Sem papel definido não há bloco —
         // exibir os dois seria conversar com duas pessoas ao mesmo tempo.
         if (role != null) {
-            Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+            Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
             when (role) {
                 ActiveRole.STUDENT -> HealthDataNotice()
@@ -96,19 +96,19 @@ internal fun SignUpForm(
             }
         }
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         ConsentFields(form = form, formActions = formActions, enabled = enabled)
 
         state.failure?.let { failure ->
-            Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+            Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
             FailureBanner(failure = failure)
         }
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         AppButton(
-            text = stringResource(R.string.auth_sign_up_action),
+            text = stringResource(id = R.string.auth_sign_up_action),
             onClick = actions.onSubmit,
             loading = state.submitting,
         )
@@ -131,35 +131,39 @@ private fun IdentityFields(
         AppTextField(
             value = form.name,
             onValueChange = formActions.onNameChange,
-            label = stringResource(R.string.auth_name),
+            label = stringResource(id = R.string.auth_name),
             errorMessage = form.nameError?.message(),
-            supportingText = stringResource(role.nameSupport()),
+            supportingText = stringResource(id = role.nameSupport()),
             enabled = enabled,
             keyboardType = KeyboardType.Text,
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         AppTextField(
             value = state.email,
             onValueChange = actions.onEmailChange,
-            label = stringResource(R.string.auth_email),
+            label = stringResource(id = R.string.auth_email),
             errorMessage = state.emailError?.message(),
             enabled = enabled,
             keyboardType = KeyboardType.Email,
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         AppPasswordField(
             value = state.password,
             onValueChange = actions.onPasswordChange,
-            label = stringResource(R.string.auth_password),
-            showLabel = stringResource(R.string.auth_password_show),
-            hideLabel = stringResource(R.string.auth_password_hide),
+            label = stringResource(id = R.string.auth_password),
+            showLabel = stringResource(id = R.string.auth_password_show),
+            hideLabel = stringResource(id = R.string.auth_password_hide),
             errorMessage = state.passwordError?.message(),
             // A regra dita na entrada do campo evita o erro que ela descreveria depois do envio.
-            supportingText = pluralStringResource(R.plurals.auth_password_min_length, minimum, minimum),
+            supportingText = pluralStringResource(
+                id = R.plurals.auth_password_min_length,
+                count = minimum,
+                minimum,
+            ),
             enabled = enabled,
             // `Next`, e não `Done`: a senha deixou de ser o último campo do formulário.
             imeAction = ImeAction.Next,
@@ -177,22 +181,22 @@ internal fun ContactFields(form: SignUpFormState, formActions: SignUpFormActions
         AppMaskedTextField(
             value = form.birthDate,
             onValueChange = formActions.onBirthDateChange,
-            label = stringResource(R.string.auth_birth_date),
+            label = stringResource(id = R.string.auth_birth_date),
             mask = BIRTH_DATE_MASK,
             errorMessage = form.birthDateError?.message(),
-            supportingText = stringResource(role.birthDateSupport()),
+            supportingText = stringResource(id = role.birthDateSupport()),
             enabled = enabled,
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         AppMaskedTextField(
             value = form.phone,
             onValueChange = formActions.onPhoneChange,
-            label = stringResource(R.string.auth_phone),
+            label = stringResource(id = R.string.auth_phone),
             mask = PHONE_MASK,
             errorMessage = form.phoneError?.message(),
-            supportingText = stringResource(role.phoneSupport()),
+            supportingText = stringResource(id = role.phoneSupport()),
             enabled = enabled,
             // `Done` só quando o celular for mesmo o último campo. Para o treinador ainda vem o
             // registro, e uma tecla "concluir" no meio do formulário fecha o teclado para nada.
@@ -217,9 +221,9 @@ private fun HealthDataNotice(modifier: Modifier = Modifier) {
         shape = MaterialTheme.shapes.medium,
     ) {
         Text(
-            text = stringResource(R.string.auth_health_notice),
+            text = stringResource(id = R.string.auth_health_notice),
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(Dimens.SpaceLarge),
+            modifier = Modifier.padding(all = Dimens.SpaceLarge),
         )
     }
 }
@@ -241,9 +245,9 @@ internal fun ConsentFields(form: SignUpFormState, formActions: SignUpFormActions
         AppCheckboxField(
             checked = form.acceptedTerms,
             onCheckedChange = formActions.onTermsChange,
-            text = stringResource(R.string.auth_terms_accept),
+            text = stringResource(id = R.string.auth_terms_accept),
             enabled = enabled,
-            errorMessage = stringResource(R.string.auth_terms_required).takeIf { form.termsMissing },
+            errorMessage = stringResource(id = R.string.auth_terms_required).takeIf { form.termsMissing },
         )
 
         LegalLinks(onOpen = formActions.onOpenLegalDocument, enabled = enabled)
@@ -256,9 +260,9 @@ internal fun ConsentFields(form: SignUpFormState, formActions: SignUpFormActions
         AppCheckboxField(
             checked = form.marketingOptIn,
             onCheckedChange = formActions.onMarketingChange,
-            text = stringResource(R.string.auth_marketing_opt_in),
+            text = stringResource(id = R.string.auth_marketing_opt_in),
             enabled = enabled,
-            supportingText = stringResource(R.string.auth_marketing_support),
+            supportingText = stringResource(id = R.string.auth_marketing_support),
         )
     }
 }
@@ -278,13 +282,14 @@ internal fun LegalLinks(onOpen: (LegalDocument) -> Unit, enabled: Boolean, modif
     ) {
         AppTextButton(
             modifier = Modifier.weight(1f),
-            text = stringResource(R.string.auth_terms_open),
+            text = stringResource(id = R.string.auth_terms_open),
             onClick = { onOpen(LegalDocument.TERMS) },
             enabled = enabled,
         )
+
         AppTextButton(
             modifier = Modifier.weight(1f),
-            text = stringResource(R.string.auth_privacy_open),
+            text = stringResource(id = R.string.auth_privacy_open),
             onClick = { onOpen(LegalDocument.PRIVACY) },
             enabled = enabled,
         )
@@ -321,7 +326,7 @@ private fun SignUpFormPreview() {
     RunAndLiftTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             Column(
-                modifier = Modifier.padding(Dimens.SpaceLarge),
+                modifier = Modifier.padding(all = Dimens.SpaceLarge),
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXXLarge),
             ) {
                 roles.forEach { (role, form) ->
