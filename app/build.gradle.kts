@@ -108,6 +108,9 @@ dependencies {
     lintChecks(libs.compose.lint.checks)
 
     testImplementation(libs.junit)
+    // MainViewModel resolve o destino inicial numa corrotina do `viewModelScope`, que despacha na
+    // Main — sem o dispatcher de teste não há como afirmar o resultado.
+    testImplementation(libs.kotlinx.coroutines.test)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

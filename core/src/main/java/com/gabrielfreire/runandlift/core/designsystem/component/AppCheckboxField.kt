@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
+import com.gabrielfreire.runandlift.core.designsystem.PreviewSamples
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 
 /**
@@ -130,21 +131,21 @@ private fun AppCheckboxFieldPreview() {
                 AppCheckboxField(
                     checked = true,
                     onCheckedChange = {},
-                    text = "Li e concordo com os Termos de Uso e a Política de Privacidade.",
+                    text = PreviewSamples.Consent.TERMS,
                 )
 
                 AppCheckboxField(
                     checked = false,
                     onCheckedChange = {},
-                    text = "Quero receber dicas de treino e novidades por e-mail.",
-                    supportingText = "Opcional, e você pode cancelar quando quiser.",
+                    text = PreviewSamples.Consent.MARKETING,
+                    supportingText = PreviewSamples.Support.MARKETING,
                 )
 
                 AppCheckboxField(
                     checked = false,
                     onCheckedChange = {},
-                    text = "Li e concordo com os Termos de Uso e a Política de Privacidade.",
-                    errorMessage = "Para criar a conta é preciso aceitar os Termos de Uso.",
+                    text = PreviewSamples.Consent.TERMS,
+                    errorMessage = PreviewSamples.Error.TERMS_REQUIRED,
                 )
             }
         }

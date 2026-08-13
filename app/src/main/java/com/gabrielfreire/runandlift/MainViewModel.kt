@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
-import com.gabrielfreire.runandlift.feature.auth.AuthRoutes
-import com.gabrielfreire.runandlift.feature.auth.ProfileCompletion
+import com.gabrielfreire.runandlift.feature.auth.completeprofile.ProfileCompletion
+import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 import com.gabrielfreire.runandlift.navigation.RoleRoutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -86,11 +86,3 @@ class MainViewModel(private val authRepository: AuthRepository, private val user
         else -> RoleRoutes.graphFor(role)
     }
 }
-
-data class MainUiState(
-    /** Enquanto for `false`, a splash permanece na tela. */
-    val ready: Boolean = false,
-    val startDestination: String = AuthRoutes.GRAPH,
-    val activeRole: ActiveRole? = null,
-    val canSwitchRole: Boolean = false,
-)

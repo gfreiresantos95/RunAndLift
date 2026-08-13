@@ -49,6 +49,9 @@
          ("Crie uma conta") porque é o que a pessoa manda o app fazer, não o nome de uma tela. -->
     <string name="auth_prompt_no_account">Ainda não tem conta?</string>
     <string name="auth_prompt_has_account">Já tem uma conta?</string>
+    <!-- Saída da recuperação de senha. Mesmo desenho das outras duas: a seta de voltar é um alvo
+         pequeno no topo, e quem desiste está olhando para o fim da tela. -->
+    <string name="auth_prompt_remembered_password">Lembrou a senha?</string>
     <string name="auth_go_to_sign_up">Crie uma conta</string>
     <string name="auth_go_to_sign_in">Entrar</string>
 
@@ -120,9 +123,10 @@
     <string name="auth_recovery_explanation">Informe o e-mail da sua conta. Se ele estiver
         cadastrado, você recebe um link para criar uma senha nova.</string>
     <string name="auth_recovery_action">Enviar link</string>
+    <!-- Ambígua de propósito: aparece igual para endereço que existe e para endereço que não
+         existe. Distinguir os dois casos transformaria a tela num verificador de quem tem conta. -->
     <string name="auth_recovery_sent">Se o e-mail estiver cadastrado, o link já está a caminho.
         Confira também a caixa de spam.</string>
-    <string name="auth_recovery_back">Voltar para entrar</string>
 
     <!-- Validação de formulário -->
     <string name="auth_error_email_required">Informe seu e-mail.</string>

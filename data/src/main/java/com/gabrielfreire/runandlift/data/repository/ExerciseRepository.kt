@@ -42,16 +42,3 @@ interface ExerciseRepository {
      */
     suspend fun syncIfOutdated(): CatalogSyncResult
 }
-
-/** Desfecho de uma tentativa de sincronização do catálogo. */
-sealed interface CatalogSyncResult {
-
-    /** A versão local já estava em dia. Nenhuma leitura do Firestore foi gasta. */
-    data class AlreadyUpToDate(val version: Int) : CatalogSyncResult
-
-    /** O catálogo foi baixado e gravado. */
-    data class Updated(val version: Int, val exerciseCount: Int) : CatalogSyncResult
-
-    /** A sincronização falhou. O catálogo local segue utilizável. */
-    data class Failed(val cause: Throwable) : CatalogSyncResult
-}
