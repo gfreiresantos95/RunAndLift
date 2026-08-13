@@ -63,8 +63,8 @@ internal fun SignInScreen(
         onBack = actions.onBack,
         bottom = {
             AlternativePrompt(
-                prompt = stringResource(R.string.auth_prompt_no_account),
-                action = stringResource(R.string.auth_go_to_sign_up),
+                prompt = stringResource(id = R.string.auth_prompt_no_account),
+                action = stringResource(id = R.string.auth_go_to_sign_up),
                 onClick = actions.onCreateAccount,
                 enabled = !state.submitting,
             )
@@ -73,16 +73,15 @@ internal fun SignInScreen(
         role?.let {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 RoleChip(role = it)
-                Spacer(modifier = Modifier.height(Dimens.SpaceSmall))
             }
         }
 
         AuthHeadline(
-            title = stringResource(R.string.auth_sign_in_title),
-            subtitle = stringResource(R.string.auth_sign_in_subtitle),
+            title = stringResource(id = R.string.auth_sign_in_title),
+            subtitle = stringResource(id = R.string.auth_sign_in_subtitle),
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         SignInForm(state = state, actions = actions)
     }
@@ -94,20 +93,20 @@ private fun SignInForm(state: CredentialsUiState, actions: SignInActions, modifi
         AppTextField(
             value = state.email,
             onValueChange = actions.onEmailChange,
-            label = stringResource(R.string.auth_email),
+            label = stringResource(id = R.string.auth_email),
             errorMessage = state.emailError?.message(),
             enabled = !state.submitting,
             keyboardType = KeyboardType.Email,
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         AppPasswordField(
             value = state.password,
             onValueChange = actions.onPasswordChange,
-            label = stringResource(R.string.auth_password),
-            showLabel = stringResource(R.string.auth_password_show),
-            hideLabel = stringResource(R.string.auth_password_hide),
+            label = stringResource(id = R.string.auth_password),
+            showLabel = stringResource(id = R.string.auth_password_show),
+            hideLabel = stringResource(id = R.string.auth_password_hide),
             errorMessage = state.passwordError?.message(),
             enabled = !state.submitting,
             imeAction = ImeAction.Done,
@@ -115,11 +114,13 @@ private fun SignInForm(state: CredentialsUiState, actions: SignInActions, modifi
             onImeAction = actions.onSubmit,
         )
 
+        Spacer(modifier = Modifier.height(Dimens.SpaceSmall))
+
         // Colado na senha e alinhado à direita, que é onde se procura por isso depois de errá-la —
         // e não no fim da tela, junto de ações sem relação com ela.
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             AppTextButton(
-                text = stringResource(R.string.auth_forgot_password),
+                text = stringResource(id = R.string.auth_forgot_password),
                 onClick = actions.onForgotPassword,
                 enabled = !state.submitting,
             )
@@ -133,7 +134,7 @@ private fun SignInForm(state: CredentialsUiState, actions: SignInActions, modifi
         Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         AppButton(
-            text = stringResource(R.string.auth_sign_in_action),
+            text = stringResource(id = R.string.auth_sign_in_action),
             onClick = actions.onSubmit,
             loading = state.submitting,
         )
@@ -152,12 +153,14 @@ private fun SignInForm(state: CredentialsUiState, actions: SignInActions, modifi
         // daqui com uma. Dizer a que se está concordando é obrigação de quem cria a conta, e não
         // do formulário de cadastro — que esta pessoa não vai ver.
         Text(
-            text = stringResource(R.string.auth_legal_notice_sign_in),
+            text = stringResource(id = R.string.auth_legal_notice_sign_in),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
+
+        Spacer(modifier = Modifier.height(Dimens.SpaceXSmall))
 
         LegalLinks(onOpen = actions.onOpenLegalDocument, enabled = !state.submitting)
     }

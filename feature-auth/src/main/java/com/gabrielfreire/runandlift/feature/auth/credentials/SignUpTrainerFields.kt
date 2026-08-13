@@ -56,15 +56,15 @@ internal fun TrainerFields(
         AppMaskedTextField(
             value = cref,
             onValueChange = onCrefChange,
-            label = stringResource(R.string.auth_cref),
+            label = stringResource(id = R.string.auth_cref),
             mask = AuthFormValidation.CREF_MASK,
             errorMessage = crefError?.message(),
-            supportingText = stringResource(R.string.auth_cref_support),
+            supportingText = stringResource(id = R.string.auth_cref_support),
             enabled = enabled,
             imeAction = ImeAction.Done,
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         CrefNotice()
     }
@@ -86,9 +86,9 @@ private fun CrefNotice(modifier: Modifier = Modifier) {
         shape = MaterialTheme.shapes.medium,
     ) {
         Text(
-            text = stringResource(R.string.auth_cref_notice),
+            text = stringResource(id = R.string.auth_cref_notice),
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(Dimens.SpaceLarge),
+            modifier = Modifier.padding(all = Dimens.SpaceLarge),
         )
     }
 }
@@ -98,7 +98,7 @@ private fun CrefNotice(modifier: Modifier = Modifier) {
 private fun TrainerFieldsPreview() {
     RunAndLiftTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
-            Column(modifier = Modifier.padding(Dimens.SpaceLarge)) {
+            Column(modifier = Modifier.padding(all = Dimens.SpaceLarge)) {
                 TrainerFields(
                     cref = "012345GSP",
                     onCrefChange = {},

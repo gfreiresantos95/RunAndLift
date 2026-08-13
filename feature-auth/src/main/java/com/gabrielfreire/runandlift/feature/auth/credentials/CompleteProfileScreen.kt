@@ -44,7 +44,7 @@ internal fun CompleteProfileScreen(
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(state.completedRole) {
-        state.completedRole?.let(onCompleted)
+        state.completedRole?.let(block = onCompleted)
     }
 
     AuthScreenLayout(modifier = modifier, bottom = {}) {
@@ -52,16 +52,14 @@ internal fun CompleteProfileScreen(
             RoleChip(role = state.role)
         }
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceSmall))
-
         AuthHeadline(
-            title = stringResource(R.string.auth_complete_title),
+            title = stringResource(id = R.string.auth_complete_title),
             subtitle = state.name.takeIf { it.isNotBlank() }
-                ?.let { stringResource(R.string.auth_complete_subtitle_named, it) }
-                ?: stringResource(R.string.auth_complete_subtitle),
+                ?.let { stringResource(id = R.string.auth_complete_subtitle_named, it) }
+                ?: stringResource(id = R.string.auth_complete_subtitle),
         )
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         // Enquanto se descobre o que falta, nada é desenhado: campos que aparecem preenchidos um
         // instante depois dão a impressão de que a tela se corrigiu sozinha.
@@ -82,21 +80,21 @@ internal fun CompleteProfileScreen(
         }
 
         if (state.askConsent) {
-            Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+            Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
             ConsentFields(form = form, formActions = actions, enabled = enabled)
         }
 
         if (state.failed) {
-            Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+            Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
             // `UNKNOWN` e não `NO_NETWORK`: rede é a causa provável, não a causa sabida, e
             // mandar alguém conferir a internet que está funcionando é pior que não palpitar.
             FailureBanner(failure = AuthFailure.UNKNOWN)
         }
 
-        Spacer(modifier = Modifier.height(Dimens.SpaceXLarge))
+        Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
         AppButton(
-            text = stringResource(R.string.auth_complete_action),
+            text = stringResource(id = R.string.auth_complete_action),
             onClick = onSubmit,
             loading = state.submitting,
         )

@@ -21,7 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -79,6 +81,7 @@ fun AppTextField(
     val hasError = errorMessage != null
     val bringIntoView = remember { BringIntoViewRequester() }
     val scope = rememberCoroutineScope()
+    val localFocusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier
@@ -98,9 +101,18 @@ fun AppTextField(
                 imeAction = imeAction,
             ),
             keyboardActions = KeyboardActions(
-                onDone = { onImeAction?.invoke() },
-                onGo = { onImeAction?.invoke() },
-                onNext = { onImeAction?.invoke() },
+                onDone = {
+                    onImeAction?.invoke()
+                    localFocusManager.clearFocus()
+                },
+                onGo = {
+                    onImeAction?.invoke()
+                    localFocusManager.clearFocus()
+                },
+                onNext = {
+                    onImeAction?.invoke()
+                    localFocusManager.moveFocus(FocusDirection.Down)
+                },
             ),
             visualTransformation = visualTransformation,
             trailingIcon = trailingContent,
