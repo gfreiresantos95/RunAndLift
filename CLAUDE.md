@@ -55,6 +55,25 @@ All versions go through the version catalog at `gradle/libs.versions.toml` and a
 
 `main` is protected by a GitHub ruleset: work enters through a branch and a Pull Request, the `verify` and `firestore-rules` checks must pass before merging, history is linear (squash only), and force-push and deletion are blocked. Those two check names are the **job ids** in `ci.yml` — renaming a job without updating the ruleset stalls every later PR. See `docs/adr/0015`.
 
+## Opening a Pull Request
+
+The full cycle is `gh`-driven, and `.claude/settings.json` allowlists it so it runs without a prompt per command (force-push, hard reset, `pr merge` and `pr close` stay denied — merging is the author's call, not the agent's).
+
+```bash
+gh pr create --base main --head <branch> \
+  --title "<title>" --body-file <file.md> \
+  --assignee @me --label refactor --label tests
+```
+
+Two details that are easy to get wrong:
+
+- **`--body-file`, never `--body`.** PR descriptions here carry markdown, accents and blank lines; passing that inline gets mangled by the shell. Write it to a scratchpad file first.
+- **`--assignee @me`**, not the handle spelled out — it keeps working for whoever runs the command.
+
+Labels are a fixed vocabulary, and a PR takes as many as apply: `refactor` (reorganisation, no behaviour change), `feature`, `fix`, `tests`, `docs`, `build` (Gradle, CI, dependencies), `security` (Firestore rules, LGPD, auth). Create a missing one with `gh label create <name> --color <hex>` rather than inventing a synonym.
+
+Commit messages and PR bodies are written in **Portuguese**, like the KDoc; code, identifiers and this file stay in English.
+
 Write new code inside these limits instead of discovering them at commit time: **6 parameters** per function and **7** per constructor (defaults don't count, so Compose slot APIs are fine), **11 functions** per file and per class, **60 lines** per function, **120 columns**.
 
 Rule exceptions live in `config/detekt/detekt.yml` with the reason in a comment — mostly Compose frictions (`@Composable` PascalCase, unused private `@Preview`, colour tokens as magic numbers).

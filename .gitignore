@@ -41,5 +41,10 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 
+# Claude Code — settings.json é versionado de propósito: é o allowlist de comandos do projeto,
+# citado no CLAUDE.md, e não guarda segredo nenhum. O settings.local.json é o arquivo pessoal de
+# cada máquina, que o próprio Claude Code escreve ao aprovar um comando pontual.
+.claude/settings.local.json
+
 # SO
 .DS_Store
