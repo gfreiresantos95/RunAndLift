@@ -55,6 +55,8 @@ All versions go through the version catalog at `gradle/libs.versions.toml` and a
 
 `main` is protected by a GitHub ruleset: work enters through a branch and a Pull Request, the `verify` and `firestore-rules` checks must pass before merging, history is linear (squash only), and force-push and deletion are blocked. Those two check names are the **job ids** in `ci.yml` — renaming a job without updating the ruleset stalls every later PR. See `docs/adr/0015`.
 
+The ruleset also requires **one approving review from a code owner**, and `.github/CODEOWNERS` makes the repository owner own every path. That rule exists for the PRs nobody is watching — Dependabot's — which arrive with no reviewer at all. GitHub will not request a review from a PR's own author, and nobody can approve their own PR, so on the owner's own PRs the requirement stays unmet by design and the merge goes through the admin bypass the ruleset grants. Don't "fix" that by dropping the requirement; the bot PRs are the point.
+
 ## Opening a Pull Request
 
 The full cycle is `gh`-driven, and `.claude/settings.json` allowlists it so it runs without a prompt per command (force-push, hard reset, `pr merge` and `pr close` stay denied — merging is the author's call, not the agent's).
@@ -69,6 +71,15 @@ Two details that are easy to get wrong:
 
 - **`--body-file`, never `--body`.** PR descriptions here carry markdown, accents and blank lines; passing that inline gets mangled by the shell. Write it to a scratchpad file first.
 - **`--assignee @me`**, not the handle spelled out — it keeps working for whoever runs the command.
+- **Reviewers are not added by hand.** `.github/CODEOWNERS` already requests the owner on every PR that isn't theirs; `--add-reviewer` with the author's own handle is a 422 from the API.
+
+**After the PR is open, go back to `main`:**
+
+```bash
+git switch main && git fetch origin && git merge --ff-only origin/main
+```
+
+The branch stays on the remote for review, and the working copy is left where the next piece of work starts — on an up-to-date default branch, ready to branch again. Merging the PR is the author's call, so never wait on it; the next branch is cut from `main` and not stacked on top of unmerged work.
 
 Labels are a fixed vocabulary, and a PR takes as many as apply: `refactor` (reorganisation, no behaviour change), `feature`, `fix`, `tests`, `docs`, `build` (Gradle, CI, dependencies), `security` (Firestore rules, LGPD, auth). Create a missing one with `gh label create <name> --color <hex>` rather than inventing a synonym.
 
