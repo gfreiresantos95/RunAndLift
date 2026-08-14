@@ -42,6 +42,60 @@ class CompleteProfileViewModelTest {
         acceptedTermsVersion = consent,
     )
 
+    /**
+     * A regressão que motivou o conserto: **conta criada pelo Google ficava sem nome no banco**.
+     *
+     * O nome vinha na folha do Google, parava no SDK e nunca era gravado — esta tela é a única
+     * escrita do fluxo, e ela mandava tudo menos o nome. Só ficou visível quando a home passou a
+     * cumprimentar pelo nome e cumprimentou com "Olá!".
+     */
+    @Test
+    fun `nome vindo do Google e gravado em users`() = runTest(mainDispatcherRule.dispatcher) {
+        val google = FakeAuthRepository(
+            signedIn = FakeAuthRepository.ACCOUNT.copy(displayName = "Ana Ribeiro"),
+        )
+        val users = FakeUserRepository()
+        val viewModel = CompleteProfileViewModel(google, users, ActiveRole.STUDENT)
+        testScheduler.advanceUntilIdle()
+
+        viewModel.onBirthDateChange("21051990")
+        viewModel.onTermsChange(true)
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        assertEquals("Ana Ribeiro", users.lastDetails?.displayName)
+    }
+
+    @Test
+    fun `nome ja gravado tem precedencia sobre o do provedor`() = runTest(mainDispatcherRule.dispatcher) {
+        val google = FakeAuthRepository(
+            signedIn = FakeAuthRepository.ACCOUNT.copy(displayName = "Ana da Conta Google"),
+        )
+        val users = FakeUserRepository(storedProfile = profile(consent = PrivacyConsent.CURRENT_TERMS_VERSION))
+        val viewModel = CompleteProfileViewModel(google, users, ActiveRole.STUDENT)
+        testScheduler.advanceUntilIdle()
+
+        // Quem editou o próprio nome não pode vê-lo voltar ao da conta Google só por passar por
+        // esta tela de novo.
+        assertEquals("Bruno Lima", viewModel.uiState.value.name)
+    }
+
+    @Test
+    fun `conta sem nome no provedor nao inventa nome`() = runTest(mainDispatcherRule.dispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.STUDENT)
+        testScheduler.advanceUntilIdle()
+
+        viewModel.onBirthDateChange("21051990")
+        viewModel.onTermsChange(true)
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // Sem nome em lugar nenhum, o campo fica vazio no banco em vez de receber um derivado do
+        // e-mail: um nome que a pessoa nunca escolheu apareceria na home como se fosse dela.
+        assertNull(users.lastDetails?.displayName)
+    }
+
     @Test
     fun `o que ja esta gravado volta preenchido no campo`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository(
@@ -135,7 +189,7 @@ class CompleteProfileViewModelTest {
     }
 
     @Test
-    fun `nao reenvia o nome, para nao sobrescrever o do provedor`() = runTest(mainDispatcherRule.dispatcher) {
+    fun `reenvia o nome ja gravado, sem trocar por outro`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository(storedProfile = profile())
         val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
@@ -145,9 +199,11 @@ class CompleteProfileViewModelTest {
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
-        // O repositório já preserva o nome que existe; reenviá-lo daqui não acrescentaria nada e
-        // arriscaria trocar o nome real por um derivado do e-mail.
-        assertNull(users.lastDetails?.displayName)
+        // Este teste afirmava o contrário — que a tela não mandava nome nenhum, "porque o
+        // repositório preserva o que existe". A premissa estava certa sobre o repositório e errada
+        // sobre a origem: nada gravava o nome do provedor, então não havia o que preservar. Agora
+        // o nome vai junto, e o que ele carrega é o **mesmo** que já estava lá.
+        assertEquals("Bruno Lima", users.lastDetails?.displayName)
     }
 
     @Test

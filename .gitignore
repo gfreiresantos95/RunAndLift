@@ -17,8 +17,10 @@
 # compilação falha. Fica fora de build/, então precisa de regra própria.
 .kotlin/
 local.properties
-/build
-*/build/
+# `**/build/` e não `*/build/`: com os módulos de feature aninhados em feature/<nome>/, a saída de
+# build passou a ficar dois níveis abaixo da raiz, e o padrão de um nível só deixava de cobri-la —
+# o `git add` seguinte tentou versionar os .dex do módulo.
+**/build/
 /captures
 .externalNativeBuild
 .cxx

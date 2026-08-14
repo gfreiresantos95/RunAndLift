@@ -93,18 +93,23 @@ internal class CompleteProfileViewModel(
      * caso logo depois de autenticar, porque a entrada acabou de ler o mesmo documento.
      */
     private suspend fun load() {
-        val uid = authRepository.currentAccountOrNull()?.uid
+        val account = authRepository.currentAccountOrNull()
+        val uid = account?.uid
         val profile = uid?.let { runCatching { userRepository.profile(it) }.getOrNull() }
         val registration = uid
             ?.takeIf { isTrainer }
             ?.let { runCatching { userRepository.trainerRegistration(it) }.getOrNull() }
+
+        // O que já está gravado tem precedência sobre o que o provedor diz: quem editou o próprio
+        // nome não pode vê-lo voltar ao da conta Google só por passar por esta tela de novo.
+        val name = profile?.displayName?.takeIf { it.isNotBlank() } ?: account?.displayName
 
         _formState.update { it.prefilledFrom(profile, registration) }
         _uiState.update {
             it.copy(
                 loading = false,
                 askConsent = profile?.acceptedTermsVersion == null,
-                name = profile?.displayName.orEmpty(),
+                name = name.orEmpty(),
             )
         }
     }
@@ -117,9 +122,18 @@ internal class CompleteProfileViewModel(
     private suspend fun save(form: ProfileFormState) {
         val uid = authRepository.currentAccountOrNull()?.uid
 
+        // O nome que a tela mostra é o mesmo que vai ao banco. Ele já passou pelo `load`, que
+        // preferiu o gravado ao do provedor — esta é a **única** escrita do fluxo do Google, e sem
+        // mandá-lo aqui o nome não chega a `users/{uid}` por nenhum outro caminho.
+        val name = _uiState.value.name
+
         val profile = uid?.let {
             runCatching {
-                userRepository.saveProfile(uid = it, role = role, details = form.toCompletionDetails(isTrainer))
+                userRepository.saveProfile(
+                    uid = it,
+                    role = role,
+                    details = form.toCompletionDetails(isTrainer = isTrainer, providerName = name),
+                )
             }.getOrNull()
         }
 

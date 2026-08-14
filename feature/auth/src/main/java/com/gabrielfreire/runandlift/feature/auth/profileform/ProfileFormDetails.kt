@@ -38,11 +38,23 @@ internal fun ProfileFormState.toSignUpDetails(email: String?, isTrainer: Boolean
 /**
  * Formulário → perfil, na conclusão de cadastro.
  *
- * Diverge da anterior em **um ponto só**: não manda `displayName`. Quem o forneceu foi o provedor,
- * e o repositório já preserva o nome que existe — reenviá-lo daqui não acrescentaria nada e
- * arriscaria sobrescrever o nome real por um derivado do e-mail.
+ * Diverge da anterior em **um ponto só**: o nome não vem do formulário, porque esta tela não o
+ * pergunta — vem do provedor, por [providerName].
+ *
+ * Esta função já não mandou `displayName` nenhum, no entendimento de que "quem o forneceu foi o
+ * provedor e o repositório preserva o que existe". A premissa era falsa: **ninguém gravava**. A
+ * folha do Google devolvia o nome, ele parava no SDK, e a conta criada por ali ficava com
+ * `users/{uid}.displayName` nulo para sempre — o que só ficou visível quando a home passou a
+ * cumprimentar pelo nome e cumprimentou com "Olá!".
+ *
+ * O repositório escreve o nome **apenas quando ainda não há um**, então reenviá-lo aqui não
+ * atropela o nome de quem já tinha.
+ *
+ * @param providerName nome vindo da conta do provedor, ou `null` quando não há. Em branco conta
+ *   como ausente: gravar `""` como nome esconderia a ausência atrás de um valor.
  */
-internal fun ProfileFormState.toCompletionDetails(isTrainer: Boolean) = SignUpDetails(
+internal fun ProfileFormState.toCompletionDetails(isTrainer: Boolean, providerName: String?) = SignUpDetails(
+    displayName = providerName?.trim()?.takeIf { it.isNotEmpty() },
     birthDate = AuthFormValidation.parseBirthDate(birthDate),
     phone = phone.ifEmpty { null },
     consent = PrivacyConsent(

@@ -12,13 +12,21 @@ O ADR-0009 deixou os grafos de treinador e de aluno como duas telas de espera de
 registrou que a estrutura seria revisitada quando o segundo módulo de feature nascesse. Chegou a
 hora: as duas telas de espera dão lugar a três abas por papel — início, treinos e menu.
 
-A pergunta é onde essas telas moram. Elas não são do fluxo de entrada, então `:feature-auth` está
+A pergunta é onde essas telas moram. Elas não são do fluxo de entrada, então `:feature:auth` está
 fora; deixá-las no `:app` era a terceira opção, e é o que existia.
 
 ## Decisão
 
-**Dois módulos, `:feature-student` e `:feature-trainer`.** Um por papel, e não um `:feature-home`
+**Dois módulos, `:feature:student` e `:feature:trainer`.** Um por papel, e não um `:feature-home`
 com dois pacotes dentro.
+
+**E os três módulos de feature moram dentro de `feature/`**, não soltos na raiz. A raiz do
+repositório tem três pastas de módulo — `core`, `data` e `feature` — e cada feature é um módulo
+dentro da terceira. Com um módulo por tela, a alternativa (`feature-auth`, `feature-student`,
+`feature-trainer`, e mais um por funcionalidade nova) faria a raiz listar dez pastas irmãs em que
+só o prefixo diz quem é do quê. O projeto Gradle `:feature` não tem código nem `build.gradle.kts`:
+é apenas o guarda-chuva. **O módulo antes chamado `:feature-auth` passou a ser `:feature:auth`** —
+os ADRs anteriores que o citam pelo nome antigo se referem a este mesmo módulo.
 
 A razão é a mesma que o ADR-0009 usou para recusar o grafo único com condicionais, aplicada um
 nível acima: com dois módulos, o código do aluno **não enxerga** o do treinador. Não há como
@@ -55,8 +63,8 @@ a home do aluno recebe o treino do dia e o aviso de cadastro incompleto, a do tr
 carteira de alunos. Um componente parametrizado para os dois teria vida curta e terminaria em
 condicionais por papel, que é o desenho que o projeto recusa desde o ADR-0009.
 
-**Convention plugins agora.** O gatilho registrado no ADR-0003 disparou junto: `feature-student` e
-`feature-trainer` têm `build.gradle.kts` praticamente idênticos ao do `:feature-auth`. Adiado de
+**Convention plugins agora.** O gatilho registrado no ADR-0003 disparou junto: `feature/student` e
+`feature/trainer` têm `build.gradle.kts` praticamente idênticos ao do `:feature:auth`. Adiado de
 propósito para não misturar mudança de build com entrega de tela — três arquivos repetidos ainda
 cabem na cabeça, e o custo de extraí-los não cresce por esperar mais um módulo.
 
@@ -70,8 +78,8 @@ porque source set de teste não se compartilha entre módulos. Trinta linhas rep
 por ora, que um módulo `:test-fixtures` com a configuração de build que ele exige. **Gatilho:** o
 terceiro módulo que precisar dos mesmos fakes.
 
-O nome do app agora existe como string em três módulos — `:app`, `:feature-student` e
-`:feature-trainer` —, porque feature não enxerga o aplicativo. É o preço da seta de dependência
+O nome do app agora existe como string em três módulos — `:app`, `:feature:student` e
+`:feature:trainer` —, porque feature não enxerga o aplicativo. É o preço da seta de dependência
 apontar para um lado só, e foi pago conscientemente.
 
 Duas decisões de interface ficaram embutidas e merecem registro:

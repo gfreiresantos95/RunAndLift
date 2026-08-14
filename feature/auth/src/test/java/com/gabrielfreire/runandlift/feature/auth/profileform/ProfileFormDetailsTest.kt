@@ -34,11 +34,25 @@ class ProfileFormDetailsTest {
     }
 
     @Test
-    fun `conclusao nao manda nome nenhum`() {
-        val details = filled.toCompletionDetails(isTrainer = false)
+    fun `conclusao manda o nome do provedor, e nao o do formulario`() {
+        val details = filled.toCompletionDetails(isTrainer = false, providerName = "Ana do Google")
 
-        // Quem forneceu o nome foi o provedor; reenviá-lo daqui arriscaria sobrescrevê-lo.
-        assertNull(details.displayName)
+        // A tela de conclusão não pergunta nome: o do formulário não foi digitado por ninguém ali.
+        // Esta é a única escrita do fluxo do Google, e antes ela não mandava nome nenhum — o que
+        // deixava a conta criada pelo Google sem nome em users/{uid} para sempre.
+        assertEquals("Ana do Google", details.displayName)
+    }
+
+    @Test
+    fun `conclusao sem nome de provedor nao grava nome`() {
+        assertNull(filled.toCompletionDetails(isTrainer = false, providerName = null).displayName)
+    }
+
+    @Test
+    fun `nome de provedor em branco conta como ausente`() {
+        // Gravar "" esconderia a ausência atrás de um valor, e o app não teria como distinguir
+        // "sem nome" de "nome vazio de propósito".
+        assertNull(filled.toCompletionDetails(isTrainer = false, providerName = "   ").displayName)
     }
 
     @Test
@@ -52,7 +66,7 @@ class ProfileFormDetailsTest {
     fun `registro sai em forma canonica, e so para treinador`() {
         assertEquals("012345-G/SP", filled.toSignUpDetails(email = null, isTrainer = true).cref)
         assertNull("registro profissional não é dado de aluno", filled.toSignUpDetails(null, isTrainer = false).cref)
-        assertEquals("012345-G/SP", filled.toCompletionDetails(isTrainer = true).cref)
+        assertEquals("012345-G/SP", filled.toCompletionDetails(isTrainer = true, providerName = null).cref)
     }
 
     @Test

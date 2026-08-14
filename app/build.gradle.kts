@@ -84,9 +84,9 @@ dependencies {
     // :core traz Compose e Material 3 por `api` — não redeclarar aqui.
     implementation(project(":core"))
     implementation(project(":data"))
-    implementation(project(":feature-auth"))
-    implementation(project(":feature-student"))
-    implementation(project(":feature-trainer"))
+    implementation(project(":feature:auth"))
+    implementation(project(":feature:student"))
+    implementation(project(":feature:trainer"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))
