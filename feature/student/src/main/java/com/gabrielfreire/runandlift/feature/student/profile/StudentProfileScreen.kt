@@ -20,7 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
-import com.gabrielfreire.runandlift.core.designsystem.component.AppTextField
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormActions
@@ -33,9 +32,10 @@ import com.gabrielfreire.runandlift.feature.student.trainingform.previewTraining
  * É o oposto do onboarding de propósito: lá, uma pergunta por vez, para não assustar quem acabou de
  * criar a conta; aqui, tudo junto, porque quem abre esta tela sabe o que veio consertar.
  *
- * O e-mail aparece **desabilitado**, e não escondido: quem edita o perfil precisa reconhecer de
- * qual conta ele é, e um campo ausente levanta a dúvida de onde se troca aquilo. Desabilitado com
- * a explicação embaixo responde a pergunta antes de ela ser feita.
+ * **Só o que o treinador precisa ver mora aqui.** Nome, contato e e-mail ficam em "Meus dados", que
+ * é outro documento e outro público: aquele só o titular lê, este o treinador vinculado também. Uma
+ * tela com os dois juntos esconderia essa diferença de quem precisa dela para decidir o que
+ * preencher — e é a diferença que o consentimento de dado de saúde torna concreta.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,26 +72,18 @@ internal fun StudentProfileScreen(
         ) {
             if (state.loading) return@Column
 
-            AppTextField(
-                value = state.email,
-                onValueChange = {},
-                label = stringResource(R.string.student_field_email),
-                supportingText = stringResource(R.string.student_field_email_support),
-                enabled = false,
-            )
-
             TrainingFormFields(form = form, actions = actions)
 
             if (state.failed) {
                 Text(
-                    text = stringResource(R.string.student_profile_save_failed),
+                    text = stringResource(R.string.student_save_failed),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
             }
 
             AppButton(
-                text = stringResource(R.string.student_profile_save),
+                text = stringResource(R.string.student_action_save),
                 onClick = onSubmit,
                 loading = state.saving,
                 modifier = Modifier.fillMaxWidth(),
@@ -111,7 +103,7 @@ internal fun StudentProfileScreen(
 private fun StudentProfileScreenPreview() {
     RunAndLiftTheme {
         StudentProfileScreen(
-            state = StudentProfileUiState(loading = false, name = "Ana Ribeiro", email = "ana@exemplo.com"),
+            state = StudentProfileUiState(loading = false, name = "Ana Ribeiro"),
             form = TrainingFormState(healthConsent = true, weight = "72,5", height = "175"),
             actions = previewTrainingFormActions(),
             onSubmit = {},

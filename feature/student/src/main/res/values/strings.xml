@@ -30,17 +30,40 @@
     <string name="student_workouts_empty">Seus treinos aparecem aqui assim que seu treinador
         montar o primeiro.</string>
 
-    <!-- Menu. -->
+    <!-- Menu. Duas linhas de perfil porque são dois documentos com dois públicos: "Meus dados" só o
+         titular lê, "Perfil de treino" o treinador vinculado também. -->
     <string name="student_menu_title">Menu</string>
     <string name="student_menu_section_profile">Perfil</string>
     <string name="student_menu_section_account">Conta</string>
-    <string name="student_menu_profile">Meu perfil de treino</string>
-    <string name="student_menu_profile_description">Nível, objetivo, dias disponíveis e o que o seu
-        treinador precisa saber.</string>
+    <string name="student_menu_account">Meus dados</string>
+    <string name="student_menu_account_description">Nome, contato e como você entra no app.</string>
+    <string name="student_menu_training">Perfil de treino</string>
+    <string name="student_menu_training_description">Nível, objetivo, dias e o que o seu treinador
+        precisa saber para montar seu treino.</string>
     <string name="student_menu_sign_out">Sair da conta</string>
     <string name="student_menu_switch_role">Trocar de papel</string>
 
     <string name="student_action_back">Voltar</string>
+    <string name="student_action_save">Salvar</string>
+    <string name="student_save_failed">Não deu para salvar agora. Confira sua conexão e tente de
+        novo.</string>
+
+    <!-- Meus dados. -->
+    <string name="student_account_title">Meus dados</string>
+    <string name="student_field_name">Nome completo</string>
+    <string name="student_field_name_support">É assim que o seu treinador te encontra na lista de
+        alunos.</string>
+    <string name="student_field_phone">Celular (WhatsApp)</string>
+    <string name="student_field_phone_support">Opcional. Ajuda o seu treinador a falar com você
+        fora do app.</string>
+    <string name="student_field_birth_date">Data de nascimento</string>
+    <string name="student_field_birth_date_support">Ajusta as faixas de esforço do seu treino, e por
+        isso não muda por aqui.</string>
+
+    <!-- Erros dos dados cadastrais. -->
+    <string name="student_error_name_required">Informe o seu nome.</string>
+    <string name="student_error_name_incomplete">Informe nome e sobrenome.</string>
+    <string name="student_error_phone_invalid">Informe DDD e número, com 10 ou 11 dígitos.</string>
 
     <!-- Onboarding: cabeçalho e navegação. -->
     <string name="student_onboarding_progress">Passo %1$d de %2$d</string>
@@ -53,8 +76,10 @@
     <!-- Onboarding: títulos em segunda pessoa, porque é uma conversa. A linha de apoio diz sempre
          para que a resposta serve — é o que faz a pessoa responder em vez de pular. -->
     <string name="student_onboarding_level_title">Como está o seu treino hoje?</string>
-    <string name="student_onboarding_level_subtitle">Isso decide por onde o seu treinador começa —
-        não há resposta errada.</string>
+    <!-- O primeiro passo carrega a promessa do fluxo inteiro: é curto, e nada aqui é definitivo.
+         Sem isso, quem acabou de criar a conta lê seis perguntas como um segundo cadastro. -->
+    <string name="student_onboarding_level_subtitle">Isso decide por onde o seu treinador começa.
+        Leva menos de um minuto, e você pode mudar tudo depois no seu perfil.</string>
     <string name="student_onboarding_goal_title">Qual é o seu objetivo?</string>
     <string name="student_onboarding_goal_subtitle">A mesma pessoa treina diferente para cada um
         deles. Escolha o principal.</string>
@@ -131,8 +156,8 @@
     <string name="student_field_restrictions_sample">Dói o ombro direito quando levanto acima da
         cabeça.</string>
     <string name="student_field_email">E-mail</string>
-    <string name="student_field_email_support">É como você entra no app. Para trocá-lo, fale com o
-        suporte.</string>
+    <string name="student_field_email_support">É como você entra no app, e por isso não muda por
+        aqui.</string>
 
     <!-- Erros dos campos digitados. As frases falam de conferir o número, nunca do valor: quem
          digitou 7 no lugar de 70 precisa do aviso, quem pesa 140 não precisa de opinião. -->
@@ -140,8 +165,5 @@
     <string name="student_error_height_invalid">Confira a altura em centímetros. Exemplo: 175.</string>
 
     <!-- Edição de perfil. -->
-    <string name="student_profile_title">Meu perfil</string>
-    <string name="student_profile_save">Salvar</string>
-    <string name="student_profile_save_failed">Não deu para salvar agora. Confira sua conexão e
-        tente de novo.</string>
+    <string name="student_profile_title">Perfil de treino</string>
 </resources>

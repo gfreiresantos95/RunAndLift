@@ -94,6 +94,20 @@ internal class FirestoreUserRepository(
         Unit
     }
 
+    override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) =
+        withContext(dispatchers.io) {
+            // `FieldValue.delete()` e não a omissão do campo: aqui nulo significa "apaguei o
+            // número", e omitir preservaria o antigo — que é o comportamento de `saveProfile`, e
+            // exatamente o que esta função existe para não fazer.
+            val fields = mapOf(
+                FIELD_DISPLAY_NAME to displayName,
+                FIELD_PHONE to (phone ?: FieldValue.delete()),
+            )
+
+            document(uid).set(fields, SetOptions.merge()).await()
+            Unit
+        }
+
     /**
      * Só o que veio preenchido entra no mapa.
      *

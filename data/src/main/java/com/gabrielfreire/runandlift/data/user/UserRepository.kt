@@ -42,6 +42,25 @@ interface UserRepository {
     suspend fun setActiveRole(uid: String, role: ActiveRole)
 
     /**
+     * Nome e celular **substituídos** pelo que o titular acabou de digitar.
+     *
+     * Existe separado de [saveProfile] porque as duas escritas querem coisas opostas do mesmo
+     * campo. [saveProfile] preenche o que falta e **preserva** o nome existente — é o que impede o
+     * cadastro e a conclusão pós-Google de atropelar um nome real. Uma tela de edição precisa
+     * exatamente do contrário: quem digitou um nome novo está corrigindo o antigo, e preservá-lo
+     * faria o botão de salvar não fazer nada.
+     *
+     * Não toca em papel, nascimento nem consentimento: o que esta chamada escreve é o que ela diz
+     * no nome.
+     *
+     * Custo declarado: 1 escrita, 0 leitura.
+     *
+     * @param phone `null` apaga o número, que é o que "esvaziei o campo de propósito" significa
+     *   numa tela de edição — diferente de [saveProfile], onde nulo quer dizer "não informado".
+     */
+    suspend fun updateIdentity(uid: String, displayName: String, phone: String?)
+
+    /**
      * Registro no CREF gravado em `trainerProfiles/{uid}`, ou `null` quando não há nenhum.
      *
      * Existe separado de [profile] porque mora em outro documento, e porque só interessa a quem é

@@ -10,6 +10,7 @@ import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormState
 import com.gabrielfreire.runandlift.feature.student.trainingform.prefilledFrom
 import com.gabrielfreire.runandlift.feature.student.trainingform.toDetails
+import com.gabrielfreire.runandlift.feature.student.trainingform.trainingFormActions
 import com.gabrielfreire.runandlift.feature.student.trainingform.validated
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,29 +53,14 @@ internal class StudentProfileViewModel(
         viewModelScope.launch { load() }
     }
 
-    fun onLevelSelect(level: TrainingLevel) = _formState.update { it.copy(level = level) }
-
-    fun onGoalSelect(goal: TrainingGoal) = _formState.update { it.copy(goal = goal) }
-
-    fun onDayToggle(day: DayOfWeek) = _formState.update { it.toggleDay(day) }
-
-    fun onWeightChange(value: String) = _formState.update { it.copy(weight = value, weightError = null) }
-
-    fun onHeightChange(value: String) = _formState.update { it.copy(height = value, heightError = null) }
-
-    fun onRestrictionsChange(value: String) = _formState.update { it.copy(restrictions = value) }
-
     /**
-     * Marcar libera peso, altura e restrições; desmarcar os esconde e limpa o que estava digitado.
+     * As ações de campo são as compartilhadas com o onboarding, sem nenhuma troca.
      *
-     * Desmarcar **não apaga** o que já está no banco — retirar consentimento é um pedido de exclusão
-     * e merece um fluxo próprio, com confirmação. O que esta tela faz é parar de perguntar.
+     * Desmarcar o consentimento esconde peso e altura e limpa o que estava digitado — mas **não
+     * apaga** o que já está no banco: retirar consentimento é um pedido de exclusão, e merece um
+     * fluxo próprio com confirmação. O que esta tela faz é parar de perguntar.
      */
-    fun onHealthConsentChange(accepted: Boolean) {
-        _formState.update {
-            if (accepted) it.copy(healthConsent = true) else it.copy(healthConsent = false, weight = "", height = "")
-        }
-    }
+    val formActions = trainingFormActions(_formState)
 
     fun onSubmit() {
         if (_uiState.value.saving) return
@@ -99,7 +85,6 @@ internal class StudentProfileViewModel(
             it.copy(
                 loading = false,
                 name = name.orEmpty(),
-                email = account?.email.orEmpty(),
                 missing = profile?.let(StudentProfileCompletion::missingIn) ?: MissingStudentData(),
             )
         }

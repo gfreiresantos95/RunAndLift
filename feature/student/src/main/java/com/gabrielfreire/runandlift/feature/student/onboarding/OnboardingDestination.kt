@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependencies
-import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormActions
 
 /**
  * Liga o onboarding ao seu ViewModel.
@@ -42,16 +41,11 @@ internal fun OnboardingDestination(
     OnboardingScreen(
         state = state,
         form = form,
-        actions = TrainingFormActions(
-            onLevelSelect = viewModel::onLevelSelect,
-            onGoalSelect = viewModel::onGoalSelect,
-            onDayToggle = viewModel::onDayToggle,
-            onWeightChange = viewModel::onWeightChange,
-            onHeightChange = viewModel::onHeightChange,
-            onRestrictionsChange = viewModel::onRestrictionsChange,
-            onHealthConsentChange = viewModel::onHealthConsentChange,
+        actions = viewModel.formActions,
+        steps = OnboardingStepActions(
+            onNext = { viewModel.onStepDone(answered = true) },
+            onSkip = { viewModel.onStepDone(answered = false) },
+            onBack = viewModel::onBack,
         ),
-        onNext = { viewModel.onStepDone(answered = true) },
-        onSkip = { viewModel.onStepDone(answered = false) },
     )
 }

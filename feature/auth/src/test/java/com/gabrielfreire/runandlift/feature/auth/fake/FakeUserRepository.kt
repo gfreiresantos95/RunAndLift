@@ -69,4 +69,11 @@ internal class FakeUserRepository(
     }
 
     override suspend fun setActiveRole(uid: String, role: ActiveRole) = Unit
+
+    var lastIdentity: Pair<String, String?>? = null
+        private set
+
+    override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) {
+        lastIdentity = displayName to phone
+    }
 }

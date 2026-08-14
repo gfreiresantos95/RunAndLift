@@ -29,6 +29,7 @@ internal class FakeUserRepository(
         return UserProfile(
             uid = uid,
             displayName = displayName,
+            phone = "11987654321",
             roles = UserRoles(student = true),
             activeRole = ActiveRole.STUDENT,
         )
@@ -40,4 +41,11 @@ internal class FakeUserRepository(
     override suspend fun setActiveRole(uid: String, role: ActiveRole) = error("a troca de papel é decidida pelo :app")
 
     override suspend fun trainerRegistration(uid: String): String? = null
+
+    var lastIdentity: Pair<String, String?>? = null
+        private set
+
+    override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) {
+        lastIdentity = displayName to phone
+    }
 }

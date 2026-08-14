@@ -41,20 +41,12 @@ class StudentProfileViewModelTest {
     }
 
     @Test
-    fun `e-mail da conta aparece na tela, e nao vem do formulario`() = runTest {
-        val viewModel = viewModel()
-        advanceUntilIdle()
-
-        assertEquals(FakeAuthRepository.ACCOUNT.email, viewModel.uiState.value.email)
-    }
-
-    @Test
     fun `consentimento ja dado nao e recarimbado`() = runTest {
         val students = FakeStudentRepository(FakeStudentRepository.complete())
         val viewModel = viewModel(students = students)
         advanceUntilIdle()
 
-        viewModel.onRestrictionsChange("Joelho esquerdo")
+        viewModel.formActions.onRestrictionsChange("Joelho esquerdo")
         viewModel.onSubmit()
         advanceUntilIdle()
 
@@ -69,7 +61,7 @@ class StudentProfileViewModelTest {
         val viewModel = viewModel(students = students)
         advanceUntilIdle()
 
-        viewModel.onHealthConsentChange(true)
+        viewModel.formActions.onHealthConsentChange(true)
         viewModel.onSubmit()
         advanceUntilIdle()
 
@@ -82,8 +74,8 @@ class StudentProfileViewModelTest {
         val viewModel = viewModel(students = students)
         advanceUntilIdle()
 
-        viewModel.onDayToggle(java.time.DayOfWeek.MONDAY)
-        viewModel.onDayToggle(java.time.DayOfWeek.WEDNESDAY)
+        viewModel.formActions.onDayToggle(java.time.DayOfWeek.MONDAY)
+        viewModel.formActions.onDayToggle(java.time.DayOfWeek.WEDNESDAY)
         viewModel.onSubmit()
         advanceUntilIdle()
 
@@ -98,7 +90,7 @@ class StudentProfileViewModelTest {
         val viewModel = viewModel(students = students)
         advanceUntilIdle()
 
-        viewModel.onWeightChange("7")
+        viewModel.formActions.onWeightChange("7")
         viewModel.onSubmit()
         advanceUntilIdle()
 

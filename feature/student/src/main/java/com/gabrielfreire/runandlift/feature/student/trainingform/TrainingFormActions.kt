@@ -2,6 +2,8 @@ package com.gabrielfreire.runandlift.feature.student.trainingform
 
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import java.time.DayOfWeek
 
 /**
@@ -22,6 +24,32 @@ internal data class TrainingFormActions(
     val onHeightChange: (String) -> Unit,
     val onRestrictionsChange: (String) -> Unit,
     val onHealthConsentChange: (Boolean) -> Unit,
+)
+
+/**
+ * As ações que **todo** dono deste formulário implementa da mesma forma: escrever o campo no estado
+ * e limpar o erro dele.
+ *
+ * Existe porque o onboarding e a edição de perfil tinham as sete idênticas, uma a uma, e a única
+ * que difere de verdade — o consentimento — some no meio das outras seis quando estão todas
+ * escritas à mão. Aqui as seis triviais somem, e quem precisa mudar a sétima o faz com um `copy`,
+ * que deixa a diferença visível.
+ *
+ * Retirar o consentimento **limpa peso e altura**: dado sensível não fica em memória à espera de
+ * uma autorização que foi retirada. Isso vale para as duas telas, então mora aqui.
+ */
+internal fun trainingFormActions(state: MutableStateFlow<TrainingFormState>) = TrainingFormActions(
+    onLevelSelect = { level -> state.update { it.copy(level = level) } },
+    onGoalSelect = { goal -> state.update { it.copy(goal = goal) } },
+    onDayToggle = { day -> state.update { it.toggleDay(day) } },
+    onWeightChange = { value -> state.update { it.copy(weight = value, weightError = null) } },
+    onHeightChange = { value -> state.update { it.copy(height = value, heightError = null) } },
+    onRestrictionsChange = { value -> state.update { it.copy(restrictions = value) } },
+    onHealthConsentChange = { accepted ->
+        state.update {
+            if (accepted) it.copy(healthConsent = true) else it.copy(healthConsent = false, weight = "", height = "")
+        }
+    },
 )
 
 /** As ações sem efeito, para os previews — a tela se desenha, e nada acontece ao tocar. */

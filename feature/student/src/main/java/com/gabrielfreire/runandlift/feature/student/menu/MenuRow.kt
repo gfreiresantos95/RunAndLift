@@ -59,8 +59,8 @@ private fun MenuRowPreview() {
         Surface(color = MaterialTheme.colorScheme.background) {
             Column(modifier = Modifier.padding(all = Dimens.SpaceLarge)) {
                 MenuRow(
-                    title = stringResource(R.string.student_menu_profile),
-                    description = stringResource(R.string.student_menu_profile_description),
+                    title = stringResource(R.string.student_menu_training),
+                    description = stringResource(R.string.student_menu_training_description),
                     onClick = {},
                 )
             }

@@ -1,4 +1,4 @@
-package com.gabrielfreire.runandlift.feature.student.profile
+package com.gabrielfreire.runandlift.feature.student.account
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,30 +8,28 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependencies
 
-/** Liga a edição de perfil ao seu ViewModel. */
+/** Liga a tela de dados cadastrais ao seu ViewModel. */
 @Composable
-internal fun StudentProfileDestination(
+internal fun AccountDestination(
     dependencies: StudentDependencies,
     onBack: () -> Unit,
-    viewModel: StudentProfileViewModel = viewModel(
+    viewModel: AccountViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                StudentProfileViewModel(
+                AccountViewModel(
                     authRepository = dependencies.authRepository,
                     userRepository = dependencies.userRepository,
-                    studentRepository = dependencies.studentRepository,
                 )
             }
         },
     ),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val form by viewModel.formState.collectAsStateWithLifecycle()
 
-    StudentProfileScreen(
+    AccountScreen(
         state = state,
-        form = form,
-        actions = viewModel.formActions,
+        onNameChange = viewModel::onNameChange,
+        onPhoneChange = viewModel::onPhoneChange,
         onSubmit = viewModel::onSubmit,
         onBack = onBack,
     )

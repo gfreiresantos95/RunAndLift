@@ -34,6 +34,7 @@ fun RunAndLiftNavHost(
     container: AppContainer,
     canSwitchRole: Boolean,
     onSwitchRole: () -> Unit,
+    onAuthenticated: (ActiveRole, (String) -> Unit) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -57,8 +58,14 @@ fun RunAndLiftNavHost(
             authRepository = container.authRepository,
             userRepository = container.userRepository,
             webClientId = webClientId,
+            // Para onde ir depois de autenticar não é decisão do fluxo de entrada, e desde o
+            // onboarding também não é uma constante: um aluno recém-criado vai para o passo a
+            // passo, e quem já o respondeu vai para a home. Quem sabe responder isso é o
+            // `MainViewModel`, e a resposta chega por callback porque envolve uma leitura.
             onAuthenticatedWithRole = { role ->
-                navController.navigateToRole(role, clearAuth = true)
+                onAuthenticated(role) { destination ->
+                    navController.navigateAfterAuth(destination)
+                }
             },
         )
 
@@ -82,6 +89,19 @@ fun RunAndLiftNavHost(
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,
         )
+    }
+}
+
+/**
+ * Leva para onde a autenticação decidiu — a home do papel, ou o onboarding do aluno novo.
+ *
+ * Remove o fluxo de entrada da pilha: depois de autenticado, "voltar" na primeira tela deve sair do
+ * app, e não regressar ao login com sessão ativa.
+ */
+internal fun NavHostController.navigateAfterAuth(destination: String) {
+    navigate(destination) {
+        launchSingleTop = true
+        popUpTo(AuthRoutes.GRAPH) { inclusive = true }
     }
 }
 

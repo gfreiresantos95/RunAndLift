@@ -69,7 +69,7 @@ class OnboardingViewModelTest {
         viewModel.onStepDone(answered = true)
         assertEquals(OnboardingStep.HEALTH_CONSENT, viewModel.uiState.value.step)
 
-        viewModel.onHealthConsentChange(true)
+        viewModel.formActions.onHealthConsentChange(true)
 
         assertEquals(
             OnboardingStep.ALWAYS_SHOWN.size + OnboardingStep.BEHIND_CONSENT.size,
@@ -95,19 +95,19 @@ class OnboardingViewModelTest {
         val students = FakeStudentRepository()
         val viewModel = viewModel(students = students)
 
-        viewModel.onLevelSelect(TrainingLevel.INTERMEDIATE)
+        viewModel.formActions.onLevelSelect(TrainingLevel.INTERMEDIATE)
         viewModel.onStepDone(answered = true)
-        viewModel.onGoalSelect(TrainingGoal.HYPERTROPHY)
+        viewModel.formActions.onGoalSelect(TrainingGoal.HYPERTROPHY)
         viewModel.onStepDone(answered = true)
-        viewModel.onDayToggle(DayOfWeek.MONDAY)
-        viewModel.onDayToggle(DayOfWeek.WEDNESDAY)
+        viewModel.formActions.onDayToggle(DayOfWeek.MONDAY)
+        viewModel.formActions.onDayToggle(DayOfWeek.WEDNESDAY)
         viewModel.onStepDone(answered = true)
-        viewModel.onHealthConsentChange(true)
+        viewModel.formActions.onHealthConsentChange(true)
         viewModel.onStepDone(answered = true)
-        viewModel.onWeightChange("72,5")
-        viewModel.onHeightChange("175")
+        viewModel.formActions.onWeightChange("72,5")
+        viewModel.formActions.onHeightChange("175")
         viewModel.onStepDone(answered = true)
-        viewModel.onRestrictionsChange("Ombro direito")
+        viewModel.formActions.onRestrictionsChange("Ombro direito")
         viewModel.onStepDone(answered = true)
         advanceUntilIdle()
 
@@ -125,10 +125,10 @@ class OnboardingViewModelTest {
     fun `retirar o consentimento apaga o que foi digitado`() = runTest {
         val viewModel = viewModel()
 
-        viewModel.onHealthConsentChange(true)
-        viewModel.onWeightChange("72,5")
-        viewModel.onHeightChange("175")
-        viewModel.onHealthConsentChange(false)
+        viewModel.formActions.onHealthConsentChange(true)
+        viewModel.formActions.onWeightChange("72,5")
+        viewModel.formActions.onHeightChange("175")
+        viewModel.formActions.onHealthConsentChange(false)
 
         // Dado sensível não fica em memória à espera de uma autorização que foi retirada.
         assertEquals("", viewModel.formState.value.weight)
@@ -139,17 +139,45 @@ class OnboardingViewModelTest {
     fun `peso fora da faixa segura o passo`() = runTest {
         val viewModel = viewModel()
 
-        viewModel.onHealthConsentChange(true)
+        viewModel.formActions.onHealthConsentChange(true)
         repeat(OnboardingStep.ALWAYS_SHOWN.size) { viewModel.onStepDone(answered = true) }
         assertEquals(OnboardingStep.MEASURES, viewModel.uiState.value.step)
 
-        viewModel.onWeightChange("7")
+        viewModel.formActions.onWeightChange("7")
         viewModel.onStepDone(answered = true)
 
         // Quem digitou 7 no lugar de 70 precisa ser avisado antes de o número virar o ponto de
         // partida do treino.
         assertEquals(OnboardingStep.MEASURES, viewModel.uiState.value.step)
         assertTrue(viewModel.formState.value.weightError != null)
+    }
+
+    @Test
+    fun `voltar um passo preserva o que foi respondido`() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.formActions.onLevelSelect(TrainingLevel.INTERMEDIATE)
+        viewModel.onStepDone(answered = true)
+        assertEquals(OnboardingStep.GOAL, viewModel.uiState.value.step)
+
+        viewModel.onBack()
+
+        // Quem volta quer corrigir, não recomeçar: encontrar o campo vazio faria a pessoa digitar
+        // duas vezes o que ela só queria conferir.
+        assertEquals(OnboardingStep.LEVEL, viewModel.uiState.value.step)
+        assertEquals(TrainingLevel.INTERMEDIATE, viewModel.formState.value.level)
+    }
+
+    @Test
+    fun `nao ha para onde voltar no primeiro passo`() = runTest {
+        val viewModel = viewModel()
+
+        assertFalse(viewModel.uiState.value.canGoBack)
+
+        viewModel.onBack()
+
+        assertEquals(OnboardingStep.LEVEL, viewModel.uiState.value.step)
+        assertEquals(1, viewModel.uiState.value.position)
     }
 
     @Test

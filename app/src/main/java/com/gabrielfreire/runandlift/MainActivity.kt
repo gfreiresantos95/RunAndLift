@@ -85,6 +85,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigateToRole(role, clearAuth = false)
                                     }
                                 },
+                                onAuthenticated = viewModel::destinationAfterAuth,
                                 navController = navController,
                                 // `consumeWindowInsets` junto do padding, e não só o padding:
                                 // sem ele, uma tela com Scaffold próprio aplicaria o recuo da

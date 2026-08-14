@@ -24,4 +24,12 @@ internal data class OnboardingUiState(
 
     /** Se é o último passo da sequência — muda o rótulo do botão de "Continuar" para "Concluir". */
     val isLast: Boolean get() = position == total
+
+    /**
+     * Se há passo anterior.
+     *
+     * Falso no primeiro, e é por isso que a seta some ali: mostrar uma saída que leva de volta ao
+     * cadastro recém-concluído seria oferecer desfazer o que não se desfaz.
+     */
+    val canGoBack: Boolean get() = position > 1
 }

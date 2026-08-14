@@ -84,6 +84,9 @@ class MainViewModelTest {
         override suspend fun setActiveRole(uid: String, role: ActiveRole) {
             activeRoleSetTo = role
         }
+
+        override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) =
+            error("a decisão de rota inicial não edita identidade")
     }
 
     /**
@@ -207,6 +210,53 @@ class MainViewModelTest {
         testScheduler.advanceUntilIdle()
 
         assertEquals(RoleRoutes.graphFor(ActiveRole.TRAINER), viewModel.uiState.value.startDestination)
+    }
+
+    @Test
+    fun `aluno recem-criado vai para o onboarding assim que autentica`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = false),
+        )
+        var destination: String? = null
+
+        viewModel.destinationAfterAuth(ActiveRole.STUDENT) { destination = it }
+        testScheduler.advanceUntilIdle()
+
+        // Deixar isto para a abertura seguinte era tarde demais: a pessoa já teria visto a home
+        // vazia e formado a impressão de que não há nada a fazer ali.
+        assertEquals(StudentRoutes.ONBOARDING, destination)
+    }
+
+    @Test
+    fun `quem ja respondeu o onboarding entra direto na home`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = true),
+        )
+        var destination: String? = null
+
+        viewModel.destinationAfterAuth(ActiveRole.STUDENT) { destination = it }
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(RoleRoutes.graphFor(ActiveRole.STUDENT), destination)
+    }
+
+    @Test
+    fun `treinador nunca cai no onboarding ao autenticar`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = false),
+        )
+        var destination: String? = null
+
+        viewModel.destinationAfterAuth(ActiveRole.TRAINER) { destination = it }
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(RoleRoutes.graphFor(ActiveRole.TRAINER), destination)
     }
 
     @Test

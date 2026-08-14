@@ -73,6 +73,32 @@ class MainViewModel(
         }
     }
 
+    /**
+     * Para onde ir **assim que a conta é autenticada**, e não só na abertura seguinte.
+     *
+     * Existe porque quem acabou de criar conta como aluno precisa responder o onboarding **antes**
+     * de ver a home — do contrário o passo a passo só apareceria no próximo lançamento do app, que
+     * é tarde demais: a essa altura a pessoa já viu a home vazia e formou a impressão de que não há
+     * nada a fazer ali.
+     *
+     * A pergunta é a mesma da abertura, e a resposta vem da mesma fonte: documento inexistente em
+     * `students/{uid}` significa que o passo a passo nunca aconteceu. Quem entra numa conta antiga,
+     * que já tem documento, vai direto para a home.
+     *
+     * Custo declarado: **0 leitura** com o documento em cache — que é o caso logo depois do
+     * cadastro, porque a gravação do perfil acabou de passar por ali.
+     */
+    fun destinationAfterAuth(role: ActiveRole, onResolved: (String) -> Unit) {
+        viewModelScope.launch {
+            val uid = authRepository.currentAccountOrNull()?.uid
+
+            val needsOnboarding = uid != null && role == ActiveRole.STUDENT &&
+                runCatching { studentRepository.profile(uid) }.map { it == null }.getOrDefault(false)
+
+            onResolved(if (needsOnboarding) StudentRoutes.ONBOARDING else RoleRoutes.graphFor(role))
+        }
+    }
+
     /** Troca o papel ativo e devolve o novo, ou `null` se a troca não se aplica. */
     fun switchRole(onSwitched: (ActiveRole) -> Unit) {
         val current = _uiState.value

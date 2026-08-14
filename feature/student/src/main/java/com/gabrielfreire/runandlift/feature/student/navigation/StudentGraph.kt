@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.gabrielfreire.runandlift.feature.student.account.AccountDestination
 import com.gabrielfreire.runandlift.feature.student.home.StudentHomeDestination
 import com.gabrielfreire.runandlift.feature.student.menu.StudentMenuDestination
 import com.gabrielfreire.runandlift.feature.student.onboarding.OnboardingDestination
@@ -52,7 +53,13 @@ fun NavGraphBuilder.studentGraph(
                 dependencies = dependencies,
                 onSignedOut = onSignedOut,
                 onSwitchRole = onSwitchRole,
-                onOpenProfile = { navController.navigate(StudentRoutes.PROFILE) },
+                onOpen = { route -> navController.navigate(route) },
+            )
+        }
+        composable(StudentRoutes.ACCOUNT) {
+            AccountDestination(
+                dependencies = dependencies,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(StudentRoutes.ONBOARDING) {

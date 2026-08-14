@@ -28,4 +28,13 @@ object StudentRoutes {
 
     /** Edição do perfil de treino, alcançada pelo aviso da home e pelo menu. */
     const val PROFILE = "student/profile"
+
+    /**
+     * Dados cadastrais — nome e contato, em `users/{uid}`.
+     *
+     * Rota separada de [PROFILE] porque são dois documentos com dois públicos: este só o titular
+     * lê, e aquele o treinador vinculado também. Uma tela só esconderia a diferença de quem precisa
+     * dela para decidir o que preencher.
+     */
+    const val ACCOUNT = "student/account"
 }
