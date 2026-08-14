@@ -1,14 +1,3 @@
 <resources>
     <string name="app_name">Run &amp; Lift</string>
-
-    <!-- Alternância de papel (E0-08). -->
-    <string name="role_switch_action">Trocar de papel</string>
-
-    <!-- Telas de espera dos grafos por papel. Saem quando E2-06 e E6-01 chegarem. -->
-    <string name="role_trainer_home_title">Painel do treinador</string>
-    <string name="role_trainer_home_body">Sua carteira de alunos aparece aqui. Ainda não há nada
-        para mostrar: o convite de aluno e a lista chegam nos próximos itens.</string>
-    <string name="role_student_home_title">Meu treino</string>
-    <string name="role_student_home_body">Seu treino do dia aparece aqui. Ainda não há nada para
-        mostrar: entre com o código do seu treinador quando ele enviar.</string>
 </resources>

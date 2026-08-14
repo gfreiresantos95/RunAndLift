@@ -67,7 +67,7 @@ Também aqui: `FirebaseAuthRepository` e `FirestoreUserRepository`, os tipos de 
 construir um repositório de fora. Entidades, DAOs e fontes de dados são `internal`. Detalhes em
 [`data/README.md`](../data/README.md).
 
-### `:feature-auth` — autenticação completa
+### `:feature:auth` — autenticação completa
 
 Seis fluxos, um pacote cada: boas-vindas, entrar, criar conta, recuperar senha, concluir cadastro e
 escolher papel. O caminho é linear — boas-vindas → entrar → criar conta —, e **o papel é escolhido
@@ -261,12 +261,19 @@ a configuração sempre do branch padrão, então mudança em `dependabot.yml` s
 ### Estrutura de módulos
 
 ```
-:app           — aplicação, grafo raiz de navegação, AppContainer (injeção manual)
-:core          — design system: tema, tipografia, componentes
-:data          — Room, Firestore, repositórios
-:feature-auth  — boas-vindas, entrar, criar conta, recuperar senha, concluir cadastro, escolher papel
-:feature-*     — demais funcionalidades, criadas sob demanda
+:app                — aplicação, grafo raiz de navegação, AppContainer (injeção manual)
+:core               — design system: tema, tipografia, componentes
+:data               — Room, Firestore, repositórios
+:feature:auth       — boas-vindas, entrar, criar conta, recuperar senha, concluir cadastro, escolher papel
+:feature:student    — início, treinos e menu do aluno
+:feature:trainer    — início, treinos e menu do treinador
+:feature:*          — demais funcionalidades, criadas sob demanda
 ```
+
+A raiz do repositório tem **três pastas de módulo e não mais** — `core/`, `data/` e `feature/` —, e
+cada feature é um módulo dentro da terceira. Uma funcionalidade nova é uma pasta em `feature/` mais
+uma linha `include(":feature:<nome>")`. O projeto `:feature` em si não tem código nem
+`build.gradle.kts`: é só o guarda-chuva.
 
 Dentro de um módulo de feature, **um pacote por contexto**: cada fluxo é dono do seu, incluindo o
 `…Destination.kt` que liga a tela ao ViewModel, de modo que o arquivo do grafo continue sendo só um
@@ -365,7 +372,7 @@ Dessas coleções, as que já têm código escrevendo ou lendo são `users`, `tr
 
 **Não há teste de UI, e isso é decisão.** Layout se confere abrindo o `@Preview` — é para isso que
 todo arquivo de Compose carrega um. O que ganha teste é o que o preview não mostra. Os fakes são
-escritos à mão, não gerados por MockK, e ficam em `feature-auth/src/test/…/fake/` para serem
+escritos à mão, não gerados por MockK, e ficam em `feature/auth/src/test/…/fake/` para serem
 reusados em vez de reescritos dentro de cada teste.
 
 Os testes que mais importam são os de regra invisível na tela e fácil de desfazer sem querer: a

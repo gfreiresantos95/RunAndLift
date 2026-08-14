@@ -81,6 +81,20 @@ internal object PreviewSamples {
         const val MARKETING = "Quero receber dicas de treino e novidades por e-mail."
     }
 
+    /** Rótulos das abas da barra inferior. */
+    object Tab {
+        const val HOME = "Início"
+        const val WORKOUTS = "Treinos"
+        const val MENU = "Menu"
+    }
+
+    /** Identidade de quem está logado, para o card de saudação. */
+    object Identity {
+        const val GREETING = "Olá, Ana"
+        const val ROLE_STUDENT = "Aluno"
+        const val ROLE_TRAINER = "Treinador"
+    }
+
     /** Texto de aviso, para o card que só existe para explicar alguma coisa. */
     const val NOTICE = "Peso, medidas e histórico de lesões não são pedidos aqui. Esses dados vêm " +
         "depois, na avaliação com o seu treinador, e só com a sua autorização."

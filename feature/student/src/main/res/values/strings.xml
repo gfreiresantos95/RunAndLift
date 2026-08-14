@@ -1,0 +1,29 @@
+<resources>
+    <!--
+        O nome do app aparece aqui, e não vem de :app, porque módulo de feature não enxerga o
+        aplicativo — é a mesma direção de dependência que mantém :feature-auth independente. São
+        duas cópias da mesma palavra, e é o preço de a seta apontar para um lado só.
+    -->
+    <string name="student_app_name">Run &amp; Lift</string>
+
+    <!-- Abas da barra inferior. -->
+    <string name="student_tab_home">Início</string>
+    <string name="student_tab_workouts">Treinos</string>
+    <string name="student_tab_menu">Menu</string>
+
+    <!-- Início. -->
+    <string name="student_home_greeting">Olá, %1$s</string>
+    <!-- Sem nome gravado: conta criada pelo Google que ainda não completou o cadastro. -->
+    <string name="student_home_greeting_anonymous">Olá!</string>
+    <string name="student_home_role">Aluno</string>
+
+    <!-- Treinos. -->
+    <string name="student_workouts_title">Treinos</string>
+    <string name="student_workouts_empty">Seus treinos aparecem aqui assim que seu treinador
+        montar o primeiro.</string>
+
+    <!-- Menu. -->
+    <string name="student_menu_title">Menu</string>
+    <string name="student_menu_sign_out">Sair da conta</string>
+    <string name="student_menu_switch_role">Trocar de papel</string>
+</resources>

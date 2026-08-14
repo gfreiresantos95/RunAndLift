@@ -104,5 +104,9 @@ internal class FirebaseAuthRepository(
         uid = uid,
         email = email,
         isEmailVerified = isEmailVerified,
+        // Vem preenchido pelo Google e vazio no cadastro por e-mail. `takeIf` porque o SDK devolve
+        // string vazia, e não nulo, quando o provedor não informou nome — e "" gravado como nome
+        // seria pior que nome nenhum: o app não teria como distinguir ausência de escolha.
+        displayName = displayName?.takeIf { it.isNotBlank() },
     )
 }

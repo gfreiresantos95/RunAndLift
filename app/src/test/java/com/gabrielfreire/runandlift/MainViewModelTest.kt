@@ -134,7 +134,7 @@ class MainViewModelTest {
         val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(completeProfile()))
         testScheduler.advanceUntilIdle()
 
-        assertEquals(RoleRoutes.STUDENT_GRAPH, viewModel.uiState.value.startDestination)
+        assertEquals(RoleRoutes.graphFor(ActiveRole.STUDENT), viewModel.uiState.value.startDestination)
         assertEquals(ActiveRole.STUDENT, viewModel.uiState.value.activeRole)
     }
 

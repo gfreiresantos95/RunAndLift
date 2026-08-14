@@ -1,0 +1,25 @@
+<resources>
+    <!-- Mesma cópia do nome que existe no módulo do aluno, e pela mesma razão: feature não
+         enxerga :app. -->
+    <string name="trainer_app_name">Run &amp; Lift</string>
+
+    <!-- Abas da barra inferior. -->
+    <string name="trainer_tab_home">Início</string>
+    <string name="trainer_tab_workouts">Treinos</string>
+    <string name="trainer_tab_menu">Menu</string>
+
+    <!-- Início. -->
+    <string name="trainer_home_greeting">Olá, %1$s</string>
+    <string name="trainer_home_greeting_anonymous">Olá!</string>
+    <string name="trainer_home_role">Treinador</string>
+
+    <!-- Treinos. -->
+    <string name="trainer_workouts_title">Treinos</string>
+    <string name="trainer_workouts_empty">Os programas que você montar aparecem aqui, prontos para
+        atribuir aos seus alunos.</string>
+
+    <!-- Menu. -->
+    <string name="trainer_menu_title">Menu</string>
+    <string name="trainer_menu_sign_out">Sair da conta</string>
+    <string name="trainer_menu_switch_role">Trocar de papel</string>
+</resources>

@@ -39,3 +39,4 @@ se pensou na época é justamente o que se quer preservar.
 | [0013](0013-cadastro-de-treinador-e-registro-profissional.md) | Cadastro de treinador, registro profissional e uma tela para os dois perfis | Aceito |
 | [0014](0014-conclusao-de-cadastro-e-formato-antes-do-erro.md) | Conclusão de cadastro pós-Google, e formato conferido antes do erro | Aceito |
 | [0015](0015-protecao-da-branch-principal.md) | Proteção da branch principal por ruleset | Aceito |
+| [0016](0016-um-modulo-por-papel-e-navegacao-por-abas.md) | Um módulo por papel e navegação por abas | Aceito |
