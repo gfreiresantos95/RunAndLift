@@ -47,6 +47,23 @@ Nenhum deles é opcional, e desenhar só o terceiro é o erro mais comum.
 - Dentro de uma tela, o que aparece e some usa `AnimatedVisibility` com `AppMotion.DURATION_SHORT`.
 - Movimento que a pessoa não pediu não existe. Nada pisca, nada pulsa, nada chama atenção sozinho.
 
+## Seleção
+
+Tudo que se escolhe usa a **mesma** linguagem visual, vinda de `selectionAppearance(selected)`:
+
+- **Desmarcado** — contorno de 1 dp sobre fundo transparente.
+- **Marcado** — preenchido com `secondaryContainer`, sem contorno.
+
+A diferença é a **presença de preenchimento**, e não a cor: é o que faz a seleção sobreviver em
+escala de cinza e atende à regra de a cor nunca ser o único canal. Vale para cartão de opção
+(nível, objetivo), tecla de dia e chip de lesão.
+
+- Nunca escolher a cor de seleção na tela. Se `selectionAppearance` não serve, o caso é novo e a
+  discussão é sobre a regra, não sobre aquela tela.
+- Ícone de confirmação **só em escolha múltipla**, onde ele reforça "mais este". Em escolha única
+  seria um visto repetido em cada linha.
+- Escolha única usa `Role.RadioButton`; múltipla usa `Role.Checkbox`.
+
 ## Cor
 
 - Consumir `MaterialTheme.colorScheme` e `MaterialTheme.extendedColors`. **Nunca** os tokens de

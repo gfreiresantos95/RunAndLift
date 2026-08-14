@@ -16,6 +16,7 @@ import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.minimumTouchTarget
 import com.gabrielfreire.runandlift.core.designsystem.rememberSelectionHaptics
+import com.gabrielfreire.runandlift.core.designsystem.selectionAppearance
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
 import com.gabrielfreire.runandlift.feature.student.text.description
 import com.gabrielfreire.runandlift.feature.student.text.title
@@ -27,9 +28,13 @@ import com.gabrielfreire.runandlift.feature.student.text.title
  * selecionada, 1 de 3" em vez de apenas "botão". A escolha é entre irmãs, e a leitura precisa dizer
  * isso.
  *
- * A seleção é marcada por **cor de fundo e contorno**, e o rótulo continua legível nos dois estados
- * — cor sozinha não pode carregar a informação (E0-09). Como a lista inteira fica visível, a opção
- * marcada é sempre comparável com as outras.
+ * **Desmarcado é contorno; marcado é preenchido** — a mesma linguagem dos chips de lesão, vinda de
+ * [selectionAppearance]. Antes daqui, este cartão era cinza preenchido quando desmarcado, e três
+ * passos seguidos do onboarding usavam três códigos de cor diferentes para dizer a mesma coisa.
+ *
+ * Continua sendo **cartão e não chip**, apesar de vestir a mesma roupa: nível e objetivo têm uma
+ * frase de apoio abaixo do rótulo, e um chip não tem onde colocá-la. O que se unifica é como a
+ * seleção se mostra, não o formato do que se escolhe.
  */
 @Composable
 internal fun OptionCard(
@@ -40,6 +45,7 @@ internal fun OptionCard(
     description: String? = null,
 ) {
     val haptics = rememberSelectionHaptics()
+    val appearance = selectionAppearance(selected = selected)
 
     Surface(
         modifier = modifier
@@ -55,16 +61,9 @@ internal fun OptionCard(
                     onSelect()
                 },
             ),
-        color = if (selected) {
-            MaterialTheme.colorScheme.secondaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant
-        },
-        contentColor = if (selected) {
-            MaterialTheme.colorScheme.onSecondaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        color = appearance.container,
+        contentColor = appearance.content,
+        border = appearance.border,
         shape = MaterialTheme.shapes.medium,
     ) {
         Column(

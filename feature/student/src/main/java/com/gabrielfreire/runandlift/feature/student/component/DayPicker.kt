@@ -20,6 +20,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.rememberSelectionHaptics
+import com.gabrielfreire.runandlift.core.designsystem.selectionAppearance
 import com.gabrielfreire.runandlift.feature.student.text.fullLabel
 import com.gabrielfreire.runandlift.feature.student.text.shortLabel
 import java.time.DayOfWeek
@@ -36,6 +37,10 @@ import java.time.DayOfWeek
  *
  * `toggleable` com `Role.Checkbox` porque as escolhas são independentes: marcar terça não desmarca
  * quinta, e o anúncio precisa deixar isso claro desde o primeiro toque.
+ *
+ * **Desmarcado é contorno; marcado é preenchido** — a mesma linguagem dos chips de lesão e dos
+ * cartões de nível, vinda de [selectionAppearance]. Antes daqui as sete teclas eram cinza
+ * preenchido e viravam azul, um terceiro código de cor num passo a passo que já tinha dois.
  */
 @Composable
 internal fun DayPicker(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit, modifier: Modifier = Modifier) {
@@ -58,6 +63,7 @@ internal fun DayPicker(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit, 
 private fun DayToggle(day: DayOfWeek, selected: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     val label = day.fullLabel()
     val haptics = rememberSelectionHaptics()
+    val appearance = selectionAppearance(selected = selected)
 
     Surface(
         modifier = modifier
@@ -75,12 +81,9 @@ private fun DayToggle(day: DayOfWeek, selected: Boolean, onToggle: () -> Unit, m
             // O rótulo curto é decoração para o olho; quem ouve recebe o nome inteiro, e o estado
             // vem do próprio `toggleable`.
             .clearAndSetSemantics { contentDescription = label },
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = if (selected) {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        color = appearance.container,
+        contentColor = appearance.content,
+        border = appearance.border,
         shape = MaterialTheme.shapes.small,
     ) {
         Box(contentAlignment = Alignment.Center) {
