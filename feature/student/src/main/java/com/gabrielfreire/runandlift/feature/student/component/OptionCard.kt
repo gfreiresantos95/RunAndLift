@@ -15,6 +15,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.minimumTouchTarget
+import com.gabrielfreire.runandlift.core.designsystem.rememberSelectionHaptics
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
 import com.gabrielfreire.runandlift.feature.student.text.description
 import com.gabrielfreire.runandlift.feature.student.text.title
@@ -38,11 +39,22 @@ internal fun OptionCard(
     modifier: Modifier = Modifier,
     description: String? = null,
 ) {
+    val haptics = rememberSelectionHaptics()
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .minimumTouchTarget()
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect),
+            // Só ao **passar** a marcar: retocar a opção que já estava escolhida não mudou nada, e
+            // vibrar ali ensinaria que a vibração não quer dizer coisa alguma.
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = {
+                    if (!selected) haptics.selected()
+                    onSelect()
+                },
+            ),
         color = if (selected) {
             MaterialTheme.colorScheme.secondaryContainer
         } else {

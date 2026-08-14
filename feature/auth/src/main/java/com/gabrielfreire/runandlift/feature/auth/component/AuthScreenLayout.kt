@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
+import com.gabrielfreire.runandlift.core.designsystem.contentWidth
 import com.gabrielfreire.runandlift.feature.auth.R
 
 /**
@@ -50,6 +54,7 @@ import com.gabrielfreire.runandlift.feature.auth.R
  *   para onde mandar ninguém — é o caso da conclusão de cadastro, de onde não se sai pela metade.
  * @param content miolo da tela, já dentro de uma [Column] rolável.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AuthScreenLayout(
     bottom: @Composable () -> Unit,
@@ -57,13 +62,18 @@ internal fun AuthScreenLayout(
     onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    // Formulários longos: sem isto, o conteúdo rola por trás do título transparente e as duas
+    // camadas de texto se sobrepõem. `pinned` porque a seta de voltar não pode sumir ao rolar.
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(connection = scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopBar(
                 title = stringResource(id = R.string.auth_app_name),
                 onBack = onBack,
                 backContentDescription = stringResource(id = R.string.auth_back),
+                scrollBehavior = scrollBehavior,
             )
         },
     ) { innerPadding ->
@@ -73,18 +83,26 @@ internal fun AuthScreenLayout(
                 .padding(paddingValues = innerPadding)
                 .consumeWindowInsets(paddingValues = innerPadding)
                 .imePadding()
-                .verticalScroll(state = rememberScrollState())
-                .padding(paddingValues = Dimens.ScreenPadding),
+                .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            content()
+            // A coluna de dentro é a que tem largura limitada; a de fora é a que rola. Ao
+            // contrário, a barra de rolagem apareceria no meio da tela num tablet, e não na borda.
+            Column(
+                modifier = Modifier
+                    .contentWidth()
+                    .padding(paddingValues = Dimens.ScreenPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                content()
 
-            // Respiro, e não um divisor: o que separa a ação desta tela da saída para a outra é
-            // distância, não uma linha a mais para o olho processar.
-            Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
+                // Respiro, e não um divisor: o que separa a ação desta tela da saída para a outra é
+                // distância, não uma linha a mais para o olho processar.
+                Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
-            bottom()
+                bottom()
+            }
         }
     }
 }

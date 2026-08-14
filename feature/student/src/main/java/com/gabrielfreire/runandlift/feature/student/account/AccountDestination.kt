@@ -58,6 +58,7 @@ internal fun AccountDestination(
                     ?.let { navController.navigate(StudentRoutes.cityPicker(it)) }
             },
             onSubmit = viewModel::onSubmit,
+            onSavedShown = viewModel::onSavedShown,
             onBack = onBack,
         ),
     )

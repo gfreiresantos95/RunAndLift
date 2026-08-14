@@ -1,7 +1,9 @@
 package com.gabrielfreire.runandlift.core.designsystem
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
@@ -34,6 +36,19 @@ object Dimens {
 
     /** Padding horizontal padrão de conteúdo de tela. */
     val ScreenPadding = PaddingValues(horizontal = SpaceLarge, vertical = SpaceSmall)
+
+    /**
+     * Largura máxima de uma coluna de conteúdo — formulário, texto corrido, lista de opções.
+     *
+     * 600dp porque acima disso a linha passa de setenta e cinco caracteres, que é onde a leitura
+     * começa a falhar: o olho perde o início da linha seguinte ao voltar. Num telefone o valor nunca
+     * é alcançado e nada muda; num tablet, num dobrável aberto ou numa janela redimensionada é o que
+     * impede o formulário de esticar de ponta a ponta e virar uma faixa de campos com dois palmos de
+     * distância entre o rótulo e o valor.
+     *
+     * Quem aplica é `AppScreenColumn`; nenhuma tela precisa se lembrar do número.
+     */
+    val ContentMaxWidth = 600.dp
 
     // --- Alvos de toque ---
 
@@ -78,3 +93,13 @@ object Dimens {
  */
 fun Modifier.minimumTouchTarget(): Modifier =
     this.sizeIn(minWidth = Dimens.MinTouchTarget, minHeight = Dimens.MinTouchTarget)
+
+/**
+ * Limita a largura a [Dimens.ContentMaxWidth], ocupando tudo o que couber abaixo disso.
+ *
+ * **Centralizar é do pai** — este modificador só limita. Na prática ninguém o usa direto: quem
+ * combina as duas coisas é `AppScreenColumn`, que é onde a coluna de conteúdo das telas mora.
+ */
+fun Modifier.contentWidth(): Modifier = this
+    .widthIn(max = Dimens.ContentMaxWidth)
+    .fillMaxWidth()

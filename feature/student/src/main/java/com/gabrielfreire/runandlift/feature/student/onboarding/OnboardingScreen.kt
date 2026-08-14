@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
+import com.gabrielfreire.runandlift.core.designsystem.component.AppMessageCard
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
 import com.gabrielfreire.runandlift.feature.student.R
@@ -88,16 +90,15 @@ internal fun OnboardingScreen(
             OnboardingStepContent(state = state, form = form, actions = actions)
 
             if (state.failed) {
-                Text(
-                    text = stringResource(R.string.student_onboarding_save_failed),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                AppMessageCard(text = stringResource(R.string.student_onboarding_save_failed))
             }
         }
     }
 }
 
+// A barra deste fluxo é transparente sempre: a barra de progresso logo abaixo já separa o cabeçalho
+// do conteúdo, e uma segunda faixa de cor ao rolar empilharia duas divisórias.
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OnboardingHeader(state: OnboardingUiState, onBack: (() -> Unit)?, modifier: Modifier = Modifier) {
     // Animada porque o total muda no meio do fluxo: um salto seco pareceria defeito.

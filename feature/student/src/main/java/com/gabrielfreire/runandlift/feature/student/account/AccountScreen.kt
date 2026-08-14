@@ -3,16 +3,11 @@ package com.gabrielfreire.runandlift.feature.student.account
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -20,10 +15,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
+import com.gabrielfreire.runandlift.core.designsystem.component.AppLoadingState
 import com.gabrielfreire.runandlift.core.designsystem.component.AppMaskedTextField
+import com.gabrielfreire.runandlift.core.designsystem.component.AppMessageCard
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenScaffold
 import com.gabrielfreire.runandlift.core.designsystem.component.AppSelectField
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextField
-import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.validation.AccountFormValidation
 import com.gabrielfreire.runandlift.feature.student.validation.message
@@ -43,53 +40,54 @@ import com.gabrielfreire.runandlift.feature.student.validation.message
  * forma em que ela foi feita — `São Paulo - SP`. O banco guarda só a sigla; o nome por extenso é
  * remontado na carga, uma vez.
  *
+ * **Salvar confirma e fica.** A tela fechava sozinha ao gravar, sem dizer nada: a pessoa tocava em
+ * "Salvar", tudo sumia, e não havia como distinguir "salvou" de "voltou sem salvar". Agora aparece
+ * a confirmação e a tela permanece — quem veio corrigir um dado precisa **ver** a correção pegar, e
+ * a seta de voltar está no topo para quem já terminou.
+ *
  * @param actions os eventos da tela, reunidos: com estado e cidade a assinatura passaria de seis
  *   parâmetros, e seis lambdas soltas em sequência é onde duas trocadas de lugar compilam.
  */
 @Composable
 internal fun AccountScreen(state: AccountUiState, actions: AccountActions, modifier: Modifier = Modifier) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val savedMessage = stringResource(R.string.student_saved)
+
     LaunchedEffect(state.saved) {
-        if (state.saved) actions.onBack()
+        if (!state.saved) return@LaunchedEffect
+
+        // Baixa o sinal **antes** de esperar o aviso sumir: sem isso, uma segunda gravação enquanto
+        // o primeiro aviso ainda está na tela não dispararia o efeito de novo.
+        actions.onSavedShown()
+        snackbarHostState.showSnackbar(message = savedMessage)
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            AppTopBar(
-                title = stringResource(R.string.student_account_title),
-                onBack = actions.onBack,
-                backContentDescription = stringResource(R.string.student_action_back),
-            )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = padding)
-                .padding(paddingValues = Dimens.ScreenPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
-        ) {
-            if (state.loading) return@Column
-
-            AccountFields(state = state, actions = actions)
-
-            if (state.failed) {
-                Text(
-                    text = stringResource(R.string.student_save_failed),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-
-            AppButton(
-                text = stringResource(R.string.student_action_save),
-                onClick = actions.onSubmit,
-                loading = state.saving,
-                modifier = Modifier.fillMaxWidth(),
-            )
+    AppScreenScaffold(
+        title = stringResource(R.string.student_account_title),
+        modifier = modifier,
+        onBack = actions.onBack,
+        backContentDescription = stringResource(R.string.student_action_back),
+        snackbarHostState = snackbarHostState,
+    ) {
+        // Um indicador, e não a tela em branco que havia aqui — branco não é "carregando", é
+        // "quebrado". Ele só aparece se a carga demorar; ver `AppLoadingState`.
+        if (state.loading) {
+            AppLoadingState(contentDescription = stringResource(R.string.student_loading))
+            return@AppScreenScaffold
         }
+
+        AccountFields(state = state, actions = actions)
+
+        if (state.failed) {
+            AppMessageCard(text = stringResource(R.string.student_save_failed))
+        }
+
+        AppButton(
+            text = stringResource(R.string.student_action_save),
+            onClick = actions.onSubmit,
+            loading = state.saving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -220,5 +218,6 @@ private fun previewAccountActions() = AccountActions(
     onOpenStatePicker = {},
     onOpenCityPicker = {},
     onSubmit = {},
+    onSavedShown = {},
     onBack = {},
 )

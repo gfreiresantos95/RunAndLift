@@ -2,11 +2,7 @@ package com.gabrielfreire.runandlift.feature.student.menu
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +13,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
 import com.gabrielfreire.runandlift.core.designsystem.component.AppOutlinedButton
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.feature.student.R
@@ -52,12 +49,8 @@ internal fun StudentMenuScreen(
         tabs = tabs,
         modifier = modifier,
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = Dimens.ScreenPadding)
-                .verticalScroll(rememberScrollState()),
+        AppScreenColumn(
+            modifier = Modifier.padding(paddingValues = innerPadding),
             verticalArrangement = Arrangement.spacedBy(Dimens.SpaceSmall),
         ) {
             MenuSectionTitle(text = stringResource(R.string.student_menu_section_profile))

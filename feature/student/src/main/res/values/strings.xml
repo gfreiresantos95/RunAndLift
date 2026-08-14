@@ -27,8 +27,12 @@
 
     <!-- Treinos. -->
     <string name="student_workouts_title">Treinos</string>
-    <string name="student_workouts_empty">Seus treinos aparecem aqui assim que seu treinador
-        montar o primeiro.</string>
+    <!-- Título do vazio no presente, e não "nenhum treino": ele descreve o que a tela É, e a linha
+         de baixo diz o que falta acontecer — que aqui é coisa de outra pessoa, e dizer isso evita
+         que a pessoa fique procurando o passo que ela teria esquecido. -->
+    <string name="student_workouts_empty_title">Seus treinos aparecem aqui</string>
+    <string name="student_workouts_empty">Assim que seu treinador montar o primeiro, ele chega nesta
+        aba — e fica disponível mesmo sem internet na academia.</string>
 
     <!-- Menu. Duas linhas de perfil porque são dois documentos com dois públicos: "Meus dados" só o
          titular lê, "Perfil de treino" o treinador vinculado também. -->
@@ -47,6 +51,12 @@
     <string name="student_action_save">Salvar</string>
     <string name="student_save_failed">Não deu para salvar agora. Confira sua conexão e tente de
         novo.</string>
+    <!-- Confirmação de salvamento. No passado e sem exclamação: é um recibo, não uma comemoração —
+         a pessoa corrigiu um telefone, não bateu um recorde. -->
+    <string name="student_saved">Alterações salvas.</string>
+    <!-- Anunciado pelo leitor de tela quando o indicador de carregamento entra. Sem isto, quem usa
+         TalkBack não recebe sinal nenhum de que algo está em curso. -->
+    <string name="student_loading">Carregando</string>
 
     <!-- Meus dados. -->
     <string name="student_account_title">Meus dados</string>

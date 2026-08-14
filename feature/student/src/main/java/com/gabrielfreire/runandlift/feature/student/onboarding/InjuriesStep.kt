@@ -19,6 +19,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextField
+import com.gabrielfreire.runandlift.core.designsystem.rememberSelectionHaptics
 import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.text.label
@@ -131,9 +132,16 @@ private fun InjuryChips(form: TrainingFormState, actions: TrainingFormActions) {
  */
 @Composable
 private fun InjuryChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val haptics = rememberSelectionHaptics()
+
     FilterChip(
         selected = selected,
-        onClick = onClick,
+        // Onze chips lado a lado, alguns com duas palavras: o retorno tátil é o que confirma qual
+        // deles o dedo alcançou, e ligar soa diferente de desligar.
+        onClick = {
+            haptics.toggled(!selected)
+            onClick()
+        },
         label = { Text(text = label) },
         leadingIcon = if (selected) {
             { Icon(painter = painterResource(AppIcons.Check), contentDescription = null) }

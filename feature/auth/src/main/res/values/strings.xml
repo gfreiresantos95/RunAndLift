@@ -2,6 +2,8 @@
     <!-- Marca, usada na abertura e na barra superior do fluxo de entrada -->
     <string name="auth_app_name">Run &amp; Lift</string>
     <string name="auth_back">Voltar</string>
+    <!-- Anunciado pelo leitor de tela quando o indicador de carregamento entra. -->
+    <string name="auth_loading">Carregando</string>
 
     <!-- Boas-vindas: escolha de papel antes do login -->
     <string name="welcome_slogan">Do plano à última repetição, no mesmo lugar.</string>

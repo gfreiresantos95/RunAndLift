@@ -149,6 +149,13 @@ The tests worth keeping honest are the ones for rules the UI can't show you: pas
 
 ## Design system (`:core`, package `core.designsystem`)
 
+**Before writing a screen, read `docs/design-guidelines.md`** — it is the checklist (four states per
+screen, which scaffold, motion, colour, a11y, UX writing), and `docs/adr/0017` carries the reasoning.
+The one rule that summarises it: if you are hand-rolling a frame, a state or a spacing, a component
+for it already exists. **Every screen owes four states** — `AppLoadingState`, `AppEmptyState`, its
+content, and `AppMessageCard` — and `if (loading) return` is never one of them, because it draws a
+blank screen, which reads as broken rather than as loading.
+
 Four layers, and code should always consume the highest one:
 
 - `Color.kt` — brand tonal ramps (Cobalto/Aço/Brasa + state families) as `internal` tokens. **Never referenced from a screen.**
@@ -157,6 +164,13 @@ Four layers, and code should always consume the highest one:
 - `Type.kt`, `Shape.kt`, `Dimens.kt` — `AppTypography`, `AppShapes`, plus the spacing grid and `Dimens.MinTouchTarget` (48 dp) with the `Modifier.minimumTouchTarget()` helper.
 
 `:core` has **no `strings.xml` by design** — every component takes its text as a parameter, so the design system never decides language. Preview sample copy therefore can't come from `stringResource`; it lives in `PreviewSamples.kt`, one file for the whole module. Modules that *do* have string resources (`:feature:auth`) must use `stringResource` in previews instead — a literal there is a second copy of a string that already exists.
+
+`AppScreenScaffold` (title + back arrow) and `AppTabScaffold` (bottom bar) are the two screen frames;
+both wire the top bar's `pinnedScrollBehavior` internally, which is what keeps a screen from ever
+touching that experimental Material API. Scrolling content goes in `AppScreenColumn`, which applies
+the 600 dp `Dimens.ContentMaxWidth` — the line that stops the app from being a stretched phone on a
+tablet or foldable. `AppMotion` owns every duration and easing, including the navigation transitions
+the root `NavHost` applies; a screen never writes `tween(300)` of its own.
 
 `AppSearchablePicker` is the full-screen "choose one from a long list" — top bar, search box, list, and three distinct outcomes, because **an empty search and a list that failed to load are different screens**: one says there is nothing matching, the other offers to try again. It knows nothing about states or cities, which is what lets the same screen serve two feature modules that don't see each other; the filtering happens in the ViewModel, since a rule inside a composable can't be tested without booting a screen. `AppSelectField` is the field that opens it: it looks like `AppTextField` on purpose, is read-only rather than disabled (grey means "unavailable", and this field is perfectly available — just not by keyboard), and takes its taps on a layer above, because an `OutlinedTextField` swallows the touch to place a cursor even when read-only.
 

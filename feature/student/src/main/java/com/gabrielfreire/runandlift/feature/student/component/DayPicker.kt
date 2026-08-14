@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.contentDescription
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
+import com.gabrielfreire.runandlift.core.designsystem.rememberSelectionHaptics
 import com.gabrielfreire.runandlift.feature.student.text.fullLabel
 import com.gabrielfreire.runandlift.feature.student.text.shortLabel
 import java.time.DayOfWeek
@@ -56,11 +57,21 @@ internal fun DayPicker(selected: Set<DayOfWeek>, onToggle: (DayOfWeek) -> Unit, 
 @Composable
 private fun DayToggle(day: DayOfWeek, selected: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     val label = day.fullLabel()
+    val haptics = rememberSelectionHaptics()
 
     Surface(
         modifier = modifier
             .height(Dimens.MinTouchTarget)
-            .toggleable(value = selected, role = Role.Checkbox, onValueChange = { onToggle() })
+            // As sete teclas são pequenas e ficam coladas: aqui o retorno tátil não é enfeite, é o
+            // que diz que o dedo pegou a certa sem obrigar a conferir com o olho.
+            .toggleable(
+                value = selected,
+                role = Role.Checkbox,
+                onValueChange = { value ->
+                    haptics.toggled(value)
+                    onToggle()
+                },
+            )
             // O rótulo curto é decoração para o olho; quem ouve recebe o nome inteiro, e o estado
             // vem do próprio `toggleable`.
             .clearAndSetSemantics { contentDescription = label },

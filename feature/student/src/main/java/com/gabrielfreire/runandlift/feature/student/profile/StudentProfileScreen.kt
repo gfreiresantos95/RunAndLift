@@ -1,26 +1,19 @@
 package com.gabrielfreire.runandlift.feature.student.profile
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
-import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
+import com.gabrielfreire.runandlift.core.designsystem.component.AppLoadingState
+import com.gabrielfreire.runandlift.core.designsystem.component.AppMessageCard
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenScaffold
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormActions
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormState
@@ -37,7 +30,6 @@ import com.gabrielfreire.runandlift.feature.student.trainingform.previewTraining
  * tela com os dois juntos esconderia essa diferença de quem precisa dela para decidir o que
  * preencher — e é a diferença que o consentimento de dado de saúde torna concreta.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun StudentProfileScreen(
     state: StudentProfileUiState,
@@ -47,48 +39,39 @@ internal fun StudentProfileScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val savedMessage = stringResource(R.string.student_saved)
+
+    // Confirma e fica, como "Meus dados": esta tela existe para corrigir o que o onboarding deixou
+    // passar, e fechar sozinha era exatamente o que impedia de ver que a correção pegou.
     LaunchedEffect(state.saved) {
-        if (state.saved) onBack()
+        if (state.saved) snackbarHostState.showSnackbar(message = savedMessage)
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            AppTopBar(
-                title = stringResource(R.string.student_profile_title),
-                onBack = onBack,
-                backContentDescription = stringResource(R.string.student_action_back),
-            )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = padding)
-                .padding(paddingValues = Dimens.ScreenPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
-        ) {
-            if (state.loading) return@Column
-
-            TrainingFormFields(form = form, actions = actions)
-
-            if (state.failed) {
-                Text(
-                    text = stringResource(R.string.student_save_failed),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-
-            AppButton(
-                text = stringResource(R.string.student_action_save),
-                onClick = onSubmit,
-                loading = state.saving,
-                modifier = Modifier.fillMaxWidth(),
-            )
+    AppScreenScaffold(
+        title = stringResource(R.string.student_profile_title),
+        modifier = modifier,
+        onBack = onBack,
+        backContentDescription = stringResource(R.string.student_action_back),
+        snackbarHostState = snackbarHostState,
+    ) {
+        if (state.loading) {
+            AppLoadingState(contentDescription = stringResource(R.string.student_loading))
+            return@AppScreenScaffold
         }
+
+        TrainingFormFields(form = form, actions = actions)
+
+        if (state.failed) {
+            AppMessageCard(text = stringResource(R.string.student_save_failed))
+        }
+
+        AppButton(
+            text = stringResource(R.string.student_action_save),
+            onClick = onSubmit,
+            loading = state.saving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
