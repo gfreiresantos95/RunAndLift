@@ -4,6 +4,7 @@ import android.content.Context
 import com.gabrielfreire.runandlift.data.DataContainer
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
+import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 
 /**
@@ -35,4 +36,7 @@ class AppContainer(context: Context) {
 
     /** Papéis e papel ativo (E1-02, E1-09). */
     val userRepository: UserRepository get() = dataContainer.userRepository
+
+    /** Perfil de treino do aluno, em `students/{uid}` (E2-01). */
+    val studentRepository: StudentRepository get() = dataContainer.studentRepository
 }

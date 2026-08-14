@@ -4,8 +4,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.gabrielfreire.runandlift.data.auth.AuthRepository
-import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.trainer.home.TrainerHomeDestination
 import com.gabrielfreire.runandlift.feature.trainer.menu.TrainerMenuDestination
 import com.gabrielfreire.runandlift.feature.trainer.workouts.TrainerWorkoutsDestination
@@ -22,16 +20,10 @@ import com.gabrielfreire.runandlift.feature.trainer.workouts.TrainerWorkoutsDest
  */
 fun NavGraphBuilder.trainerGraph(
     navController: NavHostController,
-    authRepository: AuthRepository,
-    userRepository: UserRepository,
+    dependencies: TrainerDependencies,
     onSignedOut: () -> Unit,
     onSwitchRole: (() -> Unit)?,
 ) {
-    val dependencies = TrainerDependencies(
-        authRepository = authRepository,
-        userRepository = userRepository,
-    )
-
     navigation(startDestination = TrainerRoutes.HOME, route = TrainerRoutes.GRAPH) {
         composable(TrainerRoutes.HOME) {
             TrainerHomeDestination(navController = navController, dependencies = dependencies)

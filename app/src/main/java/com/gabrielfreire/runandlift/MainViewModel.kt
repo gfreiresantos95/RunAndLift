@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
+import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.completeprofile.ProfileCompletion
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
+import com.gabrielfreire.runandlift.feature.student.navigation.StudentRoutes
 import com.gabrielfreire.runandlift.navigation.RoleRoutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,8 +32,11 @@ import kotlinx.coroutines.launch
  * Resolver isso aqui, e não depois da primeira composição, é o que evita o app abrir na tela de
  * login e trocar para a home um frame depois — o piscar que o backlog quer evitar na abertura.
  */
-class MainViewModel(private val authRepository: AuthRepository, private val userRepository: UserRepository) :
-    ViewModel() {
+class MainViewModel(
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
+    private val studentRepository: StudentRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -50,9 +55,18 @@ class MainViewModel(private val authRepository: AuthRepository, private val user
             val incomplete = account != null && role != null &&
                 ProfileCompletion.missing(userRepository, account.uid, role).any
 
+            // Documento inexistente em `students/{uid}` significa que o passo a passo nunca
+            // aconteceu — é a marca de "primeiro acesso como aluno", e não uma contagem de campos
+            // vazios: quem pulou tudo já tem documento, e não deve rever o onboarding.
+            //
+            // Leitura que falha responde "já aconteceu", pela mesma razão de ProfileCompletion:
+            // sem rede e sem cache, repetir o onboarding é pior do que deixá-lo passar.
+            val needsOnboarding = account != null && role == ActiveRole.STUDENT && !incomplete &&
+                runCatching { studentRepository.profile(account.uid) }.map { it == null }.getOrDefault(false)
+
             _uiState.value = MainUiState(
                 ready = true,
-                startDestination = startDestinationFor(account != null, role, incomplete),
+                startDestination = startDestinationFor(account != null, role, incomplete, needsOnboarding),
                 activeRole = role,
                 canSwitchRole = profile?.roles?.hasBoth == true,
             )
@@ -79,10 +93,24 @@ class MainViewModel(private val authRepository: AuthRepository, private val user
         }
     }
 
-    private fun startDestinationFor(hasAccount: Boolean, role: ActiveRole?, incomplete: Boolean): String = when {
+    private fun startDestinationFor(
+        hasAccount: Boolean,
+        role: ActiveRole?,
+        incomplete: Boolean,
+        needsOnboarding: Boolean,
+    ): String = when {
         !hasAccount -> AuthRoutes.GRAPH
+
         role == null -> AuthRoutes.ROLE_SELECTION
+
         incomplete -> AuthRoutes.completeProfile(role)
+
+        // Depois do cadastro completo, e só para o aluno: o passo a passo que apresenta quem ele é
+        // ao treinador. Vem **depois** da conclusão de cadastro porque aquela é obrigação legal e
+        // esta é conversa de produto — inverter a ordem pediria dado de saúde antes do aceite dos
+        // termos.
+        needsOnboarding -> StudentRoutes.ONBOARDING
+
         else -> RoleRoutes.graphFor(role)
     }
 }

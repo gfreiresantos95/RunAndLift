@@ -94,6 +94,79 @@ describe('acesso do treinador ao aluno', () => {
   });
 });
 
+/**
+ * O perfil de treino que o onboarding do aluno grava (E2-01).
+ *
+ * O documento carrega dado de saúde — peso, altura e histórico de lesão —, e é por isso que a
+ * escrita é do titular e de mais ninguém: um treinador que pudesse escrever aqui poderia registrar
+ * uma condição clínica em nome do aluno.
+ */
+describe('perfil de treino do aluno', () => {
+  const profile = {
+    level: 'INTERMEDIATE',
+    goal: 'HYPERTROPHY',
+    availableDays: [1, 3, 5],
+    weightKg: 72.5,
+    heightCm: 175,
+    restrictions: 'Ombro direito',
+    healthConsent: { version: '2026-08-13' },
+  };
+
+  it('o aluno grava o próprio perfil', async () => {
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(student.doc(`students/${STUDENT}`).set(profile));
+  });
+
+  it('o aluno lê o próprio perfil', async () => {
+    await seed(async (db) => {
+      await db.doc(`students/${STUDENT}`).set(profile);
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(student.doc(`students/${STUDENT}`).get());
+  });
+
+  it('o treinador com vínculo ativo lê o perfil do aluno', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set(activeLink(TRAINER, STUDENT));
+      await db.doc(`students/${STUDENT}`).set(profile);
+    });
+
+    // É para isto que o documento existe separado de users/{uid}: o treinador precisa ler.
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(trainer.doc(`students/${STUDENT}`).get());
+  });
+
+  it('NÃO deixa o treinador escrever no perfil do aluno', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set(activeLink(TRAINER, STUDENT));
+      await db.doc(`students/${STUDENT}`).set(profile);
+    });
+
+    // Ler é o trabalho dele; escrever seria registrar dado de saúde em nome de outra pessoa.
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertFails(trainer.doc(`students/${STUDENT}`).update({ weightKg: 80 }));
+  });
+
+  it('NÃO deixa um aluno ler o perfil de outro', async () => {
+    await seed(async (db) => {
+      await db.doc(`students/${OTHER_STUDENT}`).set(profile);
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertFails(student.doc(`students/${OTHER_STUDENT}`).get());
+  });
+
+  it('NÃO deixa quem não está autenticado ler nada', async () => {
+    await seed(async (db) => {
+      await db.doc(`students/${STUDENT}`).set(profile);
+    });
+
+    const anonymous = testEnv.unauthenticatedContext().firestore();
+    await assertFails(anonymous.doc(`students/${STUDENT}`).get());
+  });
+});
+
 describe('sessões de treino', () => {
   it('o aluno registra o próprio treino', async () => {
     const student = testEnv.authenticatedContext(STUDENT).firestore();

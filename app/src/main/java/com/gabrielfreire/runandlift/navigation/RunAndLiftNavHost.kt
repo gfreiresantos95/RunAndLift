@@ -7,12 +7,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.gabrielfreire.runandlift.R
-import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.data.user.UserRepository
+import com.gabrielfreire.runandlift.di.AppContainer
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 import com.gabrielfreire.runandlift.feature.auth.navigation.authGraph
+import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependencies
 import com.gabrielfreire.runandlift.feature.student.navigation.studentGraph
+import com.gabrielfreire.runandlift.feature.trainer.navigation.TrainerDependencies
 import com.gabrielfreire.runandlift.feature.trainer.navigation.trainerGraph
 
 /**
@@ -30,8 +31,7 @@ import com.gabrielfreire.runandlift.feature.trainer.navigation.trainerGraph
 @Composable
 fun RunAndLiftNavHost(
     startDestination: String,
-    authRepository: AuthRepository,
-    userRepository: UserRepository,
+    container: AppContainer,
     canSwitchRole: Boolean,
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
@@ -54,8 +54,8 @@ fun RunAndLiftNavHost(
     ) {
         authGraph(
             navController = navController,
-            authRepository = authRepository,
-            userRepository = userRepository,
+            authRepository = container.authRepository,
+            userRepository = container.userRepository,
             webClientId = webClientId,
             onAuthenticatedWithRole = { role ->
                 navController.navigateToRole(role, clearAuth = true)
@@ -64,16 +64,21 @@ fun RunAndLiftNavHost(
 
         trainerGraph(
             navController = navController,
-            authRepository = authRepository,
-            userRepository = userRepository,
+            dependencies = TrainerDependencies(
+                authRepository = container.authRepository,
+                userRepository = container.userRepository,
+            ),
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,
         )
 
         studentGraph(
             navController = navController,
-            authRepository = authRepository,
-            userRepository = userRepository,
+            dependencies = StudentDependencies(
+                authRepository = container.authRepository,
+                userRepository = container.userRepository,
+                studentRepository = container.studentRepository,
+            ),
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,
         )

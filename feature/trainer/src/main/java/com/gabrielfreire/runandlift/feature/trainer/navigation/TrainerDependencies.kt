@@ -9,4 +9,4 @@ import com.gabrielfreire.runandlift.data.user.UserRepository
  * Quem constrói é `:app`, dono do container; este módulo apenas recebe. Assim uma tela nova muda o
  * conteúdo desta classe, e não a assinatura de [trainerGraph] e a de quem a chama.
  */
-internal data class TrainerDependencies(val authRepository: AuthRepository, val userRepository: UserRepository)
+data class TrainerDependencies(val authRepository: AuthRepository, val userRepository: UserRepository)

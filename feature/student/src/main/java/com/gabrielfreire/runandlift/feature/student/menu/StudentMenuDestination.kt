@@ -13,8 +13,8 @@ import com.gabrielfreire.runandlift.feature.student.navigation.studentTabBar
  * Liga o menu do aluno ao seu ViewModel.
  *
  * [onSignedOut] é chamado **depois** de a sessão ser encerrada, e não junto do toque: navegar antes
- * deixaria a tela de entrada visível com a sessão ainda ativa por um instante, e um retorno rápido
- * cairia de novo na home.
+ * deixaria a tela de entrada visível com a sessão ainda ativa, e um retorno rápido cairia de novo
+ * na home.
  */
 @Composable
 internal fun StudentMenuDestination(
@@ -22,6 +22,7 @@ internal fun StudentMenuDestination(
     dependencies: StudentDependencies,
     onSignedOut: () -> Unit,
     onSwitchRole: (() -> Unit)?,
+    onOpenProfile: () -> Unit,
     viewModel: StudentMenuViewModel = viewModel(
         factory = viewModelFactory {
             initializer { StudentMenuViewModel(dependencies.authRepository) }
@@ -30,6 +31,7 @@ internal fun StudentMenuDestination(
 ) {
     StudentMenuScreen(
         tabs = studentTabBar(navController = navController, current = StudentTab.MENU),
+        onOpenProfile = onOpenProfile,
         onSignOut = { viewModel.signOut(onSignedOut) },
         onSwitchRole = onSwitchRole,
     )

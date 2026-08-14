@@ -1,7 +1,7 @@
 <resources>
     <!--
         O nome do app aparece aqui, e não vem de :app, porque módulo de feature não enxerga o
-        aplicativo — é a mesma direção de dependência que mantém :feature-auth independente. São
+        aplicativo — é a mesma direção de dependência que mantém :feature:auth independente. São
         duas cópias da mesma palavra, e é o preço de a seta apontar para um lado só.
     -->
     <string name="student_app_name">Run &amp; Lift</string>
@@ -17,6 +17,14 @@
     <string name="student_home_greeting_anonymous">Olá!</string>
     <string name="student_home_role">Aluno</string>
 
+    <!-- Aviso de perfil incompleto. Diz quantas faltam para a pessoa decidir se agora é hora. -->
+    <plurals name="student_home_reminder_title">
+        <item quantity="one">Falta %1$d resposta no seu perfil</item>
+        <item quantity="other">Faltam %1$d respostas no seu perfil</item>
+    </plurals>
+    <string name="student_home_reminder_body">Quanto mais o seu treinador souber sobre você, mais o
+        treino é seu. Toque para completar.</string>
+
     <!-- Treinos. -->
     <string name="student_workouts_title">Treinos</string>
     <string name="student_workouts_empty">Seus treinos aparecem aqui assim que seu treinador
@@ -24,6 +32,116 @@
 
     <!-- Menu. -->
     <string name="student_menu_title">Menu</string>
+    <string name="student_menu_section_profile">Perfil</string>
+    <string name="student_menu_section_account">Conta</string>
+    <string name="student_menu_profile">Meu perfil de treino</string>
+    <string name="student_menu_profile_description">Nível, objetivo, dias disponíveis e o que o seu
+        treinador precisa saber.</string>
     <string name="student_menu_sign_out">Sair da conta</string>
     <string name="student_menu_switch_role">Trocar de papel</string>
+
+    <string name="student_action_back">Voltar</string>
+
+    <!-- Onboarding: cabeçalho e navegação. -->
+    <string name="student_onboarding_progress">Passo %1$d de %2$d</string>
+    <string name="student_onboarding_next">Continuar</string>
+    <string name="student_onboarding_finish">Concluir</string>
+    <string name="student_onboarding_skip">Pular por agora</string>
+    <string name="student_onboarding_save_failed">Não deu para salvar agora. Você pode tentar de
+        novo, ou seguir e completar depois pelo seu perfil.</string>
+
+    <!-- Onboarding: títulos em segunda pessoa, porque é uma conversa. A linha de apoio diz sempre
+         para que a resposta serve — é o que faz a pessoa responder em vez de pular. -->
+    <string name="student_onboarding_level_title">Como está o seu treino hoje?</string>
+    <string name="student_onboarding_level_subtitle">Isso decide por onde o seu treinador começa —
+        não há resposta errada.</string>
+    <string name="student_onboarding_goal_title">Qual é o seu objetivo?</string>
+    <string name="student_onboarding_goal_subtitle">A mesma pessoa treina diferente para cada um
+        deles. Escolha o principal.</string>
+    <string name="student_onboarding_days_title">Em quais dias você pode treinar?</string>
+    <string name="student_onboarding_days_subtitle">O programa é montado em cima da sua agenda, e
+        não do contrário.</string>
+    <string name="student_onboarding_health_title">Podemos guardar seus dados de saúde?</string>
+    <string name="student_onboarding_health_subtitle">Peso, altura e histórico de lesão só são
+        guardados com a sua autorização.</string>
+    <string name="student_onboarding_measures_title">Peso e altura</string>
+    <string name="student_onboarding_measures_subtitle">São o ponto de partida. A avaliação com o
+        seu treinador é que confere.</string>
+    <string name="student_onboarding_restrictions_title">Alguma lesão ou limitação?</string>
+    <string name="student_onboarding_restrictions_subtitle">É o que evita um exercício que te
+        machuque. Escreva com as suas palavras.</string>
+
+    <!-- Onboarding: dias. -->
+    <string name="student_onboarding_days_none">Nenhum dia escolhido ainda.</string>
+    <plurals name="student_onboarding_days_count">
+        <item quantity="one">%1$d dia por semana</item>
+        <item quantity="other">%1$d dias por semana</item>
+    </plurals>
+
+    <!-- Consentimento de dado de saúde. O aviso vem antes da caixa: primeiro o que será guardado,
+         para quê e quem vê; só então a pergunta. -->
+    <string name="student_onboarding_health_notice">Peso, altura e histórico de lesão são dados de
+        saúde. Servem para o seu treinador ajustar o que prescreve, e só ele — com vínculo ativo com
+        você — pode lê-los. Você pode responder depois, ou não responder.</string>
+    <string name="student_onboarding_health_consent">Autorizo guardar meus dados de saúde para
+        ajustar o meu treino.</string>
+
+    <!-- Níveis. -->
+    <string name="student_level_beginner">Iniciante</string>
+    <string name="student_level_beginner_description">Nunca treinei, ou parei há tanto tempo que
+        volto do começo.</string>
+    <string name="student_level_intermediate">Intermediário</string>
+    <string name="student_level_intermediate_description">Treino com alguma regularidade e conheço
+        os movimentos principais.</string>
+    <string name="student_level_advanced">Avançado</string>
+    <string name="student_level_advanced_description">Treino há anos, sem parar por muito tempo, e
+        acompanho minhas cargas.</string>
+
+    <!-- Objetivos. -->
+    <string name="student_goal_hypertrophy">Ganhar massa muscular</string>
+    <string name="student_goal_strength">Ficar mais forte</string>
+    <string name="student_goal_weight_loss">Perder gordura</string>
+    <string name="student_goal_conditioning">Ganhar fôlego e resistência</string>
+    <string name="student_goal_health">Saúde e disposição</string>
+
+    <!-- Dias da semana. Abreviados na tela, por extenso para o leitor de tela. -->
+    <string name="student_day_monday">Seg</string>
+    <string name="student_day_tuesday">Ter</string>
+    <string name="student_day_wednesday">Qua</string>
+    <string name="student_day_thursday">Qui</string>
+    <string name="student_day_friday">Sex</string>
+    <string name="student_day_saturday">Sáb</string>
+    <string name="student_day_sunday">Dom</string>
+    <string name="student_day_monday_full">Segunda-feira</string>
+    <string name="student_day_tuesday_full">Terça-feira</string>
+    <string name="student_day_wednesday_full">Quarta-feira</string>
+    <string name="student_day_thursday_full">Quinta-feira</string>
+    <string name="student_day_friday_full">Sexta-feira</string>
+    <string name="student_day_saturday_full">Sábado</string>
+    <string name="student_day_sunday_full">Domingo</string>
+
+    <!-- Campos. -->
+    <string name="student_field_weight">Peso (kg)</string>
+    <string name="student_field_weight_support">Ponto de partida para acompanhar sua evolução.</string>
+    <string name="student_field_height">Altura (cm)</string>
+    <string name="student_field_height_support">Em centímetros. Exemplo: 175.</string>
+    <string name="student_field_restrictions">Lesões e limitações</string>
+    <string name="student_field_restrictions_support">Ex.: dói o ombro direito quando levanto acima
+        da cabeça.</string>
+    <string name="student_field_restrictions_sample">Dói o ombro direito quando levanto acima da
+        cabeça.</string>
+    <string name="student_field_email">E-mail</string>
+    <string name="student_field_email_support">É como você entra no app. Para trocá-lo, fale com o
+        suporte.</string>
+
+    <!-- Erros dos campos digitados. As frases falam de conferir o número, nunca do valor: quem
+         digitou 7 no lugar de 70 precisa do aviso, quem pesa 140 não precisa de opinião. -->
+    <string name="student_error_weight_invalid">Confira o peso em quilos. Exemplo: 72,5.</string>
+    <string name="student_error_height_invalid">Confira a altura em centímetros. Exemplo: 175.</string>
+
+    <!-- Edição de perfil. -->
+    <string name="student_profile_title">Meu perfil</string>
+    <string name="student_profile_save">Salvar</string>
+    <string name="student_profile_save_failed">Não deu para salvar agora. Confira sua conexão e
+        tente de novo.</string>
 </resources>
