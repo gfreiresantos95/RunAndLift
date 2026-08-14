@@ -29,7 +29,14 @@ internal fun TrainingFormState.toDetails(includeDays: Boolean, consentJustGiven:
     availableDays = availableDays.takeIf { includeDays },
     weightKg = TrainingFormValidation.parseWeight(weight),
     heightCm = TrainingFormValidation.parseHeight(height),
-    restrictions = restrictions.trim().takeIf { it.isNotEmpty() },
+    // Conjunto vazio **é** resposta quando a pergunta foi respondida — "não tenho lesão nenhuma" —,
+    // e é por isso que quem decide se ele vai é [TrainingFormState.injuriesAnswered] e não o
+    // tamanho do conjunto. Sem isso, declarar-se saudável seria indistinguível de pular o passo.
+    injuries = injuries.takeIf { injuriesAnswered },
+    // Texto vazio vai adiante, em vez de virar `null`, porque aqui vazio quer dizer "apaguei a
+    // observação" — quem desmarcou "Outra" precisa ver o texto sumir do banco também. O repositório
+    // traduz isso em remoção do campo.
+    injuryNotes = injuryNotes.trim().takeIf { injuriesAnswered },
     healthConsent = HealthDataConsent(HealthDataConsent.CURRENT_VERSION).takeIf { consentJustGiven },
 )
 
@@ -45,6 +52,14 @@ internal fun TrainingFormState.prefilledFrom(profile: StudentProfile?) = copy(
     availableDays = profile?.availableDays.orEmpty(),
     weight = TrainingFormValidation.weightInput(profile?.weightKg),
     height = TrainingFormValidation.heightInput(profile?.heightCm),
-    restrictions = profile?.restrictions.orEmpty(),
+    injuries = profile?.injuries.orEmpty(),
+    // "Nenhuma" acesa é o que um conjunto **vazio e existente** significa no banco. Quem respondeu
+    // que não tem lesão precisa reencontrar a própria resposta marcada, e não o formulário em
+    // branco de quem nunca respondeu.
+    noInjuries = profile?.injuries?.isEmpty() == true && profile.injuryNotes.isNullOrBlank(),
+    // O chip "Outra" volta aceso porque há texto — inclusive o texto livre da versão anterior do
+    // campo, que o repositório entrega por aqui.
+    otherInjury = !profile?.injuryNotes.isNullOrBlank(),
+    injuryNotes = profile?.injuryNotes.orEmpty(),
     healthConsent = profile?.hasHealthConsent == true,
 )

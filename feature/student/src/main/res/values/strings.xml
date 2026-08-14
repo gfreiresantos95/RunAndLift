@@ -120,9 +120,11 @@
     <string name="student_onboarding_measures_title">Peso e altura</string>
     <string name="student_onboarding_measures_subtitle">São o ponto de partida. A avaliação com o
         seu treinador é que confere.</string>
-    <string name="student_onboarding_restrictions_title">Alguma lesão ou limitação?</string>
-    <string name="student_onboarding_restrictions_subtitle">É o que evita um exercício que te
-        machuque. Escreva com as suas palavras.</string>
+    <string name="student_onboarding_injuries_title">Alguma lesão ou limitação?</string>
+    <!-- Diz que é para marcar, e que marcar nada também é resposta: um campo em branco fazia metade
+         das pessoas pular sem saber o que era esperado delas. -->
+    <string name="student_onboarding_injuries_subtitle">Marque as regiões que te incomodam. É o que
+        evita um exercício que te machuque — e se não houver nenhuma, diga isso também.</string>
 
     <!-- Onboarding: dias. -->
     <string name="student_onboarding_days_none">Nenhum dia escolhido ainda.</string>
@@ -178,10 +180,28 @@
     <string name="student_field_weight_support">Ponto de partida para acompanhar sua evolução.</string>
     <string name="student_field_height">Altura (cm)</string>
     <string name="student_field_height_support">Em centímetros. Exemplo: 175.</string>
-    <string name="student_field_restrictions">Lesões e limitações</string>
-    <string name="student_field_restrictions_support">Ex.: dói o ombro direito quando levanto acima
+    <!-- Regiões do corpo, na ordem da cabeça aos pés. Os termos são os da anamnese, e não
+         paráfrases populares: são os que a pessoa já ouviu no consultório e os que o treinador vai
+         reler ao lado do que o médico escreveu. -->
+    <string name="student_injury_neck">Pescoço</string>
+    <string name="student_injury_shoulder">Ombro</string>
+    <string name="student_injury_elbow">Cotovelo</string>
+    <string name="student_injury_wrist_hand">Punho ou mão</string>
+    <string name="student_injury_upper_back">Coluna torácica</string>
+    <string name="student_injury_lower_back">Coluna lombar</string>
+    <string name="student_injury_hip">Quadril</string>
+    <string name="student_injury_knee">Joelho</string>
+    <string name="student_injury_ankle_foot">Tornozelo ou pé</string>
+    <!-- "Nenhuma" é resposta, e não ausência dela: sem ela, quem não tem lesão carregaria o aviso
+         de perfil incompleto para sempre. -->
+    <string name="student_injury_none">Nenhuma</string>
+    <string name="student_injury_other">Outra</string>
+
+    <!-- O texto livre que a lista não substitui: a região diz onde, isto diz o quê e quando. -->
+    <string name="student_field_injury_notes">Conte um pouco mais</string>
+    <string name="student_field_injury_notes_support">Ex.: dói o ombro direito quando levanto acima
         da cabeça.</string>
-    <string name="student_field_restrictions_sample">Dói o ombro direito quando levanto acima da
+    <string name="student_field_injury_notes_sample">Dói o ombro direito quando levanto acima da
         cabeça.</string>
     <string name="student_field_email">E-mail</string>
     <string name="student_field_email_support">É como você entra no app, e por isso não muda por

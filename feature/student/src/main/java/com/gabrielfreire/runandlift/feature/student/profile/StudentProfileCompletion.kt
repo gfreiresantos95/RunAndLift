@@ -43,7 +43,10 @@ internal object StudentProfileCompletion {
             availableDays = profile.availableDays.isEmpty(),
             // Os dois juntos: peso sem altura não é meia resposta útil, é uma pergunta pela metade.
             measures = consented && (profile.weightKg == null || profile.heightCm == null),
-            restrictions = consented && profile.restrictions.isNullOrBlank(),
+            // Respondida de qualquer forma conta como respondida, inclusive "não tenho nenhuma" —
+            // que é o caso mais comum e o único que, sem esta distinção, ficaria preso no aviso
+            // para sempre.
+            injuries = consented && !profile.hasAnsweredInjuries,
             healthConsent = !consented,
         )
     }

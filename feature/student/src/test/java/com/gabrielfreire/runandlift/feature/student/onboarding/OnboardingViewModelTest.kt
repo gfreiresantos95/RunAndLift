@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.onboarding
 
 import com.gabrielfreire.runandlift.data.model.HealthDataConsent
+import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
 import com.gabrielfreire.runandlift.feature.student.fake.FakeAuthRepository
@@ -107,7 +108,9 @@ class OnboardingViewModelTest {
         viewModel.formActions.onWeightChange("72,5")
         viewModel.formActions.onHeightChange("175")
         viewModel.onStepDone(answered = true)
-        viewModel.formActions.onRestrictionsChange("Ombro direito")
+        viewModel.formActions.onInjuryToggle(InjuryArea.SHOULDER)
+        viewModel.formActions.onOtherInjuryToggle()
+        viewModel.formActions.onInjuryNotesChange("Dói ao levantar acima da cabeça")
         viewModel.onStepDone(answered = true)
         advanceUntilIdle()
 
@@ -117,7 +120,8 @@ class OnboardingViewModelTest {
         assertEquals(setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY), details?.availableDays)
         assertEquals(72.5, details?.weightKg)
         assertEquals(175, details?.heightCm)
-        assertEquals("Ombro direito", details?.restrictions)
+        assertEquals(setOf(InjuryArea.SHOULDER), details?.injuries)
+        assertEquals("Dói ao levantar acima da cabeça", details?.injuryNotes)
         assertEquals(HealthDataConsent.CURRENT_VERSION, details?.healthConsent?.version)
     }
 

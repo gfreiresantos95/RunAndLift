@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.profile
 
 import com.gabrielfreire.runandlift.data.model.HealthDataConsent
+import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.StudentProfile
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
 import com.gabrielfreire.runandlift.feature.student.fake.FakeAuthRepository
@@ -46,7 +47,7 @@ class StudentProfileViewModelTest {
         val viewModel = viewModel(students = students)
         advanceUntilIdle()
 
-        viewModel.formActions.onRestrictionsChange("Joelho esquerdo")
+        viewModel.formActions.onInjuryToggle(InjuryArea.KNEE)
         viewModel.onSubmit()
         advanceUntilIdle()
 

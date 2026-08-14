@@ -7,7 +7,7 @@ package com.gabrielfreire.runandlift.feature.student.onboarding
  * a agenda, e só então o corpo — que é a parte que exige autorização para ser guardada.
  *
  * [HEALTH_CONSENT] fica no meio de propósito. É a porta dos dois últimos: quem não aceita não vê
- * [MEASURES] nem [RESTRICTIONS], porque não faz sentido perguntar o que não se pode guardar. Pedir
+ * [MEASURES] nem [INJURIES], porque não faz sentido perguntar o que não se pode guardar. Pedir
  * o aceite no primeiro passo teria o efeito oposto — ninguém autoriza dado sensível antes de saber
  * para que serve o aplicativo.
  *
@@ -19,7 +19,7 @@ internal enum class OnboardingStep {
     DAYS,
     HEALTH_CONSENT,
     MEASURES,
-    RESTRICTIONS,
+    INJURIES,
     ;
 
     companion object {
@@ -27,7 +27,7 @@ internal enum class OnboardingStep {
         val ALWAYS_SHOWN = listOf(LEVEL, GOAL, DAYS, HEALTH_CONSENT)
 
         /** Os que só existem com autorização para guardar dado de saúde. */
-        val BEHIND_CONSENT = listOf(MEASURES, RESTRICTIONS)
+        val BEHIND_CONSENT = listOf(MEASURES, INJURIES)
 
         /**
          * A sequência para um aluno que autorizou, ou não, o tratamento de dado de saúde.

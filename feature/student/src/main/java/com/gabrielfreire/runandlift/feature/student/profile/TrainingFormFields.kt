@@ -15,9 +15,9 @@ import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.onboarding.DaysStep
 import com.gabrielfreire.runandlift.feature.student.onboarding.GoalStep
 import com.gabrielfreire.runandlift.feature.student.onboarding.HealthConsentStep
+import com.gabrielfreire.runandlift.feature.student.onboarding.InjuriesStep
 import com.gabrielfreire.runandlift.feature.student.onboarding.LevelStep
 import com.gabrielfreire.runandlift.feature.student.onboarding.MeasuresStep
-import com.gabrielfreire.runandlift.feature.student.onboarding.RestrictionsStep
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormActions
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormState
 import com.gabrielfreire.runandlift.feature.student.trainingform.previewTrainingFormActions
@@ -62,7 +62,11 @@ internal fun TrainingFormFields(form: TrainingFormState, actions: TrainingFormAc
                 onHeightChange = actions.onHeightChange,
             )
 
-            RestrictionsStep(value = form.restrictions, onChange = actions.onRestrictionsChange)
+            // Com título próprio, ao contrário de peso e altura: a lista de regiões não se explica
+            // sozinha do jeito que dois campos rotulados se explicam.
+            FieldGroup(title = stringResource(R.string.student_onboarding_injuries_title)) {
+                InjuriesStep(form = form, actions = actions)
+            }
         }
     }
 }

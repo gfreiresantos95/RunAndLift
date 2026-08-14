@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.profile
 
 import com.gabrielfreire.runandlift.data.model.HealthDataConsent
+import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.StudentProfile
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
@@ -29,22 +30,48 @@ class StudentProfileCompletionTest {
         assertTrue(missing.goal)
         assertTrue(missing.availableDays)
         assertTrue(missing.healthConsent)
-        // Sem aceite, peso e restrições **não** contam como faltando: o app não pediu esses dados e
+        // Sem aceite, peso e lesões **não** contam como faltando: o app não pediu esses dados e
         // não os pode guardar. Cobrá-los seria cobrar uma resposta já recusada.
         assertFalse(missing.measures)
-        assertFalse(missing.restrictions)
+        assertFalse(missing.injuries)
         assertEquals(4, missing.count)
     }
 
     @Test
-    fun `com consentimento, peso e restricoes passam a contar`() {
+    fun `com consentimento, peso e lesoes passam a contar`() {
         val profile = StudentProfile(uid = "u1", healthConsentVersion = HealthDataConsent.CURRENT_VERSION)
 
         val missing = StudentProfileCompletion.missingIn(profile)
 
         assertFalse("o aceite existe, então não falta", missing.healthConsent)
         assertTrue(missing.measures)
-        assertTrue(missing.restrictions)
+        assertTrue(missing.injuries)
+    }
+
+    @Test
+    fun `declarar nenhuma lesao e resposta, e tira o aviso`() {
+        val profile = StudentProfile(
+            uid = "u1",
+            injuries = emptySet(),
+            healthConsentVersion = HealthDataConsent.CURRENT_VERSION,
+        )
+
+        // É a razão de `injuries` ser um conjunto anulável: sem a diferença entre ausente e vazio,
+        // quem não tem lesão nenhuma carregaria para sempre um aviso que não tem como resolver.
+        assertFalse(StudentProfileCompletion.missingIn(profile).injuries)
+    }
+
+    @Test
+    fun `so a observacao ja conta como resposta`() {
+        val profile = StudentProfile(
+            uid = "u1",
+            injuryNotes = "Dói o ombro direito quando levanto acima da cabeça.",
+            healthConsentVersion = HealthDataConsent.CURRENT_VERSION,
+        )
+
+        // É o caso de quem veio da versão anterior do campo, que era texto livre: o que ela
+        // escreveu continua valendo como resposta, sem precisar remarcar nada.
+        assertFalse(StudentProfileCompletion.missingIn(profile).injuries)
     }
 
     @Test
@@ -75,7 +102,7 @@ class StudentProfileCompletionTest {
             availableDays = setOf(DayOfWeek.MONDAY),
             weightKg = 72.5,
             heightCm = 175,
-            restrictions = "Ombro direito",
+            injuries = setOf(InjuryArea.SHOULDER),
             healthConsentVersion = HealthDataConsent.CURRENT_VERSION,
         )
 

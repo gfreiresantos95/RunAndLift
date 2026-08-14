@@ -54,9 +54,9 @@ internal fun OnboardingStepContent(
             modifier = modifier,
         )
 
-        OnboardingStep.RESTRICTIONS -> RestrictionsStep(
-            value = form.restrictions,
-            onChange = actions.onRestrictionsChange,
+        OnboardingStep.INJURIES -> InjuriesStep(
+            form = form,
+            actions = actions,
             modifier = modifier,
         )
     }

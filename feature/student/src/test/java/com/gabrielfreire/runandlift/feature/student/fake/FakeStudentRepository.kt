@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.fake
 
 import com.gabrielfreire.runandlift.data.model.HealthDataConsent
+import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.StudentProfile
 import com.gabrielfreire.runandlift.data.model.StudentProfileDetails
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
@@ -48,6 +49,8 @@ internal class FakeStudentRepository(
         lastDetails = details
 
         val consented = details.healthConsent != null || stored?.hasHealthConsent == true
+        // Em variável porque o campo vem de outro módulo, onde o compilador não faz o smart cast.
+        val notes = details.injuryNotes
 
         return StudentProfile(
             uid = uid,
@@ -56,7 +59,9 @@ internal class FakeStudentRepository(
             availableDays = details.availableDays ?: stored?.availableDays.orEmpty(),
             weightKg = details.weightKg.takeIf { consented } ?: stored?.weightKg,
             heightCm = details.heightCm.takeIf { consented } ?: stored?.heightCm,
-            restrictions = details.restrictions.takeIf { consented } ?: stored?.restrictions,
+            injuries = details.injuries.takeIf { consented } ?: stored?.injuries,
+            // Espelha o repositório real: ausente preserva, vazio apaga.
+            injuryNotes = if (consented && notes != null) notes.takeIf { it.isNotEmpty() } else stored?.injuryNotes,
             healthConsentVersion = details.healthConsent?.version ?: stored?.healthConsentVersion,
         )
     }
@@ -70,7 +75,7 @@ internal class FakeStudentRepository(
             availableDays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY),
             weightKg = 72.5,
             heightCm = 175,
-            restrictions = "Ombro direito",
+            injuries = setOf(InjuryArea.SHOULDER),
             healthConsentVersion = HealthDataConsent.CURRENT_VERSION,
         )
     }

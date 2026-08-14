@@ -85,7 +85,7 @@ private fun StudentHomeScreenPreview() {
                 displayName = "Ana Ribeiro",
                 // Com pendência, que é o estado real de quem pulou passos no onboarding — e o
                 // único em que o aviso aparece.
-                missing = MissingStudentData(measures = true, restrictions = true),
+                missing = MissingStudentData(measures = true, injuries = true),
             ),
             tabs = previewTabs(StudentTab.HOME),
             onOpenProfile = {},

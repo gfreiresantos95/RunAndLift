@@ -187,7 +187,7 @@ private fun OnboardingScreenPreview() {
 private fun OnboardingLastStepPreview() {
     RunAndLiftTheme {
         OnboardingScreen(
-            state = OnboardingUiState(step = OnboardingStep.RESTRICTIONS, position = 6, total = 6),
+            state = OnboardingUiState(step = OnboardingStep.INJURIES, position = 6, total = 6),
             form = TrainingFormState(healthConsent = true),
             actions = previewTrainingFormActions(),
             steps = previewOnboardingStepActions(),

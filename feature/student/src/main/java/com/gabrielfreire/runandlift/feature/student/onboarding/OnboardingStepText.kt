@@ -23,7 +23,7 @@ internal fun OnboardingStep.title(): String = stringResource(
         OnboardingStep.DAYS -> R.string.student_onboarding_days_title
         OnboardingStep.HEALTH_CONSENT -> R.string.student_onboarding_health_title
         OnboardingStep.MEASURES -> R.string.student_onboarding_measures_title
-        OnboardingStep.RESTRICTIONS -> R.string.student_onboarding_restrictions_title
+        OnboardingStep.INJURIES -> R.string.student_onboarding_injuries_title
     },
 )
 
@@ -35,6 +35,6 @@ internal fun OnboardingStep.subtitle(): String = stringResource(
         OnboardingStep.DAYS -> R.string.student_onboarding_days_subtitle
         OnboardingStep.HEALTH_CONSENT -> R.string.student_onboarding_health_subtitle
         OnboardingStep.MEASURES -> R.string.student_onboarding_measures_subtitle
-        OnboardingStep.RESTRICTIONS -> R.string.student_onboarding_restrictions_subtitle
+        OnboardingStep.INJURIES -> R.string.student_onboarding_injuries_subtitle
     },
 )

@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.data.student
 
 import com.gabrielfreire.runandlift.data.model.HealthDataConsent
+import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.StudentProfile
 import com.gabrielfreire.runandlift.data.model.StudentProfileDetails
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
@@ -41,7 +42,11 @@ internal class FirestoreStudentRepository(
             // exceção — campo corrompido não pode impedir alguém de abrir o app.
             weightKg = document.getDouble(FIELD_WEIGHT),
             heightCm = document.getLong(FIELD_HEIGHT)?.toInt(),
-            restrictions = document.getString(FIELD_RESTRICTIONS),
+            injuries = document.readInjuries(),
+            // O texto livre do campo antigo vira a observação do novo. Quem escreveu "dói o ombro
+            // direito quando levanto acima da cabeça" antes de a lista existir não pode ver isso
+            // sumir porque o formato mudou — reaparece no campo "Outra", já preenchido.
+            injuryNotes = document.getString(FIELD_INJURY_NOTES) ?: document.getString(FIELD_LEGACY_RESTRICTIONS),
             healthConsentVersion = document.getString(FIELD_HEALTH_CONSENT_VERSION),
         )
     }
@@ -84,7 +89,19 @@ internal class FirestoreStudentRepository(
         if (consented) {
             details.weightKg?.let { fields[FIELD_WEIGHT] = it }
             details.heightCm?.let { fields[FIELD_HEIGHT] = it }
-            details.restrictions?.let { fields[FIELD_RESTRICTIONS] = it }
+            // Lista vazia é resposta ("não tenho lesão") e é gravada; `null` significa "não mexa".
+            details.injuries?.let { areas -> fields[FIELD_INJURIES] = areas.map { it.name }.sorted() }
+            // Texto **vazio** aqui é "apaguei a observação", e não "não informei": é a única forma
+            // de desmarcar "Outra" numa tela de edição e o texto de fato ir embora. Ausente
+            // continua querendo dizer "não mexa nisto", como em todo o resto deste mapa.
+            details.injuryNotes?.let { fields[FIELD_INJURY_NOTES] = it.ifEmpty { FieldValue.delete() } }
+
+            // O campo antigo é apagado na primeira gravação que passa por aqui. Sem isso ele
+            // sobreviveria em silêncio e voltaria a ser lido no dia em que a observação nova fosse
+            // esvaziada — o texto que a pessoa apagou reaparecendo sozinho.
+            if (details.injuries != null || details.injuryNotes != null) {
+                fields[FIELD_LEGACY_RESTRICTIONS] = FieldValue.delete()
+            }
         }
 
         return fields
@@ -109,6 +126,17 @@ internal class FirestoreStudentRepository(
     }
 
     /**
+     * As regiões lesionadas, ou `null` quando o campo **não existe** no documento.
+     *
+     * A diferença entre ausente e vazio é o dado: ausente é "não respondeu", vazio é "respondeu que
+     * não tem nenhuma". Por isso não há queda para `emptySet()` no fim — é exatamente ela que
+     * transformaria as duas coisas na mesma, e o campo ausente do `get` já devolve o nulo certo.
+     */
+    private fun DocumentSnapshot.readInjuries(): Set<InjuryArea>? = (get(FIELD_INJURIES) as? List<*>)
+        ?.mapNotNull { InjuryArea.fromStored(it as? String) }
+        ?.toSet()
+
+    /**
      * Cache primeiro, servidor só quando não há nada em disco — regra 3 do orçamento (§2.4).
      *
      * A falha do cache é engolida porque "não tem em disco" não é erro; a do servidor chega a quem
@@ -129,7 +157,17 @@ internal class FirestoreStudentRepository(
         const val FIELD_DAYS = "availableDays"
         const val FIELD_WEIGHT = "weightKg"
         const val FIELD_HEIGHT = "heightCm"
-        const val FIELD_RESTRICTIONS = "restrictions"
+        const val FIELD_INJURIES = "injuries"
+        const val FIELD_INJURY_NOTES = "injuryNotes"
+
+        /**
+         * O texto livre que existia antes de a lista de regiões existir.
+         *
+         * Continua sendo **lido** como queda de [FIELD_INJURY_NOTES], para não sumir com o que já
+         * foi escrito, e é apagado na primeira gravação que passa pelo campo novo.
+         */
+        const val FIELD_LEGACY_RESTRICTIONS = "restrictions"
+
         const val FIELD_HEALTH_CONSENT = "healthConsent"
         const val FIELD_VERSION = "version"
         const val FIELD_ACCEPTED_AT = "acceptedAt"
@@ -152,6 +190,13 @@ private fun StudentProfile.mergedWith(details: StudentProfileDetails, consented:
     availableDays = details.availableDays ?: availableDays,
     weightKg = details.weightKg.takeIf { consented } ?: weightKg,
     heightCm = details.heightCm.takeIf { consented } ?: heightCm,
-    restrictions = details.restrictions.takeIf { consented } ?: restrictions,
+    injuries = details.injuries.takeIf { consented } ?: injuries,
+    // Espelha a gravação: ausente preserva, vazio apaga. Um `?:` simples devolveria o texto antigo
+    // justamente no caso em que a pessoa acabou de apagá-lo.
+    injuryNotes = if (consented && details.injuryNotes != null) {
+        details.injuryNotes.takeIf { it.isNotEmpty() }
+    } else {
+        injuryNotes
+    },
     healthConsentVersion = details.healthConsent?.version ?: healthConsentVersion,
 )

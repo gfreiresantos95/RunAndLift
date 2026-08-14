@@ -1,5 +1,6 @@
 package com.gabrielfreire.runandlift.feature.student.trainingform
 
+import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
 import com.gabrielfreire.runandlift.data.model.TrainingLevel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,10 @@ internal data class TrainingFormActions(
     val onDayToggle: (DayOfWeek) -> Unit,
     val onWeightChange: (String) -> Unit,
     val onHeightChange: (String) -> Unit,
-    val onRestrictionsChange: (String) -> Unit,
+    val onInjuryToggle: (InjuryArea) -> Unit,
+    val onNoInjuriesToggle: () -> Unit,
+    val onOtherInjuryToggle: () -> Unit,
+    val onInjuryNotesChange: (String) -> Unit,
     val onHealthConsentChange: (Boolean) -> Unit,
 )
 
@@ -30,13 +34,16 @@ internal data class TrainingFormActions(
  * As ações que **todo** dono deste formulário implementa da mesma forma: escrever o campo no estado
  * e limpar o erro dele.
  *
- * Existe porque o onboarding e a edição de perfil tinham as sete idênticas, uma a uma, e a única
- * que difere de verdade — o consentimento — some no meio das outras seis quando estão todas
- * escritas à mão. Aqui as seis triviais somem, e quem precisa mudar a sétima o faz com um `copy`,
- * que deixa a diferença visível.
+ * Existe porque o onboarding e a edição de perfil tinham todas idênticas, uma a uma, e a única que
+ * difere de verdade — o consentimento — some no meio das outras quando estão todas escritas à mão.
+ * Aqui as triviais somem, e quem precisa mudar aquela o faz com um `copy`, que deixa a diferença
+ * visível.
  *
- * Retirar o consentimento **limpa peso e altura**: dado sensível não fica em memória à espera de
- * uma autorização que foi retirada. Isso vale para as duas telas, então mora aqui.
+ * As três de lesão delegam a [TrainingFormState], e não decidem nada: a exclusividade entre
+ * "Nenhuma" e as regiões é regra do formulário, e uma tela nova não pode ter a chance de esquecê-la.
+ *
+ * Retirar o consentimento **limpa peso, altura e lesões**: dado sensível não fica em memória à
+ * espera de uma autorização que foi retirada. Isso vale para as duas telas, então mora aqui.
  */
 internal fun trainingFormActions(state: MutableStateFlow<TrainingFormState>) = TrainingFormActions(
     onLevelSelect = { level -> state.update { it.copy(level = level) } },
@@ -44,13 +51,33 @@ internal fun trainingFormActions(state: MutableStateFlow<TrainingFormState>) = T
     onDayToggle = { day -> state.update { it.toggleDay(day) } },
     onWeightChange = { value -> state.update { it.copy(weight = value, weightError = null) } },
     onHeightChange = { value -> state.update { it.copy(height = value, heightError = null) } },
-    onRestrictionsChange = { value -> state.update { it.copy(restrictions = value) } },
-    onHealthConsentChange = { accepted ->
-        state.update {
-            if (accepted) it.copy(healthConsent = true) else it.copy(healthConsent = false, weight = "", height = "")
-        }
-    },
+    onInjuryToggle = { area -> state.update { it.toggleInjury(area) } },
+    onNoInjuriesToggle = { state.update { it.toggleNoInjuries() } },
+    onOtherInjuryToggle = { state.update { it.toggleOtherInjury() } },
+    onInjuryNotesChange = { value -> state.update { it.copy(injuryNotes = value) } },
+    onHealthConsentChange = { accepted -> state.update { it.withHealthConsent(accepted) } },
 )
+
+/**
+ * O aceite entrando ou saindo.
+ *
+ * Sair **apaga o que já foi respondido de saúde**, e não só esconde: uma autorização retirada com o
+ * peso ainda em memória é a autorização valendo na prática. O que fica é o que não é dado de saúde —
+ * nível, objetivo e dias.
+ */
+private fun TrainingFormState.withHealthConsent(accepted: Boolean): TrainingFormState = if (accepted) {
+    copy(healthConsent = true)
+} else {
+    copy(
+        healthConsent = false,
+        weight = "",
+        height = "",
+        injuries = emptySet(),
+        noInjuries = false,
+        otherInjury = false,
+        injuryNotes = "",
+    )
+}
 
 /** As ações sem efeito, para os previews — a tela se desenha, e nada acontece ao tocar. */
 internal fun previewTrainingFormActions() = TrainingFormActions(
@@ -59,6 +86,9 @@ internal fun previewTrainingFormActions() = TrainingFormActions(
     onDayToggle = {},
     onWeightChange = {},
     onHeightChange = {},
-    onRestrictionsChange = {},
+    onInjuryToggle = {},
+    onNoInjuriesToggle = {},
+    onOtherInjuryToggle = {},
+    onInjuryNotesChange = {},
     onHealthConsentChange = {},
 )
