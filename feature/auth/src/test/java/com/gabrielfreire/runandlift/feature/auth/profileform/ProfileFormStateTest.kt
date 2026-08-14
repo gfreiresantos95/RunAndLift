@@ -1,8 +1,10 @@
 package com.gabrielfreire.runandlift.feature.auth.profileform
 
+import com.gabrielfreire.runandlift.feature.auth.validation.CityError
 import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
 import com.gabrielfreire.runandlift.feature.auth.validation.NameError
 import com.gabrielfreire.runandlift.feature.auth.validation.PhoneError
+import com.gabrielfreire.runandlift.feature.auth.validation.StateError
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -22,6 +24,9 @@ class ProfileFormStateTest {
         name = "Ana Ribeiro",
         birthDate = "21051990",
         phone = "11987654321",
+        stateUf = "SP",
+        stateName = "São Paulo",
+        city = "Campinas",
         acceptedTerms = true,
     )
 
@@ -61,10 +66,22 @@ class ProfileFormStateTest {
     }
 
     @Test
+    fun `localidade e exigida dos dois perfis`() {
+        val student = filled.copy(stateUf = "", city = "").validated(isTrainer = false)
+        val trainer = filled.copy(cref = "012345GSP", stateUf = "", city = "").validated(isTrainer = true)
+
+        // Ao contrário do celular e do registro, localidade não separa os perfis: é o que aproxima
+        // aluno e treinador, e sem ela nenhum dos dois aparece para o outro.
+        assertEquals(StateError.REQUIRED, student.stateError)
+        assertEquals(CityError.REQUIRED, student.cityError)
+        assertEquals(StateError.REQUIRED, trainer.stateError)
+        assertEquals(CityError.REQUIRED, trainer.cityError)
+    }
+
+    @Test
     fun `askName false nao cobra o nome`() {
         // É a tela de conclusão: o nome veio do provedor e não tem campo onde consertá-lo.
-        val validated = ProfileFormState(birthDate = "21051990", acceptedTerms = true)
-            .validated(isTrainer = false, askName = false)
+        val validated = filled.copy(name = "").validated(isTrainer = false, askName = false)
 
         assertNull(validated.nameError)
         assertTrue(validated.isValid)
@@ -72,8 +89,7 @@ class ProfileFormStateTest {
 
     @Test
     fun `askName true cobra o nome`() {
-        val validated = ProfileFormState(birthDate = "21051990", acceptedTerms = true)
-            .validated(isTrainer = false)
+        val validated = filled.copy(name = "").validated(isTrainer = false)
 
         assertEquals(NameError.REQUIRED, validated.nameError)
         assertFalse(validated.isValid)
@@ -99,9 +115,11 @@ class ProfileFormStateTest {
             validated.birthDateError,
             validated.phoneError,
             validated.crefError,
+            validated.stateError,
+            validated.cityError,
         )
 
-        assertEquals(4, errors.size)
+        assertEquals(6, errors.size)
         assertTrue(validated.termsMissing)
     }
 

@@ -1,5 +1,8 @@
 package com.gabrielfreire.runandlift.feature.auth.profileform
 
+import com.gabrielfreire.runandlift.feature.auth.validation.CityError
+import com.gabrielfreire.runandlift.feature.auth.validation.StateError
+
 // Cenários prontos do formulário de perfil, para os previews de cadastro e de conclusão.
 //
 // Ficam num arquivo próprio porque os previews que precisam deles estão espalhados por três
@@ -25,6 +28,8 @@ internal fun previewProfileFormActions() = ProfileFormActions(
     onBirthDateChange = {},
     onPhoneChange = {},
     onCrefChange = {},
+    onOpenStatePicker = {},
+    onOpenCityPicker = {},
     onTermsChange = {},
     onMarketingChange = {},
     onOpenLegalDocument = {},
@@ -36,6 +41,9 @@ internal fun previewTrainerForm() = ProfileFormState(
     birthDate = "14031988",
     phone = "11912345678",
     cref = PREVIEW_CREF_CONTENT,
+    stateUf = "MG",
+    stateName = "Minas Gerais",
+    city = "Belo Horizonte",
     acceptedTerms = true,
 )
 
@@ -44,5 +52,16 @@ internal fun previewStudentForm() = ProfileFormState(
     name = "Ana Ribeiro",
     birthDate = "21051990",
     phone = "11987654321",
+    // Cidade de nome composto e estado acentuado: é neles que se vê a largura real da linha, e não
+    // no "Acre" que caberia em qualquer lugar.
+    stateUf = "SP",
+    stateName = "São Paulo",
+    city = "São José dos Campos",
     acceptedTerms = true,
+)
+
+/** Envio vazio: os dois campos de localidade acusando de uma vez, que é como o formulário responde. */
+internal fun previewLocationErrors() = ProfileFormState(
+    stateError = StateError.REQUIRED,
+    cityError = CityError.REQUIRED,
 )

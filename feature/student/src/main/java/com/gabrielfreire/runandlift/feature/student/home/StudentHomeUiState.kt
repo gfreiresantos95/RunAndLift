@@ -1,5 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.home
 
+import com.gabrielfreire.runandlift.feature.student.profile.MissingStudentData
+
 /**
  * Estado da home do aluno.
  *
@@ -8,8 +10,14 @@ package com.gabrielfreire.runandlift.feature.student.home
  *   giro de carregamento para preencher uma palavra pisca mais do que informa.
  * @param displayName nome gravado no cadastro, ou `null` para quem entrou pelo Google e ainda não
  *   completou o perfil.
+ * @param missing o que falta no perfil de treino. Enquanto a leitura não termina, é o vazio — e o
+ *   aviso não aparece: um aviso que some sozinho um instante depois é pior que um aviso atrasado.
  */
-internal data class StudentHomeUiState(val loading: Boolean = true, val displayName: String? = null) {
+internal data class StudentHomeUiState(
+    val loading: Boolean = true,
+    val displayName: String? = null,
+    val missing: MissingStudentData = MissingStudentData(),
+) {
 
     /**
      * Uma letra para o círculo do card, ou `null` quando não há nome.

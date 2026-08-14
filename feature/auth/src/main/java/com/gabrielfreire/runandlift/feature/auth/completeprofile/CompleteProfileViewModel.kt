@@ -2,9 +2,11 @@ package com.gabrielfreire.runandlift.feature.auth.completeprofile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
+import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.completeprofile.ProfileCompletion
+import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormController
 import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormState
 import com.gabrielfreire.runandlift.feature.auth.profileform.prefilledFrom
 import com.gabrielfreire.runandlift.feature.auth.profileform.toCompletionDetails
@@ -36,39 +38,22 @@ import kotlinx.coroutines.launch
 internal class CompleteProfileViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val locationRepository: LocationRepository,
     private val role: ActiveRole,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CompleteProfileUiState(role = role))
     val uiState: StateFlow<CompleteProfileUiState> = _uiState.asStateFlow()
 
-    private val _formState = MutableStateFlow(ProfileFormState())
-    val formState: StateFlow<ProfileFormState> = _formState.asStateFlow()
+    /** Os campos do formulário — os mesmos do cadastro, e a mesma classe que os edita. */
+    val form = ProfileFormController()
+
+    val formState: StateFlow<ProfileFormState> = form.state
 
     private val isTrainer: Boolean get() = role == ActiveRole.TRAINER
 
     init {
         viewModelScope.launch { load() }
-    }
-
-    fun onBirthDateChange(digits: String) {
-        _formState.update { it.copy(birthDate = digits, birthDateError = null) }
-    }
-
-    fun onPhoneChange(digits: String) {
-        _formState.update { it.copy(phone = digits, phoneError = null) }
-    }
-
-    fun onCrefChange(content: String) {
-        _formState.update { it.copy(cref = content, crefError = null) }
-    }
-
-    fun onTermsChange(accepted: Boolean) {
-        _formState.update { it.copy(acceptedTerms = accepted, termsMissing = false) }
-    }
-
-    fun onMarketingChange(optIn: Boolean) {
-        _formState.update { it.copy(marketingOptIn = optIn) }
     }
 
     fun onSubmit() {
@@ -77,9 +62,7 @@ internal class CompleteProfileViewModel(
 
         // O nome não é pedido aqui — veio do provedor — então validá-lo produziria um erro sem
         // campo onde consertá-lo.
-        val validated = _formState.updateAndGet {
-            it.validated(isTrainer = isTrainer, askName = false, askConsent = current.askConsent)
-        }
+        val validated = form.validate(isTrainer = isTrainer, askName = false, askConsent = current.askConsent)
         if (!validated.isValid) return
 
         _uiState.update { it.copy(submitting = true, failed = false) }
@@ -100,11 +83,16 @@ internal class CompleteProfileViewModel(
             ?.takeIf { isTrainer }
             ?.let { runCatching { userRepository.trainerRegistration(it) }.getOrNull() }
 
+        // O banco guarda só a sigla, e o campo exibe "São Paulo - SP": o nome é buscado aqui, uma
+        // vez, na mesma carga que traz o resto. `state()` nunca falha — sem lista, devolve nulo, o
+        // campo fica vazio e a pessoa escolhe de novo. Pedir de novo é melhor que exibir "- SP".
+        val state = profile?.state?.let { locationRepository.state(it) }
+
         // O que já está gravado tem precedência sobre o que o provedor diz: quem editou o próprio
         // nome não pode vê-lo voltar ao da conta Google só por passar por esta tela de novo.
         val name = profile?.displayName?.takeIf { it.isNotBlank() } ?: account?.displayName
 
-        _formState.update { it.prefilledFrom(profile, registration) }
+        form.prefill(profile = profile, registration = registration, state = state)
         _uiState.update {
             it.copy(
                 loading = false,

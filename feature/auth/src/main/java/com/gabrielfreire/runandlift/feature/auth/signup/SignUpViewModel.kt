@@ -5,15 +5,11 @@ import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.model.UserAccount
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.credentials.CredentialsViewModel
+import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormController
 import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormState
 import com.gabrielfreire.runandlift.feature.auth.profileform.toSignUpDetails
 import com.gabrielfreire.runandlift.feature.auth.profileform.validated
-import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 
 /**
  * Criar conta, já com o papel escolhido nas boas-vindas.
@@ -26,6 +22,9 @@ import kotlinx.coroutines.flow.updateAndGet
  * a diferença entre eles é a régua de [ProfileFormState.validated] mais o registro profissional que
  * só o treinador informa. Duas telas seriam duas cópias de nome, e-mail, senha, nascimento e
  * aceite para descrever um campo de diferença.
+ *
+ * Os campos de perfil pertencem a [form], e não a esta classe: a conclusão de cadastro edita o mesmo
+ * formulário, e as duas telas carregavam as mesmas oito mutações escritas duas vezes.
  *
  * Três decisões embutidas:
  * - **A gravação falhar não invalida o cadastro, nem repete a pergunta.** A conta já existe neste
@@ -49,52 +48,15 @@ internal class SignUpViewModel(
     private val intendedRole: ActiveRole? = null,
 ) : CredentialsViewModel(requireStrongPassword = true, authRepository = authRepository) {
 
-    private val _formState = MutableStateFlow(ProfileFormState())
-    val formState: StateFlow<ProfileFormState> = _formState.asStateFlow()
+    /** Os campos que não são credencial. Público porque a tela liga as ações dele diretamente. */
+    val form = ProfileFormController()
+
+    val formState: StateFlow<ProfileFormState> = form.state
 
     /** Decide a régua do formulário e o que vai ser gravado — nada mais depende do papel aqui. */
     private val isTrainer: Boolean get() = intendedRole == ActiveRole.TRAINER
 
-    fun onNameChange(name: String) {
-        _formState.update { it.copy(name = name, nameError = null) }
-    }
-
-    fun onBirthDateChange(digits: String) {
-        _formState.update {
-            it.copy(
-                birthDate = digits.filter(Char::isDigit).take(AuthFormValidation.BIRTH_DATE_DIGITS),
-                birthDateError = null,
-            )
-        }
-    }
-
-    fun onPhoneChange(digits: String) {
-        _formState.update {
-            it.copy(
-                phone = digits.filter(Char::isDigit).take(AuthFormValidation.MAX_PHONE_DIGITS),
-                phoneError = null,
-            )
-        }
-    }
-
-    /**
-     * Guarda o que a máscara entregou, sem refiltrar: quem garante dígito onde é dígito, letra
-     * maiúscula onde é letra e o tamanho máximo é o próprio campo. Refiltrar aqui seria uma
-     * segunda regra de formato, que um dia discordaria da primeira.
-     */
-    fun onCrefChange(content: String) {
-        _formState.update { it.copy(cref = content, crefError = null) }
-    }
-
-    fun onTermsChange(accepted: Boolean) {
-        _formState.update { it.copy(acceptedTerms = accepted, termsMissing = false) }
-    }
-
-    fun onMarketingChange(optIn: Boolean) {
-        _formState.update { it.copy(marketingOptIn = optIn) }
-    }
-
-    override fun validateExtras(): Boolean = _formState.updateAndGet { it.validated(isTrainer) }.isValid
+    override fun validateExtras(): Boolean = form.validate(isTrainer).isValid
 
     override suspend fun authenticate(email: String, password: String): AuthResult =
         authRepository.signUpWithEmail(email = email, password = password)
@@ -106,7 +68,7 @@ internal class SignUpViewModel(
             userRepository.saveProfile(
                 uid = account.uid,
                 role = intendedRole,
-                details = _formState.value.toSignUpDetails(isTrainer),
+                details = form.state.value.toSignUpDetails(isTrainer),
             )
         }.getOrNull()?.activeRole ?: intendedRole
     }

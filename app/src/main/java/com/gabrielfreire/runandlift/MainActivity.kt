@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
                 MainViewModel(
                     authRepository = container.authRepository,
                     userRepository = container.userRepository,
+                    studentRepository = container.studentRepository,
                 )
             }
         }
@@ -77,14 +78,14 @@ class MainActivity : ComponentActivity() {
                         Scaffold { innerPadding ->
                             RunAndLiftNavHost(
                                 startDestination = state.startDestination,
-                                authRepository = container.authRepository,
-                                userRepository = container.userRepository,
+                                container = container,
                                 canSwitchRole = state.canSwitchRole,
                                 onSwitchRole = {
                                     viewModel.switchRole { role ->
                                         navController.navigateToRole(role, clearAuth = false)
                                     }
                                 },
+                                onAuthenticated = viewModel::destinationAfterAuth,
                                 navController = navController,
                                 // `consumeWindowInsets` junto do padding, e não só o padding:
                                 // sem ele, uma tela com Scaffold próprio aplicaria o recuo da

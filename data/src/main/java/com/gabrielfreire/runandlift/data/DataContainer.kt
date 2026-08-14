@@ -4,10 +4,15 @@ import android.content.Context
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.FirebaseAuthRepository
 import com.gabrielfreire.runandlift.data.local.RunAndLiftDatabase
+import com.gabrielfreire.runandlift.data.location.CachedLocationRepository
+import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.remote.catalog.CatalogVersionSource
 import com.gabrielfreire.runandlift.data.remote.exercise.FirestoreExerciseRemoteDataSource
+import com.gabrielfreire.runandlift.data.remote.location.IbgeLocationRemoteDataSource
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
 import com.gabrielfreire.runandlift.data.repository.OfflineFirstExerciseRepository
+import com.gabrielfreire.runandlift.data.student.FirestoreStudentRepository
+import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.FirestoreUserRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.data.util.AppDispatchers
@@ -55,5 +60,23 @@ class DataContainer(
 
     val userRepository: UserRepository by lazy {
         FirestoreUserRepository(firestore = firestore, dispatchers = dispatchers)
+    }
+
+    val studentRepository: StudentRepository by lazy {
+        FirestoreStudentRepository(firestore = firestore, dispatchers = dispatchers)
+    }
+
+    /**
+     * O único repositório daqui que não fala com o Firebase — quem responde é a API do IBGE.
+     *
+     * `by lazy` importa mais neste do que nos outros: ele guarda em memória o que já baixou, e o
+     * cache só serve para alguma coisa se a instância for a mesma entre a tela de cadastro, a de
+     * perfil e as duas de seleção.
+     */
+    val locationRepository: LocationRepository by lazy {
+        CachedLocationRepository(
+            remoteDataSource = IbgeLocationRemoteDataSource(),
+            dispatchers = dispatchers,
+        )
     }
 }

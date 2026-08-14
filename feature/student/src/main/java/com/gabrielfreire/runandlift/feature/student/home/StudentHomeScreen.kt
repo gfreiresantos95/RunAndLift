@@ -17,6 +17,7 @@ import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentTab
 import com.gabrielfreire.runandlift.feature.student.navigation.previewTabs
+import com.gabrielfreire.runandlift.feature.student.profile.MissingStudentData
 
 /**
  * Início do aluno: o nome do app na barra superior e, logo abaixo, quem está usando o app.
@@ -32,6 +33,7 @@ import com.gabrielfreire.runandlift.feature.student.navigation.previewTabs
 internal fun StudentHomeScreen(
     state: StudentHomeUiState,
     tabs: List<AppBottomBarItem>,
+    onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -53,6 +55,12 @@ internal fun StudentHomeScreen(
                 subtitle = stringResource(R.string.student_home_role),
                 monogram = state.monogram,
             )
+
+            // Logo abaixo da identidade, e antes de tudo o que vier depois: é uma pendência da
+            // pessoa, e não do treino do dia. Some sozinho quando não há o que completar.
+            if (state.missing.any) {
+                ProfileReminderCard(missingCount = state.missing.count, onClick = onOpenProfile)
+            }
         }
     }
 }
@@ -72,8 +80,15 @@ internal fun StudentHomeScreen(
 private fun StudentHomeScreenPreview() {
     RunAndLiftTheme {
         StudentHomeScreen(
-            state = StudentHomeUiState(loading = false, displayName = "Ana Ribeiro"),
+            state = StudentHomeUiState(
+                loading = false,
+                displayName = "Ana Ribeiro",
+                // Com pendência, que é o estado real de quem pulou passos no onboarding — e o
+                // único em que o aviso aparece.
+                missing = MissingStudentData(measures = true, injuries = true),
+            ),
             tabs = previewTabs(StudentTab.HOME),
+            onOpenProfile = {},
         )
     }
 }

@@ -15,6 +15,9 @@ import java.util.Locale
  * cada um no arquivo vizinho junto da frase que ele vira na tela. Aqui fica só a régua; nenhuma
  * função deste objeto conhece recurso de string.
  *
+ * Estado e cidade **não** moram aqui, e a fronteira é essa: tudo neste objeto é regra de formato, e
+ * localidade não tem formato — vem de uma lista fechada. Ver [LocationValidation].
+ *
  * **As três máscaras do cadastro também moram aqui**, e não no arquivo do campo que as usa. Máscara
  * e validação são a mesma regra de formato dita duas vezes — uma para o teclado, outra para o
  * envio: [CREF_MASK] garante letra onde é letra e [validateCref] confere o que sobrou. Separá-las

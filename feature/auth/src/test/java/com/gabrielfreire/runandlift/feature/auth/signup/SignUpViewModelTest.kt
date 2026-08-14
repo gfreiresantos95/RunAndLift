@@ -7,11 +7,13 @@ import com.gabrielfreire.runandlift.feature.auth.fake.FakeUserRepository
 import com.gabrielfreire.runandlift.feature.auth.fake.MainDispatcherRule
 import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
 import com.gabrielfreire.runandlift.feature.auth.validation.BirthDateError
+import com.gabrielfreire.runandlift.feature.auth.validation.CityError
 import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
 import com.gabrielfreire.runandlift.feature.auth.validation.EmailError
 import com.gabrielfreire.runandlift.feature.auth.validation.NameError
 import com.gabrielfreire.runandlift.feature.auth.validation.PasswordError
 import com.gabrielfreire.runandlift.feature.auth.validation.PhoneError
+import com.gabrielfreire.runandlift.feature.auth.validation.StateError
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -35,11 +37,15 @@ class SignUpViewModelTest {
 
     /** Preenche o cadastro inteiro com dados válidos — o que cada teste faz é desviar de um deles. */
     private fun SignUpViewModel.fillValidForm() {
-        onNameChange("Ana Ribeiro")
+        form.onNameChange("Ana Ribeiro")
         onEmailChange("valido@exemplo.com")
         onPasswordChange("senha123")
-        onBirthDateChange("21051990")
-        onTermsChange(true)
+        form.onBirthDateChange("21051990")
+        // Localidade é exigida dos dois perfis, então entra no formulário base e não no do
+        // treinador — é o que separa este par do celular e do registro.
+        form.onStatePicked(uf = "SP", name = "São Paulo")
+        form.onCityPicked("Campinas")
+        form.onTermsChange(true)
     }
 
     /**
@@ -50,8 +56,8 @@ class SignUpViewModelTest {
      */
     private fun SignUpViewModel.fillValidTrainerForm() {
         fillValidForm()
-        onPhoneChange("11912345678")
-        onCrefChange("012345GSP")
+        form.onPhoneChange("11912345678")
+        form.onCrefChange("012345GSP")
     }
 
     @Test
@@ -73,7 +79,7 @@ class SignUpViewModelTest {
         val viewModel = SignUpViewModel(repository, FakeUserRepository())
 
         viewModel.fillValidForm()
-        viewModel.onTermsChange(false)
+        viewModel.form.onTermsChange(false)
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -93,7 +99,52 @@ class SignUpViewModelTest {
         assertEquals(PasswordError.REQUIRED, viewModel.uiState.value.passwordError)
         assertEquals(NameError.REQUIRED, viewModel.formState.value.nameError)
         assertEquals(BirthDateError.REQUIRED, viewModel.formState.value.birthDateError)
+        assertEquals(StateError.REQUIRED, viewModel.formState.value.stateError)
+        assertEquals(CityError.REQUIRED, viewModel.formState.value.cityError)
         assertTrue(viewModel.formState.value.termsMissing)
+    }
+
+    @Test
+    fun `so a sigla do estado vai ao banco`() = runTest(mainDispatcherRule.dispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.STUDENT)
+
+        viewModel.fillValidForm()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // "São Paulo" fica na tela e morre ali: duas grafias do mesmo estado no banco seriam dois
+        // estados na hora de agrupar alunos por região.
+        assertEquals("SP", users.lastDetails?.state)
+        assertEquals("Campinas", users.lastDetails?.city)
+    }
+
+    @Test
+    fun `localidade e exigida tambem do aluno`() = runTest(mainDispatcherRule.dispatcher) {
+        val repository = FakeAuthRepository()
+        val viewModel = SignUpViewModel(repository, FakeUserRepository(), ActiveRole.STUDENT)
+
+        viewModel.fillValidForm()
+        viewModel.form.onStatePicked(uf = "", name = "")
+        viewModel.form.onCityPicked("")
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // Ao contrário do celular, localidade não separa os perfis: um aluno sem cidade não aparece
+        // para nenhum treinador da região dele, que é como o vínculo começa.
+        assertEquals(StateError.REQUIRED, viewModel.formState.value.stateError)
+        assertEquals(0, repository.calls)
+    }
+
+    @Test
+    fun `trocar de estado apaga a cidade do estado anterior`() = runTest(mainDispatcherRule.dispatcher) {
+        val viewModel = SignUpViewModel(FakeAuthRepository(), FakeUserRepository(), ActiveRole.STUDENT)
+
+        viewModel.fillValidForm()
+        viewModel.form.onStatePicked(uf = "RJ", name = "Rio de Janeiro")
+
+        // Campinas no Rio de Janeiro é um par que não existe.
+        assertEquals("", viewModel.formState.value.city)
     }
 
     @Test
@@ -103,7 +154,7 @@ class SignUpViewModelTest {
         val tooYoung = LocalDate.now().minusYears(AuthFormValidation.MIN_AGE_YEARS - 1L)
 
         viewModel.fillValidForm()
-        viewModel.onBirthDateChange(tooYoung.format(DateTimeFormatter.ofPattern("ddMMyyyy")))
+        viewModel.form.onBirthDateChange(tooYoung.format(DateTimeFormatter.ofPattern("ddMMyyyy")))
         viewModel.onSubmit()
 
         assertEquals(BirthDateError.TOO_YOUNG, viewModel.formState.value.birthDateError)
@@ -116,8 +167,8 @@ class SignUpViewModelTest {
         val viewModel = SignUpViewModel(FakeAuthRepository(), users, ActiveRole.STUDENT)
 
         viewModel.fillValidForm()
-        viewModel.onPhoneChange("11987654321")
-        viewModel.onMarketingChange(true)
+        viewModel.form.onPhoneChange("11987654321")
+        viewModel.form.onMarketingChange(true)
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -146,8 +197,8 @@ class SignUpViewModelTest {
     fun `mascara nao chega ao estado, so digito`() = runTest(mainDispatcherRule.dispatcher) {
         val viewModel = SignUpViewModel(FakeAuthRepository(), FakeUserRepository())
 
-        viewModel.onBirthDateChange("21/05/1990")
-        viewModel.onPhoneChange("(11) 98765-4321")
+        viewModel.form.onBirthDateChange("21/05/1990")
+        viewModel.form.onPhoneChange("(11) 98765-4321")
 
         assertEquals("21051990", viewModel.formState.value.birthDate)
         assertEquals("11987654321", viewModel.formState.value.phone)

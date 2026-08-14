@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.home
 
 import com.gabrielfreire.runandlift.feature.student.fake.FakeAuthRepository
+import com.gabrielfreire.runandlift.feature.student.fake.FakeStudentRepository
 import com.gabrielfreire.runandlift.feature.student.fake.FakeUserRepository
 import com.gabrielfreire.runandlift.feature.student.fake.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -88,5 +89,6 @@ class StudentHomeViewModelTest {
     private fun viewModel(
         auth: FakeAuthRepository = FakeAuthRepository(),
         users: FakeUserRepository = FakeUserRepository(),
-    ) = StudentHomeViewModel(authRepository = auth, userRepository = users)
+        students: FakeStudentRepository = FakeStudentRepository(),
+    ) = StudentHomeViewModel(authRepository = auth, userRepository = users, studentRepository = students)
 }

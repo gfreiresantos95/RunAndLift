@@ -59,9 +59,11 @@ internal fun ContactFields(
             errorMessage = form.phoneError?.message(),
             supportingText = stringResource(id = role.phoneSupport()),
             enabled = enabled,
-            // `Done` só quando o celular for mesmo o último campo. Para o treinador ainda vem o
-            // registro, e uma tecla "concluir" no meio do formulário fecha o teclado para nada.
-            imeAction = if (role == ActiveRole.TRAINER) ImeAction.Next else ImeAction.Done,
+            // `Done` para os dois perfis: o celular é o último campo **digitado** deste bloco, e o
+            // que vem depois dele são estado e cidade, que se escolhem numa lista. Um "próximo"
+            // aqui moveria o foco para um campo que não aceita teclado, deixando-o aberto e inútil
+            // por cima da tela que a pessoa precisa tocar.
+            imeAction = ImeAction.Done,
         )
     }
 }

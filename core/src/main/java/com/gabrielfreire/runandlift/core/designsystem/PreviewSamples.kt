@@ -88,6 +88,42 @@ internal object PreviewSamples {
         const val MENU = "Menu"
     }
 
+    /**
+     * Tela de seleção com busca.
+     *
+     * [STATES] traz nomes acentuados e um de duas palavras de propósito: é neles que se vê se a
+     * ordenação e a largura da linha aguentam o caso real, e não só "Acre".
+     */
+    object Picker {
+        const val TITLE = "Estado"
+        const val SEARCH = "Buscar estado"
+        const val CLEAR = "Limpar busca"
+        const val EMPTY = "Nenhum estado com esse nome."
+        const val FAILURE = "Não deu para carregar a lista agora."
+        const val RETRY = "Tentar de novo"
+
+        /** Texto que não casa com nada — o que produz a tela de busca sem resultado. */
+        const val QUERY_WITHOUT_MATCH = "zzz"
+
+        val STATES = listOf(
+            "Acre - AC",
+            "Espírito Santo - ES",
+            "Minas Gerais - MG",
+            "Rio de Janeiro - RJ",
+            "Rio Grande do Sul - RS",
+            "São Paulo - SP",
+        )
+
+        /** Rótulos e conteúdo dos campos que abrem a seleção. */
+        const val STATE_LABEL = "Estado"
+        const val STATE_VALUE = "São Paulo - SP"
+        const val STATE_SUPPORT = "Escolha o seu estado na lista."
+        const val STATE_REQUIRED = "Escolha o seu estado."
+        const val CITY_LABEL = "Cidade"
+        const val CITY_SUPPORT = "Escolha a sua cidade na lista."
+        const val CITY_BLOCKED = "Escolha o estado primeiro."
+    }
+
     /** Identidade de quem está logado, para o card de saudação. */
     object Identity {
         const val GREETING = "Olá, Ana"

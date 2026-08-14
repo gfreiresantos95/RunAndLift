@@ -40,4 +40,20 @@ internal class FakeUserRepository(
     override suspend fun setActiveRole(uid: String, role: ActiveRole) = error("a troca de papel é decidida pelo :app")
 
     override suspend fun trainerRegistration(uid: String): String? = null
+
+    var lastIdentity: Pair<String, String?>? = null
+        private set
+
+    // Localidade é aceita e descartada: o módulo do treinador ainda não tem tela de edição de
+    // dados cadastrais, então nenhum teste daqui a exercita. Ver `:feature:student`, onde ela é
+    // guardada e conferida.
+    override suspend fun updateIdentity(
+        uid: String,
+        displayName: String,
+        phone: String?,
+        state: String?,
+        city: String?,
+    ) {
+        lastIdentity = displayName to phone
+    }
 }

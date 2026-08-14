@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    O :data passou a falar com um servidor que não é o Firebase — a API de Localidades do IBGE — e
+    por isso declara a permissão aqui.
+
+    Ela já chegava ao APK pelo manifesto do próprio Firebase, então nada muda no aplicativo
+    instalado. O que muda é de quem é a declaração: quem precisa de rede é este módulo, e depender
+    do manifesto de uma biblioteca de terceiros para tê-la é uma dependência que ninguém escreveu e
+    que some no dia em que o Firebase sair daqui.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>

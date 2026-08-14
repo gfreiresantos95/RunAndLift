@@ -22,6 +22,7 @@ import com.gabrielfreire.runandlift.feature.auth.component.FailureBanner
 import com.gabrielfreire.runandlift.feature.auth.component.RoleChip
 import com.gabrielfreire.runandlift.feature.auth.profileform.ConsentFields
 import com.gabrielfreire.runandlift.feature.auth.profileform.ContactFields
+import com.gabrielfreire.runandlift.feature.auth.profileform.LocationFields
 import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormActions
 import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormState
 import com.gabrielfreire.runandlift.feature.auth.profileform.TrainerFields
@@ -79,6 +80,12 @@ internal fun CompleteProfileScreen(
         val enabled = !state.submitting
 
         ContactFields(form = form, formActions = actions, role = state.role, enabled = enabled)
+
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
+
+        // Sempre perguntada, mesmo aqui: o Google não informa cidade, e é ela que aproxima aluno e
+        // treinador. O que já estiver gravado volta preenchido, como o resto desta tela.
+        LocationFields(form = form, formActions = actions, enabled = enabled)
 
         if (state.role == ActiveRole.TRAINER) {
             Spacer(modifier = Modifier.height(Dimens.SpaceLarge))

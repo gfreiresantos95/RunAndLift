@@ -5,11 +5,15 @@ import com.gabrielfreire.runandlift.data.auth.AuthResult
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.model.PrivacyConsent
 import com.gabrielfreire.runandlift.data.model.SignUpDetails
+import com.gabrielfreire.runandlift.data.model.StudentProfile
+import com.gabrielfreire.runandlift.data.model.StudentProfileDetails
 import com.gabrielfreire.runandlift.data.model.UserAccount
 import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.model.UserRoles
+import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
+import com.gabrielfreire.runandlift.feature.student.navigation.StudentRoutes
 import com.gabrielfreire.runandlift.navigation.RoleRoutes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -80,6 +84,32 @@ class MainViewModelTest {
         override suspend fun setActiveRole(uid: String, role: ActiveRole) {
             activeRoleSetTo = role
         }
+
+        override suspend fun updateIdentity(
+            uid: String,
+            displayName: String,
+            phone: String?,
+            state: String?,
+            city: String?,
+        ) = error("a decisão de rota inicial não edita identidade")
+    }
+
+    /**
+     * @param onboarded se já existe documento em `students/{uid}`. É a marca de que o passo a
+     *   passo aconteceu — o que ele contém não importa para a decisão de rota, porque quem pulou
+     *   tudo também já tem documento e não deve revê-lo.
+     */
+    private class FakeStudentRepository(
+        private val onboarded: Boolean = false,
+        private val failReading: Boolean = false,
+    ) : StudentRepository {
+        override suspend fun profile(uid: String): StudentProfile? {
+            if (failReading) error("sem rede e sem cache")
+            return StudentProfile(uid = uid).takeIf { onboarded }
+        }
+
+        override suspend fun save(uid: String, details: StudentProfileDetails): StudentProfile =
+            error("a decisão de rota inicial não grava nada")
     }
 
     private val account = UserAccount(uid = "u1", email = "ana@exemplo.com", isEmailVerified = true)
@@ -102,7 +132,7 @@ class MainViewModelTest {
 
     @Test
     fun `sem sessao abre o fluxo de entrada`() = runTest(testDispatcher) {
-        val viewModel = MainViewModel(FakeAuthRepository(null), FakeUserRepository())
+        val viewModel = MainViewModel(FakeAuthRepository(null), FakeUserRepository(), FakeStudentRepository())
         testScheduler.advanceUntilIdle()
 
         assertEquals(AuthRoutes.GRAPH, viewModel.uiState.value.startDestination)
@@ -111,7 +141,7 @@ class MainViewModelTest {
 
     @Test
     fun `com sessao e sem papel abre a escolha de papel`() = runTest(testDispatcher) {
-        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository())
+        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(), FakeStudentRepository())
         testScheduler.advanceUntilIdle()
 
         // A conta existe mas não sabe o que é — sessão anterior à escolha, ou gravação que falhou.
@@ -121,7 +151,8 @@ class MainViewModelTest {
     @Test
     fun `cadastro pela metade volta para a conclusao`() = runTest(testDispatcher) {
         val incomplete = completeProfile().copy(birthDate = null)
-        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(incomplete))
+        val viewModel =
+            MainViewModel(FakeAuthRepository(account), FakeUserRepository(incomplete), FakeStudentRepository())
         testScheduler.advanceUntilIdle()
 
         // Sem isto, fechar o aplicativo na tela de conclusão vira a forma de pular o que ela
@@ -131,7 +162,12 @@ class MainViewModelTest {
 
     @Test
     fun `cadastro completo vai direto para o grafo do papel`() = runTest(testDispatcher) {
-        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(completeProfile()))
+        val viewModel =
+            MainViewModel(
+                FakeAuthRepository(account),
+                FakeUserRepository(completeProfile()),
+                FakeStudentRepository(onboarded = true),
+            )
         testScheduler.advanceUntilIdle()
 
         assertEquals(RoleRoutes.graphFor(ActiveRole.STUDENT), viewModel.uiState.value.startDestination)
@@ -139,8 +175,99 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `aluno sem documento de perfil abre no onboarding`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = false),
+        )
+        testScheduler.advanceUntilIdle()
+
+        // Documento inexistente é a marca de primeiro acesso. Quem pulou tudo no passo a passo já
+        // tem documento, e por isso não o revê.
+        assertEquals(StudentRoutes.ONBOARDING, viewModel.uiState.value.startDestination)
+    }
+
+    @Test
+    fun `leitura do perfil de aluno que falha nao repete o onboarding`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(failReading = true),
+        )
+        testScheduler.advanceUntilIdle()
+
+        // Sem rede e sem cache não dá para afirmar que é primeiro acesso — e repetir o passo a
+        // passo de quem já o fez é pior do que deixá-lo passar.
+        assertEquals(RoleRoutes.graphFor(ActiveRole.STUDENT), viewModel.uiState.value.startDestination)
+    }
+
+    @Test
+    fun `treinador nunca ve o onboarding do aluno`() = runTest(testDispatcher) {
+        val trainer = completeProfile(UserRoles(trainer = true)).copy(activeRole = ActiveRole.TRAINER)
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            // Com registro profissional: sem ele o treinador cairia na conclusão de cadastro, e o
+            // teste passaria por um motivo que não é o que ele afirma.
+            FakeUserRepository(trainer, storedCref = "012345-G/SP"),
+            FakeStudentRepository(onboarded = false),
+        )
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(RoleRoutes.graphFor(ActiveRole.TRAINER), viewModel.uiState.value.startDestination)
+    }
+
+    @Test
+    fun `aluno recem-criado vai para o onboarding assim que autentica`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = false),
+        )
+        var destination: String? = null
+
+        viewModel.destinationAfterAuth(ActiveRole.STUDENT) { destination = it }
+        testScheduler.advanceUntilIdle()
+
+        // Deixar isto para a abertura seguinte era tarde demais: a pessoa já teria visto a home
+        // vazia e formado a impressão de que não há nada a fazer ali.
+        assertEquals(StudentRoutes.ONBOARDING, destination)
+    }
+
+    @Test
+    fun `quem ja respondeu o onboarding entra direto na home`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = true),
+        )
+        var destination: String? = null
+
+        viewModel.destinationAfterAuth(ActiveRole.STUDENT) { destination = it }
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(RoleRoutes.graphFor(ActiveRole.STUDENT), destination)
+    }
+
+    @Test
+    fun `treinador nunca cai no onboarding ao autenticar`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(
+            FakeAuthRepository(account),
+            FakeUserRepository(completeProfile()),
+            FakeStudentRepository(onboarded = false),
+        )
+        var destination: String? = null
+
+        viewModel.destinationAfterAuth(ActiveRole.TRAINER) { destination = it }
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(RoleRoutes.graphFor(ActiveRole.TRAINER), destination)
+    }
+
+    @Test
     fun `leitura que falha nao segura ninguem na porta`() = runTest(testDispatcher) {
-        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(failReading = true))
+        val viewModel =
+            MainViewModel(FakeAuthRepository(account), FakeUserRepository(failReading = true), FakeStudentRepository())
         testScheduler.advanceUntilIdle()
 
         // Sem perfil legível não há papel, então o desfecho é a escolha — e não um bloqueio na
@@ -152,7 +279,7 @@ class MainViewModelTest {
     @Test
     fun `so quem tem os dois papeis pode alternar`() = runTest(testDispatcher) {
         val both = completeProfile(UserRoles(trainer = true, student = true))
-        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(both))
+        val viewModel = MainViewModel(FakeAuthRepository(account), FakeUserRepository(both), FakeStudentRepository())
         testScheduler.advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.canSwitchRole)
@@ -161,7 +288,7 @@ class MainViewModelTest {
     @Test
     fun `quem tem um papel so nao alterna`() = runTest(testDispatcher) {
         val users = FakeUserRepository(completeProfile())
-        val viewModel = MainViewModel(FakeAuthRepository(account), users)
+        val viewModel = MainViewModel(FakeAuthRepository(account), users, FakeStudentRepository(onboarded = true))
         testScheduler.advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.canSwitchRole)
@@ -176,7 +303,7 @@ class MainViewModelTest {
     fun `alternar grava o papel novo e avisa quem chamou`() = runTest(testDispatcher) {
         val both = completeProfile(UserRoles(trainer = true, student = true))
         val users = FakeUserRepository(both)
-        val viewModel = MainViewModel(FakeAuthRepository(account), users)
+        val viewModel = MainViewModel(FakeAuthRepository(account), users, FakeStudentRepository(onboarded = true))
         testScheduler.advanceUntilIdle()
 
         var switchedTo: ActiveRole? = null

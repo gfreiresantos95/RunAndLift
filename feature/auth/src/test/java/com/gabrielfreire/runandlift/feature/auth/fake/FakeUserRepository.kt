@@ -69,4 +69,19 @@ internal class FakeUserRepository(
     }
 
     override suspend fun setActiveRole(uid: String, role: ActiveRole) = Unit
+
+    var lastIdentity: Pair<String, String?>? = null
+        private set
+
+    // Localidade é aceita e descartada: o fluxo de entrada grava por `saveProfile`, e é lá que os
+    // testes deste módulo conferem o que chega ao banco. Ver `:feature:student` para a edição.
+    override suspend fun updateIdentity(
+        uid: String,
+        displayName: String,
+        phone: String?,
+        state: String?,
+        city: String?,
+    ) {
+        lastIdentity = displayName to phone
+    }
 }

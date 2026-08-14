@@ -42,6 +42,10 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
+    // Lê o JSON da API do IBGE. Runtime só — a leitura é pela API de árvore, então o plugin de
+    // serialização não entra no projeto.
+    implementation(libs.kotlinx.serialization.json)
+
     implementation(libs.kotlinx.coroutines.android)
     // Traz o `Task.await()`, que converte a API de callbacks do Firebase em suspend.
     implementation(libs.kotlinx.coroutines.play.services)

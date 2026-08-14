@@ -7,12 +7,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.gabrielfreire.runandlift.R
-import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
-import com.gabrielfreire.runandlift.data.user.UserRepository
+import com.gabrielfreire.runandlift.di.AppContainer
+import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRepositories
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 import com.gabrielfreire.runandlift.feature.auth.navigation.authGraph
+import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependencies
 import com.gabrielfreire.runandlift.feature.student.navigation.studentGraph
+import com.gabrielfreire.runandlift.feature.trainer.navigation.TrainerDependencies
 import com.gabrielfreire.runandlift.feature.trainer.navigation.trainerGraph
 
 /**
@@ -30,10 +32,10 @@ import com.gabrielfreire.runandlift.feature.trainer.navigation.trainerGraph
 @Composable
 fun RunAndLiftNavHost(
     startDestination: String,
-    authRepository: AuthRepository,
-    userRepository: UserRepository,
+    container: AppContainer,
     canSwitchRole: Boolean,
     onSwitchRole: () -> Unit,
+    onAuthenticated: (ActiveRole, (String) -> Unit) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -54,29 +56,57 @@ fun RunAndLiftNavHost(
     ) {
         authGraph(
             navController = navController,
-            authRepository = authRepository,
-            userRepository = userRepository,
+            repositories = AuthRepositories(
+                authRepository = container.authRepository,
+                userRepository = container.userRepository,
+                locationRepository = container.locationRepository,
+            ),
             webClientId = webClientId,
+            // Para onde ir depois de autenticar não é decisão do fluxo de entrada, e desde o
+            // onboarding também não é uma constante: um aluno recém-criado vai para o passo a
+            // passo, e quem já o respondeu vai para a home. Quem sabe responder isso é o
+            // `MainViewModel`, e a resposta chega por callback porque envolve uma leitura.
             onAuthenticatedWithRole = { role ->
-                navController.navigateToRole(role, clearAuth = true)
+                onAuthenticated(role) { destination ->
+                    navController.navigateAfterAuth(destination)
+                }
             },
         )
 
         trainerGraph(
             navController = navController,
-            authRepository = authRepository,
-            userRepository = userRepository,
+            dependencies = TrainerDependencies(
+                authRepository = container.authRepository,
+                userRepository = container.userRepository,
+            ),
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,
         )
 
         studentGraph(
             navController = navController,
-            authRepository = authRepository,
-            userRepository = userRepository,
+            dependencies = StudentDependencies(
+                authRepository = container.authRepository,
+                userRepository = container.userRepository,
+                studentRepository = container.studentRepository,
+                locationRepository = container.locationRepository,
+            ),
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,
         )
+    }
+}
+
+/**
+ * Leva para onde a autenticação decidiu — a home do papel, ou o onboarding do aluno novo.
+ *
+ * Remove o fluxo de entrada da pilha: depois de autenticado, "voltar" na primeira tela deve sair do
+ * app, e não regressar ao login com sessão ativa.
+ */
+internal fun NavHostController.navigateAfterAuth(destination: String) {
+    navigate(destination) {
+        launchSingleTop = true
+        popUpTo(AuthRoutes.GRAPH) { inclusive = true }
     }
 }
 

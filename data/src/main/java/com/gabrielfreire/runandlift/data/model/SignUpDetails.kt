@@ -19,6 +19,12 @@ import java.time.LocalDate
  *   único campo aqui que não vai para `users/{uid}`: perfil profissional é público para o aluno
  *   vinculado, e `users/{uid}` é legível apenas pelo titular. Ver [UserProfile] e as regras de
  *   `trainerProfiles`.
+ * @param state **só a sigla** da unidade da federação (`SP`). O nome por extenso não é gravado: ele
+ *   é remontado na exibição por [BrazilState], e guardá-lo aqui criaria uma segunda grafia do mesmo
+ *   estado esperando para divergir da primeira.
+ * @param city nome do município, como o IBGE o escreve. Sem sigla estável para servir de chave, o
+ *   nome é o identificador possível — e é o que dispensa uma consulta à rede para exibir a cidade
+ *   de alguém.
  */
 data class SignUpDetails(
     val displayName: String? = null,
@@ -26,4 +32,6 @@ data class SignUpDetails(
     val phone: String? = null,
     val consent: PrivacyConsent? = null,
     val cref: String? = null,
+    val state: String? = null,
+    val city: String? = null,
 )

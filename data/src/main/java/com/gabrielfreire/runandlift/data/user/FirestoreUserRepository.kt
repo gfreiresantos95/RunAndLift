@@ -47,6 +47,8 @@ internal class FirestoreUserRepository(
                 ?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
             phone = document.getString(FIELD_PHONE),
             acceptedTermsVersion = document.getString(FIELD_CONSENT_TERMS_VERSION),
+            state = document.getString(FIELD_STATE),
+            city = document.getString(FIELD_CITY),
         )
     }
 
@@ -86,11 +88,34 @@ internal class FirestoreUserRepository(
                 birthDate = details.birthDate ?: existing?.birthDate,
                 phone = details.phone ?: existing?.phone,
                 acceptedTermsVersion = details.consent?.termsVersion ?: existing?.acceptedTermsVersion,
+                state = details.state ?: existing?.state,
+                city = details.city ?: existing?.city,
             )
         }
 
     override suspend fun setActiveRole(uid: String, role: ActiveRole) = withContext(dispatchers.io) {
         document(uid).update(FIELD_ACTIVE_ROLE, role.storageValue).await()
+        Unit
+    }
+
+    override suspend fun updateIdentity(
+        uid: String,
+        displayName: String,
+        phone: String?,
+        state: String?,
+        city: String?,
+    ) = withContext(dispatchers.io) {
+        // `FieldValue.delete()` e não a omissão do campo: aqui nulo significa "apaguei o
+        // número", e omitir preservaria o antigo — que é o comportamento de `saveProfile`, e
+        // exatamente o que esta função existe para não fazer.
+        val fields = mapOf(
+            FIELD_DISPLAY_NAME to displayName,
+            FIELD_PHONE to (phone ?: FieldValue.delete()),
+            FIELD_STATE to (state ?: FieldValue.delete()),
+            FIELD_CITY to (city ?: FieldValue.delete()),
+        )
+
+        document(uid).set(fields, SetOptions.merge()).await()
         Unit
     }
 
@@ -115,6 +140,10 @@ internal class FirestoreUserRepository(
         // um dia inteiro conforme o fuso de quem lê.
         details.birthDate?.let { fields[FIELD_BIRTH_DATE] = it.toString() }
         details.phone?.let { fields[FIELD_PHONE] = it }
+        // Só a sigla vai ao banco. O nome por extenso é remontado na exibição, e gravá-lo aqui
+        // seria uma segunda grafia do mesmo estado esperando para divergir da primeira.
+        details.state?.let { fields[FIELD_STATE] = it }
+        details.city?.let { fields[FIELD_CITY] = it }
         details.consent?.let { fields[FIELD_CONSENTS] = consentFields(it) }
 
         return fields
@@ -165,6 +194,8 @@ internal class FirestoreUserRepository(
         const val FIELD_STUDENT = "student"
         const val FIELD_BIRTH_DATE = "birthDate"
         const val FIELD_PHONE = "phone"
+        const val FIELD_STATE = "state"
+        const val FIELD_CITY = "city"
         const val FIELD_CONSENTS = "consents"
         const val FIELD_TERMS_VERSION = "termsVersion"
         const val FIELD_TERMS_ACCEPTED_AT = "termsAcceptedAt"

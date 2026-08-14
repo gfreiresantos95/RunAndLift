@@ -1,10 +1,14 @@
 package com.gabrielfreire.runandlift.feature.auth.profileform
 
+import com.gabrielfreire.runandlift.data.model.BrazilState
 import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
 import com.gabrielfreire.runandlift.feature.auth.validation.BirthDateError
+import com.gabrielfreire.runandlift.feature.auth.validation.CityError
 import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
+import com.gabrielfreire.runandlift.feature.auth.validation.LocationValidation
 import com.gabrielfreire.runandlift.feature.auth.validation.NameError
 import com.gabrielfreire.runandlift.feature.auth.validation.PhoneError
+import com.gabrielfreire.runandlift.feature.auth.validation.StateError
 
 /**
  * Campos do cadastro que não são credencial.
@@ -25,27 +29,50 @@ import com.gabrielfreire.runandlift.feature.auth.validation.PhoneError
  *
  * @param cref registro profissional. Preenchido apenas no cadastro de treinador — o campo nem
  *   aparece para o aluno, e a validação o ignora.
+ * @param stateUf sigla do estado escolhido (`SP`) — é o que vai para o banco.
+ * @param stateName nome por extenso do mesmo estado (`São Paulo`). Guardado ao lado da sigla **só
+ *   para desenhar o campo**: a tela promete devolver a escolha na forma em que ela foi feita, e sem
+ *   o nome em mãos exibir "São Paulo - SP" custaria uma ida à rede a cada recomposição. Nunca é
+ *   gravado — ver [com.gabrielfreire.runandlift.data.model.BrazilState].
+ * @param city nome do município escolhido.
  */
 internal data class ProfileFormState(
     val name: String = "",
     val birthDate: String = "",
     val phone: String = "",
     val cref: String = "",
+    val stateUf: String = "",
+    val stateName: String = "",
+    val city: String = "",
     val acceptedTerms: Boolean = false,
     val marketingOptIn: Boolean = false,
     val nameError: NameError? = null,
     val birthDateError: BirthDateError? = null,
     val phoneError: PhoneError? = null,
     val crefError: CrefError? = null,
+    val stateError: StateError? = null,
+    val cityError: CityError? = null,
     /** Aceite obrigatório em falta. Booleano e não enum: só existe um motivo. */
     val termsMissing: Boolean = false,
 ) {
+    /**
+     * As duas metades do estado remontadas, ou `null` enquanto não houve escolha.
+     *
+     * O formulário guarda sigla e nome separados porque só a sigla é gravada; a tela precisa dos
+     * dois juntos para escrever `São Paulo - SP`. Esta propriedade é a costura, num lugar só — feita
+     * em cada tela, seria a chance de uma delas inverter a ordem e a escolha parecer ter mudado.
+     */
+    val selectedState: BrazilState?
+        get() = stateUf.takeIf { it.isNotEmpty() }?.let { BrazilState(uf = it, name = stateName) }
+
     /** Nada pendente. Consultado depois de [validated], nunca antes — antes, tudo parece válido. */
     val isValid: Boolean
         get() = nameError == null &&
             birthDateError == null &&
             phoneError == null &&
             crefError == null &&
+            stateError == null &&
+            cityError == null &&
             !termsMissing
 }
 
@@ -59,6 +86,10 @@ internal data class ProfileFormState(
  * A diferença entre os dois perfis mora inteira aqui — celular obrigatório e CREF exigido para o
  * treinador, os dois dispensados para o aluno. Espalhar essa decisão entre a tela e o ViewModel é
  * como uma delas acabaria exigindo o que a outra esconde.
+ *
+ * Estado e cidade ficam **fora** dessa diferença: são exigidos dos dois. Localidade não é canal de
+ * contato como o celular, é o que aproxima aluno e treinador — e um aluno sem cidade não aparece
+ * para nenhum treinador da região dele.
  *
  * @param isTrainer perfil escolhido nas boas-vindas. Quando o papel é desconhecido — cadastro
  *   alcançado sem passar por elas — vale a régua do aluno, que é a menos exigente: barrar alguém
@@ -77,5 +108,7 @@ internal fun ProfileFormState.validated(
     birthDateError = AuthFormValidation.validateBirthDate(birthDate),
     phoneError = AuthFormValidation.validatePhone(phone, required = isTrainer),
     crefError = if (isTrainer) AuthFormValidation.validateCref(cref) else null,
+    stateError = LocationValidation.validateState(stateUf),
+    cityError = LocationValidation.validateCity(city),
     termsMissing = askConsent && !acceptedTerms,
 )

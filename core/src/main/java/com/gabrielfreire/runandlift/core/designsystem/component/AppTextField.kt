@@ -62,6 +62,13 @@ import kotlinx.coroutines.launch
  * @param capitalization o que o teclado oferece em maiúscula. Existe para campos cujo conteúdo é
  *   maiúsculo por natureza, como um registro profissional: se o valor vai ser convertido de
  *   qualquer jeito, o teclado precisa concordar, ou parece que o aparelho está corrigindo.
+ * @param readOnly campo que exibe sem aceitar digitação, e **continua com aparência de habilitado**.
+ *   É diferente de `enabled = false`: desabilitado é "isto não está disponível agora", e o cinza diz
+ *   isso; somente-leitura é "o valor vem de outro lugar", que é o caso do campo cujo conteúdo é
+ *   escolhido numa lista. Ver [AppSelectField], o único uso hoje.
+ * @param leadingContent desenho à esquerda do conteúdo — a lupa de um campo de busca. À esquerda, e
+ *   não à direita, porque ali ele antecede o que se vai digitar em vez de disputar espaço com o
+ *   botão de limpar.
  */
 @Composable
 fun AppTextField(
@@ -72,10 +79,12 @@ fun AppTextField(
     errorMessage: String? = null,
     supportingText: String? = null,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     imeAction: ImeAction = ImeAction.Next,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     onImeAction: (() -> Unit)? = null,
 ) {
@@ -96,6 +105,7 @@ fun AppTextField(
             singleLine = true,
             isError = hasError,
             enabled = enabled,
+            readOnly = readOnly,
             keyboardOptions = KeyboardOptions(
                 capitalization = capitalization,
                 keyboardType = keyboardType,
@@ -116,6 +126,7 @@ fun AppTextField(
                 },
             ),
             visualTransformation = visualTransformation,
+            leadingIcon = leadingContent,
             trailingIcon = trailingContent,
             modifier = Modifier
                 .fillMaxWidth()
