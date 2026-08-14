@@ -50,4 +50,21 @@ internal object AccountFormValidation {
         digits.length < MIN_PHONE_DIGITS || digits.length > MAX_PHONE_DIGITS -> PhoneError.INVALID
         else -> null
     }
+
+    /**
+     * Estado, **obrigatório** — ao contrário do celular.
+     *
+     * Localidade não é canal de contato, é o que aproxima aluno e treinador: sem cidade, este aluno
+     * não aparece para nenhum treinador da região dele, que é o jeito de o vínculo começar.
+     *
+     * Que seja exigido numa tela de **edição** tem uma consequência querida: as contas criadas
+     * antes de o campo existir preenchem-no na primeira vez que voltarem aqui. É o único caminho de
+     * preenchimento retroativo que não obriga ninguém a passar por uma tela extra na abertura.
+     *
+     * A régua é só a presença. Não há formato a conferir: o valor vem de uma lista fechada do IBGE.
+     */
+    fun validateState(uf: String): StateError? = StateError.REQUIRED.takeIf { uf.isBlank() }
+
+    /** Cidade escolhida. Ver [validateState] — mesma régua, outro campo. */
+    fun validateCity(city: String): CityError? = CityError.REQUIRED.takeIf { city.isBlank() }
 }

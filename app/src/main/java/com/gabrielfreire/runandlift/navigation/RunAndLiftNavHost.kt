@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.gabrielfreire.runandlift.R
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.di.AppContainer
+import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRepositories
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 import com.gabrielfreire.runandlift.feature.auth.navigation.authGraph
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependencies
@@ -55,8 +56,11 @@ fun RunAndLiftNavHost(
     ) {
         authGraph(
             navController = navController,
-            authRepository = container.authRepository,
-            userRepository = container.userRepository,
+            repositories = AuthRepositories(
+                authRepository = container.authRepository,
+                userRepository = container.userRepository,
+                locationRepository = container.locationRepository,
+            ),
             webClientId = webClientId,
             // Para onde ir depois de autenticar não é decisão do fluxo de entrada, e desde o
             // onboarding também não é uma constante: um aluno recém-criado vai para o passo a
@@ -85,6 +89,7 @@ fun RunAndLiftNavHost(
                 authRepository = container.authRepository,
                 userRepository = container.userRepository,
                 studentRepository = container.studentRepository,
+                locationRepository = container.locationRepository,
             ),
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,

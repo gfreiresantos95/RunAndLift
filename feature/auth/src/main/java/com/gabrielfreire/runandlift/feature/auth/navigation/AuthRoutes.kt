@@ -29,9 +29,22 @@ object AuthRoutes {
      */
     internal const val ROLE_ARG = "role"
 
+    /**
+     * Escolha do estado, numa tela própria.
+     *
+     * Tela e não lista suspensa porque a de cidade precisa de campo de busca — 853 municípios em
+     * Minas Gerais — e as duas têm de se parecer. Ver
+     * [com.gabrielfreire.runandlift.core.designsystem.component.AppSearchablePicker].
+     */
+    internal const val STATE_PICKER = "auth/picker/state"
+
+    /** Argumento da lista de cidades: a sigla do estado cujos municípios listar. */
+    internal const val UF_ARG = "uf"
+
     private const val SIGN_IN = "auth/sign-in"
     private const val SIGN_UP = "auth/sign-up"
     private const val COMPLETE_PROFILE = "auth/complete-profile"
+    private const val CITY_PICKER = "auth/picker/city"
 
     /**
      * Padrões registrados no grafo. O argumento é opcional (sintaxe de query) porque as três telas
@@ -40,6 +53,15 @@ object AuthRoutes {
     internal const val SIGN_IN_PATTERN = "$SIGN_IN?$ROLE_ARG={$ROLE_ARG}"
     internal const val SIGN_UP_PATTERN = "$SIGN_UP?$ROLE_ARG={$ROLE_ARG}"
     internal const val COMPLETE_PROFILE_PATTERN = "$COMPLETE_PROFILE?$ROLE_ARG={$ROLE_ARG}"
+
+    /**
+     * A UF é obrigatória aqui, e por isso vai no caminho e não na consulta: uma lista de municípios
+     * sem estado seriam os 5.571 do país inteiro, que é exatamente o que a tela existe para evitar.
+     */
+    internal const val CITY_PICKER_PATTERN = "$CITY_PICKER/{$UF_ARG}"
+
+    /** Rota concreta da lista de cidades de um estado. */
+    internal fun cityPicker(uf: String): String = "$CITY_PICKER/$uf"
 
     /** Rota concreta da entrada, com ou sem perfil. */
     internal fun signIn(role: ActiveRole? = null): String = withRole(SIGN_IN, role)

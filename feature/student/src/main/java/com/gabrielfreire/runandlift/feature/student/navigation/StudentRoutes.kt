@@ -37,4 +37,27 @@ object StudentRoutes {
      * dela para decidir o que preencher.
      */
     const val ACCOUNT = "student/account"
+
+    /**
+     * Escolha do estado, numa tela própria, aberta por [ACCOUNT].
+     *
+     * Tela e não lista suspensa porque a de cidade precisa de campo de busca — 853 municípios em
+     * Minas Gerais — e as duas têm de se parecer. Ficam **dentro** deste grafo porque o resultado
+     * volta pela entrada anterior da pilha: quem as abre é uma tela daqui.
+     */
+    internal const val STATE_PICKER = "student/picker/state"
+
+    /** Argumento da lista de cidades: a sigla do estado cujos municípios listar. */
+    internal const val UF_ARG = "uf"
+
+    private const val CITY_PICKER = "student/picker/city"
+
+    /**
+     * A UF é obrigatória, e por isso vai no caminho e não na consulta: uma lista de municípios sem
+     * estado seriam os 5.571 do país inteiro, que é o que a tela existe para evitar.
+     */
+    internal const val CITY_PICKER_PATTERN = "$CITY_PICKER/{$UF_ARG}"
+
+    /** Rota concreta da lista de cidades de um estado. */
+    internal fun cityPicker(uf: String): String = "$CITY_PICKER/$uf"
 }

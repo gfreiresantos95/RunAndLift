@@ -44,7 +44,16 @@ internal class FakeUserRepository(
     var lastIdentity: Pair<String, String?>? = null
         private set
 
-    override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) {
+    // Localidade é aceita e descartada: o módulo do treinador ainda não tem tela de edição de
+    // dados cadastrais, então nenhum teste daqui a exercita. Ver `:feature:student`, onde ela é
+    // guardada e conferida.
+    override suspend fun updateIdentity(
+        uid: String,
+        displayName: String,
+        phone: String?,
+        state: String?,
+        city: String?,
+    ) {
         lastIdentity = displayName to phone
     }
 }

@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.navigation
 
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
+import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 
@@ -17,4 +18,5 @@ data class StudentDependencies(
     val authRepository: AuthRepository,
     val userRepository: UserRepository,
     val studentRepository: StudentRepository,
+    val locationRepository: LocationRepository,
 )

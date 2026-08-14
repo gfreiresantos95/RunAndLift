@@ -20,6 +20,16 @@ internal data class ProfileFormActions(
     val onPhoneChange: (String) -> Unit,
     /** Só é acionado no cadastro de treinador — para o aluno o campo nem chega a existir. */
     val onCrefChange: (String) -> Unit,
+    /**
+     * Abre a tela de escolher o estado.
+     *
+     * É `onOpen…` e não `onStateChange` porque o campo não muda por digitação: ele **abre outra
+     * tela** e recebe o resultado dela depois. Quem transforma esse resultado em estado do
+     * formulário é o destino, não este contrato — aqui o que existe é a intenção de escolher.
+     */
+    val onOpenStatePicker: () -> Unit,
+    /** Abre a tela de escolher a cidade. Só é alcançável depois de haver um estado. */
+    val onOpenCityPicker: () -> Unit,
     val onTermsChange: (Boolean) -> Unit,
     val onMarketingChange: (Boolean) -> Unit,
     val onOpenLegalDocument: (LegalDocument) -> Unit,

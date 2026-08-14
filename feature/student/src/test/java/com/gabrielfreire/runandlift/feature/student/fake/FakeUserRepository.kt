@@ -20,6 +20,8 @@ internal class FakeUserRepository(
     private val displayName: String? = "Ana Ribeiro",
     private val failReading: Boolean = false,
     private val missingProfile: Boolean = false,
+    private val storedState: String? = "SP",
+    private val storedCity: String? = "Campinas",
 ) : UserRepository {
 
     override suspend fun profile(uid: String): UserProfile? {
@@ -32,6 +34,8 @@ internal class FakeUserRepository(
             phone = "11987654321",
             roles = UserRoles(student = true),
             activeRole = ActiveRole.STUDENT,
+            state = storedState,
+            city = storedCity,
         )
     }
 
@@ -42,10 +46,16 @@ internal class FakeUserRepository(
 
     override suspend fun trainerRegistration(uid: String): String? = null
 
-    var lastIdentity: Pair<String, String?>? = null
+    var lastIdentity: SavedIdentity? = null
         private set
 
-    override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) {
-        lastIdentity = displayName to phone
+    override suspend fun updateIdentity(
+        uid: String,
+        displayName: String,
+        phone: String?,
+        state: String?,
+        city: String?,
+    ) {
+        lastIdentity = SavedIdentity(displayName = displayName, phone = phone, state = state, city = city)
     }
 }

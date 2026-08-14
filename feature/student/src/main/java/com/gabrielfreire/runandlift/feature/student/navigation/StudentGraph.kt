@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.gabrielfreire.runandlift.feature.student.account.AccountDestination
 import com.gabrielfreire.runandlift.feature.student.home.StudentHomeDestination
+import com.gabrielfreire.runandlift.feature.student.location.LocationPickerDestination
 import com.gabrielfreire.runandlift.feature.student.menu.StudentMenuDestination
 import com.gabrielfreire.runandlift.feature.student.onboarding.OnboardingDestination
 import com.gabrielfreire.runandlift.feature.student.profile.StudentProfileDestination
@@ -56,10 +57,25 @@ fun NavGraphBuilder.studentGraph(
                 onOpen = { route -> navController.navigate(route) },
             )
         }
-        composable(StudentRoutes.ACCOUNT) {
+        composable(StudentRoutes.ACCOUNT) { entry ->
             AccountDestination(
+                navController = navController,
+                entry = entry,
                 dependencies = dependencies,
                 onBack = { navController.popBackStack() },
+            )
+        }
+
+        // As duas listas de localidade, abertas por "Meus dados". Ficam no mesmo grafo porque a
+        // escolha volta pela entrada anterior da pilha — quem as abre é uma tela daqui.
+        composable(StudentRoutes.STATE_PICKER) {
+            LocationPickerDestination(navController = navController, dependencies = dependencies, uf = null)
+        }
+        composable(route = StudentRoutes.CITY_PICKER_PATTERN, arguments = ufArgument()) { entry ->
+            LocationPickerDestination(
+                navController = navController,
+                dependencies = dependencies,
+                uf = entry.arguments?.getString(StudentRoutes.UF_ARG),
             )
         }
         composable(StudentRoutes.ONBOARDING) {

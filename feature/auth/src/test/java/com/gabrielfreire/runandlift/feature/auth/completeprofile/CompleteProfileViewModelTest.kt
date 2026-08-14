@@ -5,6 +5,7 @@ import com.gabrielfreire.runandlift.data.model.PrivacyConsent
 import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.model.UserRoles
 import com.gabrielfreire.runandlift.feature.auth.fake.FakeAuthRepository
+import com.gabrielfreire.runandlift.feature.auth.fake.FakeLocationRepository
 import com.gabrielfreire.runandlift.feature.auth.fake.FakeUserRepository
 import com.gabrielfreire.runandlift.feature.auth.fake.MainDispatcherRule
 import com.gabrielfreire.runandlift.feature.auth.validation.BirthDateError
@@ -12,6 +13,7 @@ import com.gabrielfreire.runandlift.feature.auth.validation.CrefError
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -32,7 +34,13 @@ class CompleteProfileViewModelTest {
 
     private val auth = FakeAuthRepository(signedIn = FakeAuthRepository.ACCOUNT)
 
-    private fun profile(birthDate: LocalDate? = null, phone: String? = null, consent: String? = null) = UserProfile(
+    private fun profile(
+        birthDate: LocalDate? = null,
+        phone: String? = null,
+        consent: String? = null,
+        state: String? = null,
+        city: String? = null,
+    ) = UserProfile(
         uid = "u1",
         displayName = "Bruno Lima",
         roles = UserRoles(trainer = true),
@@ -40,7 +48,32 @@ class CompleteProfileViewModelTest {
         birthDate = birthDate,
         phone = phone,
         acceptedTermsVersion = consent,
+        state = state,
+        city = city,
     )
+
+    private fun viewModel(
+        users: FakeUserRepository,
+        role: ActiveRole,
+        auth: FakeAuthRepository = this.auth,
+        locations: FakeLocationRepository = FakeLocationRepository(),
+    ) = CompleteProfileViewModel(
+        authRepository = auth,
+        userRepository = users,
+        locationRepository = locations,
+        role = role,
+    )
+
+    /**
+     * Escolhe estado e cidade, que passaram a ser obrigatórios para os dois perfis.
+     *
+     * Existe para os testes que conferem **outra coisa** — nome, papel, consentimento — não terem de
+     * repetir duas linhas de localidade cada um só para chegar ao envio.
+     */
+    private fun CompleteProfileViewModel.pickLocation() {
+        form.onStatePicked(uf = "SP", name = "São Paulo")
+        form.onCityPicked("Campinas")
+    }
 
     /**
      * A regressão que motivou o conserto: **conta criada pelo Google ficava sem nome no banco**.
@@ -55,11 +88,12 @@ class CompleteProfileViewModelTest {
             signedIn = FakeAuthRepository.ACCOUNT.copy(displayName = "Ana Ribeiro"),
         )
         val users = FakeUserRepository()
-        val viewModel = CompleteProfileViewModel(google, users, ActiveRole.STUDENT)
+        val viewModel = viewModel(users, ActiveRole.STUDENT, google)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("21051990")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -72,7 +106,7 @@ class CompleteProfileViewModelTest {
             signedIn = FakeAuthRepository.ACCOUNT.copy(displayName = "Ana da Conta Google"),
         )
         val users = FakeUserRepository(storedProfile = profile(consent = PrivacyConsent.CURRENT_TERMS_VERSION))
-        val viewModel = CompleteProfileViewModel(google, users, ActiveRole.STUDENT)
+        val viewModel = viewModel(users, ActiveRole.STUDENT, google)
         testScheduler.advanceUntilIdle()
 
         // Quem editou o próprio nome não pode vê-lo voltar ao da conta Google só por passar por
@@ -83,11 +117,12 @@ class CompleteProfileViewModelTest {
     @Test
     fun `conta sem nome no provedor nao inventa nome`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository()
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.STUDENT)
+        val viewModel = viewModel(users, ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("21051990")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -102,7 +137,7 @@ class CompleteProfileViewModelTest {
             storedProfile = profile(birthDate = LocalDate.of(1988, 3, 14), phone = "11912345678"),
             storedCref = "012345-G/SP",
         )
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.TRAINER)
+        val viewModel = viewModel(users, ActiveRole.TRAINER)
         testScheduler.advanceUntilIdle()
 
         // Recomeçar do zero um dado que já existe é pedir de novo o que já foi dado. E volta na
@@ -113,9 +148,68 @@ class CompleteProfileViewModelTest {
     }
 
     @Test
+    fun `sigla gravada volta como nome e sigla`() = runTest(mainDispatcherRule.dispatcher) {
+        val users = FakeUserRepository(storedProfile = profile(state = "SP", city = "Campinas"))
+        val viewModel = viewModel(users, ActiveRole.TRAINER)
+        testScheduler.advanceUntilIdle()
+
+        // O banco guarda "SP"; o campo tem de exibir a escolha na forma em que ela foi feita.
+        assertEquals("São Paulo - SP", viewModel.formState.value.selectedState?.label)
+        assertEquals("Campinas", viewModel.formState.value.city)
+    }
+
+    @Test
+    fun `estado que nao pode ser consultado deixa os dois campos vazios`() = runTest(mainDispatcherRule.dispatcher) {
+        val users = FakeUserRepository(storedProfile = profile(state = "SP", city = "Campinas"))
+        val viewModel = viewModel(users, ActiveRole.TRAINER, locations = FakeLocationRepository(failing = true))
+        testScheduler.advanceUntilIdle()
+
+        // Sem a lista não dá para escrever "São Paulo - SP", e "- SP" seria pior que vazio. A tela
+        // continua utilizável — não abrir por causa do IBGE seria trocar um campo por um bloqueio.
+        assertNull(viewModel.formState.value.selectedState)
+        assertEquals("", viewModel.formState.value.city)
+        assertFalse(viewModel.uiState.value.loading)
+    }
+
+    @Test
+    fun `so a sigla do estado vai ao banco`() = runTest(mainDispatcherRule.dispatcher) {
+        val users = FakeUserRepository()
+        val viewModel = viewModel(users, ActiveRole.STUDENT)
+        testScheduler.advanceUntilIdle()
+
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // "São Paulo" fica na tela e morre ali: duas grafias do mesmo estado no banco seriam dois
+        // estados na hora de agrupar por região.
+        assertEquals("SP", users.lastDetails?.state)
+        assertEquals("Campinas", users.lastDetails?.city)
+    }
+
+    @Test
+    fun `localidade e cobrada tambem de quem entrou pelo Google`() = runTest(mainDispatcherRule.dispatcher) {
+        val viewModel = viewModel(FakeUserRepository(), ActiveRole.STUDENT)
+        testScheduler.advanceUntilIdle()
+
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.onSubmit()
+        testScheduler.advanceUntilIdle()
+
+        // O Google informa nome e e-mail, e mais nada. Sem esta cobrança, toda conta federada
+        // ficaria sem cidade — que é justamente o que aproxima aluno e treinador.
+        assertNotNull(viewModel.formState.value.stateError)
+        assertNotNull(viewModel.formState.value.cityError)
+        assertNull(viewModel.uiState.value.completedRole)
+    }
+
+    @Test
     fun `quem ja consentiu nao e perguntado de novo`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository(storedProfile = profile(consent = PrivacyConsent.CURRENT_TERMS_VERSION))
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.TRAINER)
+        val viewModel = viewModel(users, ActiveRole.TRAINER)
         testScheduler.advanceUntilIdle()
 
         assertFalse("repetir o pedido a quem já consentiu não o torna mais válido", viewModel.uiState.value.askConsent)
@@ -123,7 +217,7 @@ class CompleteProfileViewModelTest {
 
     @Test
     fun `sem consentimento registrado, o bloco aparece`() = runTest(mainDispatcherRule.dispatcher) {
-        val viewModel = CompleteProfileViewModel(auth, FakeUserRepository(), ActiveRole.STUDENT)
+        val viewModel = viewModel(FakeUserRepository(), ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
         // Consentimento coletado por um provedor de identidade não é consentimento dado a nós.
@@ -133,7 +227,7 @@ class CompleteProfileViewModelTest {
     @Test
     fun `o nome do provedor e exibido como confirmacao`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository(storedProfile = profile())
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.TRAINER)
+        val viewModel = viewModel(users, ActiveRole.TRAINER)
         testScheduler.advanceUntilIdle()
 
         assertEquals("Bruno Lima", viewModel.uiState.value.name)
@@ -142,7 +236,7 @@ class CompleteProfileViewModelTest {
 
     @Test
     fun `nao cobra o nome, porque nao ha campo onde conserta-lo`() = runTest(mainDispatcherRule.dispatcher) {
-        val viewModel = CompleteProfileViewModel(auth, FakeUserRepository(), ActiveRole.STUDENT)
+        val viewModel = viewModel(FakeUserRepository(), ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
         viewModel.onSubmit()
@@ -155,12 +249,13 @@ class CompleteProfileViewModelTest {
 
     @Test
     fun `treinador ainda precisa do registro aqui`() = runTest(mainDispatcherRule.dispatcher) {
-        val viewModel = CompleteProfileViewModel(auth, FakeUserRepository(), ActiveRole.TRAINER)
+        val viewModel = viewModel(FakeUserRepository(), ActiveRole.TRAINER)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("14031988")
-        viewModel.onPhoneChange("11912345678")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("14031988")
+        viewModel.form.onPhoneChange("11912345678")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -171,13 +266,14 @@ class CompleteProfileViewModelTest {
     @Test
     fun `conclusao grava o papel junto com o resto, numa escrita so`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository()
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.TRAINER)
+        val viewModel = viewModel(users, ActiveRole.TRAINER)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("14031988")
-        viewModel.onPhoneChange("11912345678")
-        viewModel.onCrefChange("012345GSP")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("14031988")
+        viewModel.form.onPhoneChange("11912345678")
+        viewModel.form.onCrefChange("012345GSP")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -191,11 +287,12 @@ class CompleteProfileViewModelTest {
     @Test
     fun `reenvia o nome ja gravado, sem trocar por outro`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository(storedProfile = profile())
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.STUDENT)
+        val viewModel = viewModel(users, ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("21051990")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -209,11 +306,12 @@ class CompleteProfileViewModelTest {
     @Test
     fun `falha de escrita nao deixa passar`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository(failWriting = true)
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.STUDENT)
+        val viewModel = viewModel(users, ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("21051990")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
 
@@ -226,11 +324,12 @@ class CompleteProfileViewModelTest {
     @Test
     fun `envio duplicado nao grava duas vezes`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository()
-        val viewModel = CompleteProfileViewModel(auth, users, ActiveRole.STUDENT)
+        val viewModel = viewModel(users, ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
-        viewModel.onBirthDateChange("21051990")
-        viewModel.onTermsChange(true)
+        viewModel.form.onBirthDateChange("21051990")
+        viewModel.form.onTermsChange(true)
+        viewModel.pickLocation()
         viewModel.onSubmit()
         viewModel.onSubmit()
         testScheduler.advanceUntilIdle()
@@ -240,7 +339,7 @@ class CompleteProfileViewModelTest {
 
     @Test
     fun `leitura que falha ainda deixa a tela utilizavel`() = runTest(mainDispatcherRule.dispatcher) {
-        val viewModel = CompleteProfileViewModel(auth, FakeUserRepository(failReading = true), ActiveRole.STUDENT)
+        val viewModel = viewModel(FakeUserRepository(failReading = true), ActiveRole.STUDENT)
         testScheduler.advanceUntilIdle()
 
         // Sem conseguir ler, a tela abre vazia em vez de travar em carregamento — pedir de novo é

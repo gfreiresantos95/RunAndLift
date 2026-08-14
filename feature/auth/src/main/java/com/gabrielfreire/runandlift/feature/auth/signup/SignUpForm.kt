@@ -22,6 +22,7 @@ import com.gabrielfreire.runandlift.feature.auth.credentials.previewCredentialsS
 import com.gabrielfreire.runandlift.feature.auth.profileform.ConsentFields
 import com.gabrielfreire.runandlift.feature.auth.profileform.ContactFields
 import com.gabrielfreire.runandlift.feature.auth.profileform.HealthDataNotice
+import com.gabrielfreire.runandlift.feature.auth.profileform.LocationFields
 import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormActions
 import com.gabrielfreire.runandlift.feature.auth.profileform.ProfileFormState
 import com.gabrielfreire.runandlift.feature.auth.profileform.TrainerFields
@@ -68,6 +69,12 @@ internal fun SignUpForm(
         Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
 
         ContactFields(form = form, formActions = formActions, role = role, enabled = enabled)
+
+        Spacer(modifier = Modifier.height(Dimens.SpaceMedium))
+
+        // Depois do contato e antes do bloco do perfil: ainda é "como te encontram", que é o que o
+        // celular acabou de perguntar — só que no mapa em vez de no telefone.
+        LocationFields(form = form, formActions = formActions, enabled = enabled)
 
         // A mesma vaga do formulário, um bloco por perfil: ao aluno o app conta o que não vai
         // pedir, ao treinador o que vai fazer com o que pediu. Sem papel definido não há bloco —

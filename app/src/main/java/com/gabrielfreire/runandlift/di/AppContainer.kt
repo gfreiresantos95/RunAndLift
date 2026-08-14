@@ -3,6 +3,7 @@ package com.gabrielfreire.runandlift.di
 import android.content.Context
 import com.gabrielfreire.runandlift.data.DataContainer
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
+import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
@@ -39,4 +40,13 @@ class AppContainer(context: Context) {
 
     /** Perfil de treino do aluno, em `students/{uid}` (E2-01). */
     val studentRepository: StudentRepository get() = dataContainer.studentRepository
+
+    /**
+     * Estados e municípios, servidos da API do IBGE com cache em memória.
+     *
+     * O `get()` delega ao container de `:data`, que o guarda em `by lazy`: é a mesma instância para
+     * o cadastro, para "Meus dados" e para as telas de seleção, e é isso que faz o cache valer —
+     * uma instância por tela baixaria a mesma lista de novo em cada uma.
+     */
+    val locationRepository: LocationRepository get() = dataContainer.locationRepository
 }

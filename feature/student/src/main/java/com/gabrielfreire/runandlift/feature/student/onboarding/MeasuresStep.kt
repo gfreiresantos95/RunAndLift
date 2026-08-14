@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
@@ -51,6 +52,7 @@ internal fun MeasuresStep(
             supportingText = stringResource(R.string.student_field_height_support),
             errorMessage = form.heightError?.message(),
             keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done,
         )
     }
 }

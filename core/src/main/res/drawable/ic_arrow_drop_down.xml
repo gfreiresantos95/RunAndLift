@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Triângulo para baixo do Material Symbols, como vetor local.
+
+    É o que marca um campo que **abre uma escolha** em vez de aceitar digitação. Sem ele, um campo
+    de seleção é visualmente idêntico a um campo de texto que, ao ser tocado, não abre o teclado —
+    e a diferença entre "não posso digitar" e "está travado" é a que produz mensagem de suporte.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M7,10l5,5 5,-5z" />
+</vector>

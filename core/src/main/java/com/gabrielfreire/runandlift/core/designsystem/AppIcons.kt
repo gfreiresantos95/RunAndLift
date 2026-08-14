@@ -34,4 +34,14 @@ object AppIcons {
 
     @DrawableRes
     val Back: Int = R.drawable.ic_arrow_back
+
+    @DrawableRes
+    val Search: Int = R.drawable.ic_search
+
+    @DrawableRes
+    val Clear: Int = R.drawable.ic_close
+
+    /** Marca o campo que abre uma escolha, em vez de aceitar digitação. */
+    @DrawableRes
+    val Dropdown: Int = R.drawable.ic_arrow_drop_down
 }

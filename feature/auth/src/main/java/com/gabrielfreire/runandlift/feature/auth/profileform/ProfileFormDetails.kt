@@ -1,5 +1,6 @@
 package com.gabrielfreire.runandlift.feature.auth.profileform
 
+import com.gabrielfreire.runandlift.data.model.BrazilState
 import com.gabrielfreire.runandlift.data.model.PrivacyConsent
 import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.model.UserProfile
@@ -39,6 +40,10 @@ internal fun ProfileFormState.toSignUpDetails(isTrainer: Boolean) = SignUpDetail
         marketingOptIn = marketingOptIn,
     ).takeIf { acceptedTerms },
     cref = if (isTrainer) AuthFormValidation.formatCref(cref) else null,
+    // Só a sigla atravessa. `stateName` existe para desenhar o campo e morre aqui — gravá-lo seria
+    // uma segunda grafia do mesmo estado, livre para divergir da primeira.
+    state = stateUf.ifEmpty { null },
+    city = city.ifEmpty { null },
 )
 
 /**
@@ -68,6 +73,8 @@ internal fun ProfileFormState.toCompletionDetails(isTrainer: Boolean, providerNa
         marketingOptIn = marketingOptIn,
     ).takeIf { acceptedTerms },
     cref = if (isTrainer) AuthFormValidation.formatCref(cref) else null,
+    state = stateUf.ifEmpty { null },
+    city = city.ifEmpty { null },
 )
 
 /**
@@ -75,9 +82,19 @@ internal fun ProfileFormState.toCompletionDetails(isTrainer: Boolean, providerNa
  *
  * É o sentido inverso das duas acima, e existe pela promessa da conclusão de cadastro — pedir só o
  * que falta. Recomeçar do zero um dado que já existe é pedir de novo o que já foi dado.
+ *
+ * @param state o estado gravado, já resolvido em sigla **e** nome por quem tem acesso ao catálogo —
+ *   o banco só guarda a sigla, e o campo precisa exibir "São Paulo - SP". `null` quando não há nada
+ *   gravado ou quando a lista não pôde ser consultada; nos dois casos o campo fica vazio, e pedir de
+ *   novo é melhor do que exibir "- SP".
  */
-internal fun ProfileFormState.prefilledFrom(profile: UserProfile?, registration: String?) = copy(
+internal fun ProfileFormState.prefilledFrom(profile: UserProfile?, registration: String?, state: BrazilState?) = copy(
     birthDate = profile?.birthDate?.let(AuthFormValidation::birthDateDigits).orEmpty(),
     phone = profile?.phone.orEmpty(),
     cref = registration?.let(AuthFormValidation::crefContent).orEmpty(),
+    stateUf = state?.uf.orEmpty(),
+    stateName = state?.name.orEmpty(),
+    // A cidade só volta acompanhada do estado: sozinha ela não identifica lugar nenhum, e o campo
+    // ficaria preenchido com um nome que a lista seguinte não teria como confirmar.
+    city = profile?.city.orEmpty().takeIf { state != null }.orEmpty(),
 )

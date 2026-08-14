@@ -85,8 +85,13 @@ class MainViewModelTest {
             activeRoleSetTo = role
         }
 
-        override suspend fun updateIdentity(uid: String, displayName: String, phone: String?) =
-            error("a decisão de rota inicial não edita identidade")
+        override suspend fun updateIdentity(
+            uid: String,
+            displayName: String,
+            phone: String?,
+            state: String?,
+            city: String?,
+        ) = error("a decisão de rota inicial não edita identidade")
     }
 
     /**

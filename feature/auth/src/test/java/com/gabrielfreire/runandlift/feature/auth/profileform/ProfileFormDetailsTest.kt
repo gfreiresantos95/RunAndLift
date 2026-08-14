@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.auth.profileform
 
 import com.gabrielfreire.runandlift.data.model.ActiveRole
+import com.gabrielfreire.runandlift.data.model.BrazilState
 import com.gabrielfreire.runandlift.data.model.PrivacyConsent
 import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.model.UserRoles
@@ -109,21 +110,50 @@ class ProfileFormDetailsTest {
             activeRole = ActiveRole.TRAINER,
             birthDate = LocalDate.of(1988, 3, 14),
             phone = "11912345678",
+            state = "SP",
+            city = "Campinas",
         )
 
-        val prefilled = ProfileFormState().prefilledFrom(profile, registration = "012345-G/SP")
+        val prefilled = ProfileFormState().prefilledFrom(
+            profile = profile,
+            registration = "012345-G/SP",
+            state = BrazilState(uf = "SP", name = "São Paulo"),
+        )
 
         assertEquals("14031988", prefilled.birthDate)
         assertEquals("11912345678", prefilled.phone)
         assertEquals("012345GSP", prefilled.cref)
+        // O estado volta inteiro — sigla para gravar, nome para desenhar "São Paulo - SP".
+        assertEquals("São Paulo - SP", prefilled.selectedState?.label)
+        assertEquals("Campinas", prefilled.city)
+    }
+
+    @Test
+    fun `cidade nao volta sozinha quando o estado nao pode ser resolvido`() {
+        val profile = UserProfile(
+            uid = "u1",
+            displayName = "Bruno Lima",
+            roles = UserRoles(trainer = true),
+            activeRole = ActiveRole.TRAINER,
+            state = "SP",
+            city = "Campinas",
+        )
+
+        val prefilled = ProfileFormState().prefilledFrom(profile, registration = null, state = null)
+
+        // Cidade sem estado não identifica lugar nenhum, e há mais de uma Bom Jesus no Brasil: o
+        // campo ficaria preenchido com um nome que a lista seguinte não teria como confirmar.
+        assertEquals("", prefilled.city)
     }
 
     @Test
     fun `perfil ausente devolve campos vazios, nunca nulos`() {
-        val prefilled = ProfileFormState().prefilledFrom(profile = null, registration = null)
+        val prefilled = ProfileFormState().prefilledFrom(profile = null, registration = null, state = null)
 
         assertEquals("", prefilled.birthDate)
         assertEquals("", prefilled.phone)
         assertEquals("", prefilled.cref)
+        assertEquals("", prefilled.city)
+        assertNull(prefilled.selectedState)
     }
 }

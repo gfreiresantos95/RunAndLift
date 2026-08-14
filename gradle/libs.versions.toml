@@ -22,6 +22,7 @@ navigationCompose = "2.9.8"
 credentials = "1.6.0"
 googleId = "1.2.0"
 coroutines = "1.11.0"
+kotlinxSerialization = "1.11.0"
 turbine = "1.2.1"
 kover = "0.9.9"
 
@@ -64,6 +65,9 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+# Só o runtime, sem o plugin de compilação: o JSON do IBGE é lido pela API de árvore
+# (`parseToJsonElement`), que não depende de código gerado por `@Serializable`.
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 [plugins]

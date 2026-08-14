@@ -60,10 +60,38 @@
     <string name="student_field_birth_date_support">Ajusta as faixas de esforço do seu treino, e por
         isso não muda por aqui.</string>
 
+    <!-- Localidade. Os dois campos abrem uma lista em vez de aceitarem digitação. -->
+    <string name="student_field_state">Estado</string>
+    <string name="student_field_state_support">Escolha o seu estado na lista.</string>
+    <string name="student_field_city">Cidade</string>
+    <string name="student_field_city_support">É por ela que você e o seu treinador se encontram
+        perto.</string>
+    <!-- Substitui a linha de apoio enquanto não há estado: campo cinza sem explicação parece
+         defeito, e a dúvida que ele levanta é a que vira mensagem de suporte. -->
+    <string name="student_field_city_needs_state">Escolha o estado primeiro.</string>
+
+    <!-- Telas de seleção. Título é o substantivo do que se escolhe: a tela inteira já é a pergunta. -->
+    <string name="student_state_picker_title">Estado</string>
+    <string name="student_state_picker_search">Buscar estado</string>
+    <string name="student_state_picker_empty">Nenhum estado com esse nome.</string>
+    <string name="student_city_picker_title">Cidade</string>
+    <string name="student_city_picker_search">Buscar cidade</string>
+    <string name="student_city_picker_empty">Nenhuma cidade com esse nome neste estado.</string>
+    <string name="student_picker_clear">Limpar busca</string>
+    <!-- A lista vem do IBGE, e por isso depende de rede. A frase diz o que aconteceu e oferece o
+         botão, que é a única coisa acionável. -->
+    <string name="student_picker_failure">Não deu para carregar a lista agora. Confira sua
+        conexão.</string>
+    <string name="student_picker_retry">Tentar de novo</string>
+
     <!-- Erros dos dados cadastrais. -->
     <string name="student_error_name_required">Informe o seu nome.</string>
     <string name="student_error_name_incomplete">Informe nome e sobrenome.</string>
     <string name="student_error_phone_invalid">Informe DDD e número, com 10 ou 11 dígitos.</string>
+    <!-- Localidade não se digita, então o erro manda escolher e não conferir: "estado inválido"
+         seria acusar a pessoa de um valor que quem ofereceu foi o app. -->
+    <string name="student_error_state_required">Escolha o seu estado.</string>
+    <string name="student_error_city_required">Escolha a sua cidade.</string>
 
     <!-- Onboarding: cabeçalho e navegação. -->
     <string name="student_onboarding_progress">Passo %1$d de %2$d</string>

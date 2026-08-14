@@ -42,7 +42,7 @@ interface UserRepository {
     suspend fun setActiveRole(uid: String, role: ActiveRole)
 
     /**
-     * Nome e celular **substituídos** pelo que o titular acabou de digitar.
+     * Identidade **substituída** pelo que o titular acabou de digitar: nome, celular e localidade.
      *
      * Existe separado de [saveProfile] porque as duas escritas querem coisas opostas do mesmo
      * campo. [saveProfile] preenche o que falta e **preserva** o nome existente — é o que impede o
@@ -57,8 +57,12 @@ interface UserRepository {
      *
      * @param phone `null` apaga o número, que é o que "esvaziei o campo de propósito" significa
      *   numa tela de edição — diferente de [saveProfile], onde nulo quer dizer "não informado".
+     * @param state sigla da UF, ou `null` para apagar. Segue a mesma régua do celular: nesta tela
+     *   nulo é uma decisão, não uma omissão.
+     * @param city nome do município, ou `null` para apagar. Anda junto de [state] — cidade sem
+     *   estado não identifica lugar nenhum, e há mais de uma Bom Jesus no Brasil.
      */
-    suspend fun updateIdentity(uid: String, displayName: String, phone: String?)
+    suspend fun updateIdentity(uid: String, displayName: String, phone: String?, state: String?, city: String?)
 
     /**
      * Registro no CREF gravado em `trainerProfiles/{uid}`, ou `null` quando não há nenhum.
