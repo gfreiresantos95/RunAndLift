@@ -106,7 +106,7 @@ internal class SignUpViewModel(
             userRepository.saveProfile(
                 uid = account.uid,
                 role = intendedRole,
-                details = _formState.value.toSignUpDetails(account.email, isTrainer),
+                details = _formState.value.toSignUpDetails(isTrainer),
             )
         }.getOrNull()?.activeRole ?: intendedRole
     }

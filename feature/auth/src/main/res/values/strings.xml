@@ -160,6 +160,10 @@
          qual delas errou. -->
     <string name="auth_error_cref_invalid">Confira o número, a categoria e a sigla do estado.
         Exemplo: 012345-G/SP.</string>
+    <!-- Diz quais letras servem em vez de só recusar: quem digitou E ou outra categoria acertou o
+         número e a sigla, e mandá-lo "conferir o registro" o faz procurar erro onde não há. -->
+    <string name="auth_error_cref_category">A categoria do CREF deve ser G (graduado) ou P
+        (provisionado).</string>
 
     <!-- Falhas vindas do servidor -->
     <string name="auth_error_invalid_credentials">E-mail ou senha incorretos.</string>

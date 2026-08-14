@@ -19,11 +19,17 @@ import com.gabrielfreire.runandlift.feature.auth.validation.AuthFormValidation
 /**
  * Formulário → perfil, no cadastro por e-mail.
  *
- * O nome cai no prefixo do e-mail quando o formulário não passou por aqui — é o caso da conta
- * criada pela folha do Google, em que a tela de escolha de papel é quem grava.
+ * O nome é **o que foi digitado**, e nada mais. Havia aqui uma queda para o prefixo do e-mail
+ * quando o campo vinha vazio, justificada por um caminho que não passa por esta função — o cadastro
+ * por formulário exige nome e sobrenome antes de enviar, então o vazio nunca chegava. O que a queda
+ * fazia de fato era manter viva a ideia de que `ana@gmail.com` vira "ana": um nome que ninguém
+ * escolheu, gravado como se a pessoa o tivesse informado, e exibido assim na lista do treinador.
+ *
+ * Com a queda, foi embora também o parâmetro `email`, que só existia para alimentá-la — o e-mail
+ * que identifica a conta é o da autenticação, e nunca veio deste formulário.
  */
-internal fun ProfileFormState.toSignUpDetails(email: String?, isTrainer: Boolean) = SignUpDetails(
-    displayName = name.trim().ifEmpty { email?.substringBefore('@') },
+internal fun ProfileFormState.toSignUpDetails(isTrainer: Boolean) = SignUpDetails(
+    displayName = name.trim().takeIf { it.isNotEmpty() },
     birthDate = AuthFormValidation.parseBirthDate(birthDate),
     phone = phone.ifEmpty { null },
     // Só existe consentimento se a caixa foi marcada. Registrar um aceite que não aconteceu é

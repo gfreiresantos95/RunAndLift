@@ -56,9 +56,14 @@ internal class RoleSelectionViewModel(
                 userRepository.saveProfile(
                     uid = account.uid,
                     role = role,
-                    // Nome derivado do e-mail só entra se ainda não houver um: quem passou pelo
-                    // formulário de cadastro já informou o nome real, e o repositório preserva.
-                    details = SignUpDetails(displayName = account.email?.substringBefore('@')),
+                    // O nome do provedor, e **não** um derivado do e-mail.
+                    //
+                    // Esta tela gravava `ana` a partir de `ana@gmail.com`, e o repositório só
+                    // escreve nome quando ainda não há um — então a conta do Google que passasse
+                    // por aqui antes da conclusão de cadastro ficava com o apelido do e-mail
+                    // gravado, e a conclusão já não conseguia trocá-lo pelo nome real. Um nome que
+                    // ninguém escolheu apareceria assim na lista de alunos do treinador.
+                    details = SignUpDetails(displayName = account.displayName),
                 )
             }.onSuccess { profile ->
                 _uiState.update { it.copy(submitting = false, confirmedRole = profile.activeRole) }

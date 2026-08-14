@@ -91,7 +91,22 @@ class RoleSelectionViewModelTest {
     }
 
     @Test
-    fun `deriva um nome do e-mail para a conta que ainda nao tem`() = runTest(mainDispatcherRule.dispatcher) {
+    fun `grava o nome do provedor, e nao um apelido do e-mail`() = runTest(mainDispatcherRule.dispatcher) {
+        val google = FakeAuthRepository(
+            signedIn = FakeAuthRepository.ACCOUNT.copy(displayName = "Ana Ribeiro"),
+        )
+        val users = FakeUserRepository()
+        val viewModel = RoleSelectionViewModel(google, users)
+
+        viewModel.onSelect(ActiveRole.STUDENT)
+        viewModel.onConfirm()
+        testScheduler.advanceUntilIdle()
+
+        assertEquals("Ana Ribeiro", users.lastDetails?.displayName)
+    }
+
+    @Test
+    fun `conta sem nome no provedor nao ganha nome inventado`() = runTest(mainDispatcherRule.dispatcher) {
         val users = FakeUserRepository()
         val viewModel = RoleSelectionViewModel(auth, users)
 
@@ -99,9 +114,11 @@ class RoleSelectionViewModelTest {
         viewModel.onConfirm()
         testScheduler.advanceUntilIdle()
 
-        // O repositório preserva o nome real de quem passou pelo formulário; este só entra quando
-        // não há nenhum.
-        assertEquals("a", users.lastDetails?.displayName)
+        // Esta tela gravava "a" a partir de "a@b.com". Como o repositório só escreve nome quando
+        // ainda não há um, o apelido chegava primeiro e a conclusão de cadastro já não conseguia
+        // trocá-lo pelo nome real do provedor — e era esse apelido que apareceria na lista de
+        // alunos do treinador.
+        assertNull(users.lastDetails?.displayName)
     }
 
     @Test

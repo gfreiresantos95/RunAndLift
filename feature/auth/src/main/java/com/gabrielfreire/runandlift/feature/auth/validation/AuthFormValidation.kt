@@ -69,6 +69,20 @@ internal object AuthFormValidation {
     /** Número, categoria e estado, sem separador: `012345GSP`. */
     const val CREF_LENGTH = 9
 
+    /**
+     * Categorias que podem prescrever: **G** de graduado e **P** de provisionado.
+     *
+     * A máscara garante *uma letra* naquela posição, e não *qual* letra — sem esta régua, `012345X`
+     * entrava e era gravado como se fosse registro. As demais categorias do sistema CONFEF não
+     * cabem aqui: um estagiário não prescreve sozinho, e é prescrição o que a conta de treinador
+     * habilita (Lei 9.696/1998).
+     *
+     * Continua sem afirmar que o registro **existe** — não há API pública do CONFEF, e a
+     * conferência de verdade é humana e vem depois (ADR-0013). O que esta lista faz é impedir o
+     * erro de digitação que o formato sozinho aceitava.
+     */
+    val CREF_CATEGORIES = setOf('G', 'P')
+
     fun validateEmail(email: String): EmailError? = when {
         email.isBlank() -> EmailError.REQUIRED
         !EMAIL_PATTERN.matches(email.trim()) -> EmailError.INVALID
@@ -151,6 +165,7 @@ internal object AuthFormValidation {
     fun validateCref(content: String): CrefError? = when {
         content.isEmpty() -> CrefError.REQUIRED
         content.length < CREF_LENGTH -> CrefError.INVALID
+        content[CREF_DIGITS] !in CREF_CATEGORIES -> CrefError.INVALID_CATEGORY
         content.takeLast(STATE_LETTERS) !in BRAZILIAN_STATES -> CrefError.INVALID
         else -> null
     }

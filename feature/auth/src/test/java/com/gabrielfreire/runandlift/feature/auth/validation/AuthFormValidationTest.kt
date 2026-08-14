@@ -86,6 +86,35 @@ class AuthFormValidationTest {
     }
 
     @Test
+    fun `cref aceita as duas categorias que prescrevem`() {
+        assertNull("graduado", AuthFormValidation.validateCref("012345GSP"))
+        assertNull("provisionado", AuthFormValidation.validateCref("012345PSP"))
+    }
+
+    @Test
+    fun `categoria fora de G e P e recusada com erro proprio`() {
+        // A máscara garante *uma letra* naquela posição, não *qual* letra: `012345ESP` tinha o
+        // formato certo e entrava como registro válido.
+        assertEquals(CrefError.INVALID_CATEGORY, AuthFormValidation.validateCref("012345ESP"))
+        assertEquals(CrefError.INVALID_CATEGORY, AuthFormValidation.validateCref("012345XSP"))
+    }
+
+    @Test
+    fun `categoria invalida nao vira gravacao`() {
+        // O formato canônico passa pela mesma régua, então um registro recusado na tela também não
+        // chega ao banco por outro caminho.
+        assertNull(AuthFormValidation.formatCref("012345ESP"))
+    }
+
+    @Test
+    fun `erro de categoria e distinguido do erro de estado`() {
+        // As duas mensagens são diferentes de propósito: quem errou a categoria acertou o número e
+        // a sigla, e mandá-lo "conferir o registro" o faz procurar erro onde não há.
+        assertEquals(CrefError.INVALID_CATEGORY, AuthFormValidation.validateCref("012345ESP"))
+        assertEquals(CrefError.INVALID, AuthFormValidation.validateCref("012345GXX"))
+    }
+
+    @Test
     fun `email exige dominio com ponto e topo de duas letras`() {
         assertEquals(EmailError.REQUIRED, AuthFormValidation.validateEmail("  "))
         assertEquals("domínio sem ponto", EmailError.INVALID, AuthFormValidation.validateEmail("ana@exemplo"))
