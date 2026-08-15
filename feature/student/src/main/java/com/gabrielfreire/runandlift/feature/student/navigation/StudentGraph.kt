@@ -62,6 +62,8 @@ fun NavGraphBuilder.studentGraph(
                 navController = navController,
                 entry = entry,
                 dependencies = dependencies,
+                // Salvar volta levando o recibo; a seta volta sem ele, porque nada foi gravado.
+                onSaved = { navController.popWithSavedResult() },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -91,6 +93,7 @@ fun NavGraphBuilder.studentGraph(
         composable(StudentRoutes.PROFILE) {
             StudentProfileDestination(
                 dependencies = dependencies,
+                onSaved = { navController.popWithSavedResult() },
                 onBack = { navController.popBackStack() },
             )
         }

@@ -24,6 +24,7 @@ internal fun AccountDestination(
     navController: NavHostController,
     entry: NavBackStackEntry,
     dependencies: StudentDependencies,
+    onSaved: () -> Unit,
     onBack: () -> Unit,
     viewModel: AccountViewModel = viewModel(
         factory = viewModelFactory {
@@ -58,7 +59,7 @@ internal fun AccountDestination(
                     ?.let { navController.navigate(StudentRoutes.cityPicker(it)) }
             },
             onSubmit = viewModel::onSubmit,
-            onSavedShown = viewModel::onSavedShown,
+            onSaved = onSaved,
             onBack = onBack,
         ),
     )

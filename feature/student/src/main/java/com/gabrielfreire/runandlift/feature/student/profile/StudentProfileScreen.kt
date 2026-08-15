@@ -2,10 +2,8 @@ package com.gabrielfreire.runandlift.feature.student.profile
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,33 +32,28 @@ import com.gabrielfreire.runandlift.feature.student.trainingform.previewTraining
 internal fun StudentProfileScreen(
     state: StudentProfileUiState,
     form: TrainingFormState,
-    actions: TrainingFormActions,
-    onSubmit: () -> Unit,
-    onBack: () -> Unit,
+    formActions: TrainingFormActions,
+    actions: StudentProfileActions,
     modifier: Modifier = Modifier,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val savedMessage = stringResource(R.string.student_saved)
-
-    // Confirma e fica, como "Meus dados": esta tela existe para corrigir o que o onboarding deixou
-    // passar, e fechar sozinha era exatamente o que impedia de ver que a correção pegou.
+    // Volta ao salvar, como "Meus dados", e o recibo viaja junto: sair em silêncio faria salvar
+    // ficar indistinguível de ter tocado na seta de voltar. Ver `SavedResult`.
     LaunchedEffect(state.saved) {
-        if (state.saved) snackbarHostState.showSnackbar(message = savedMessage)
+        if (state.saved) actions.onSaved()
     }
 
     AppScreenScaffold(
         title = stringResource(R.string.student_profile_title),
         modifier = modifier,
-        onBack = onBack,
+        onBack = actions.onBack,
         backContentDescription = stringResource(R.string.student_action_back),
-        snackbarHostState = snackbarHostState,
     ) {
         if (state.loading) {
             AppLoadingState(contentDescription = stringResource(R.string.student_loading))
             return@AppScreenScaffold
         }
 
-        TrainingFormFields(form = form, actions = actions)
+        TrainingFormFields(form = form, actions = formActions)
 
         if (state.failed) {
             AppMessageCard(text = stringResource(R.string.student_save_failed))
@@ -68,7 +61,7 @@ internal fun StudentProfileScreen(
 
         AppButton(
             text = stringResource(R.string.student_action_save),
-            onClick = onSubmit,
+            onClick = actions.onSubmit,
             loading = state.saving,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -88,9 +81,8 @@ private fun StudentProfileScreenPreview() {
         StudentProfileScreen(
             state = StudentProfileUiState(loading = false, name = "Ana Ribeiro"),
             form = TrainingFormState(healthConsent = true, weight = "72,5", height = "175"),
-            actions = previewTrainingFormActions(),
-            onSubmit = {},
-            onBack = {},
+            formActions = previewTrainingFormActions(),
+            actions = StudentProfileActions(onSubmit = {}, onSaved = {}, onBack = {}),
         )
     }
 }

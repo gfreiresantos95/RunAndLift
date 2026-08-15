@@ -28,6 +28,9 @@ Nenhum deles é opcional, e desenhar só o terceiro é o erro mais comum.
 - Vazio só ganha botão quando há ação possível **a partir daquela tela**. Botão inerte é pior que
   nenhum botão.
 - Falha fica na tela até deixar de ser verdade. Confirmação é snackbar e some sozinha.
+- **Salvar sai da tela levando o recibo.** A tela de edição volta ao terminar, e a confirmação
+  aparece na tela de destino — ver `SavedResult`. Sair em silêncio faria salvar ficar
+  indistinguível de ter tocado na seta de voltar.
 
 ## Moldura e largura
 
@@ -49,20 +52,25 @@ Nenhum deles é opcional, e desenhar só o terceiro é o erro mais comum.
 
 ## Seleção
 
-Tudo que se escolhe usa a **mesma** linguagem visual, vinda de `selectionAppearance(selected)`:
+**Tudo que se escolhe é `AppChoiceChip`** — nível, objetivo, dia da semana, região lesionada. Um
+componente só, e não um por tela: três respostas visuais para "isto está escolhido?" em passos que
+vêm um atrás do outro obrigam a pessoa a reaprender o código a cada tela.
 
 - **Desmarcado** — contorno de 1 dp sobre fundo transparente.
-- **Marcado** — preenchido com `secondaryContainer`, sem contorno.
+- **Marcado** — preenchido com `secondaryContainer`, com visto à esquerda.
 
-A diferença é a **presença de preenchimento**, e não a cor: é o que faz a seleção sobreviver em
-escala de cinza e atende à regra de a cor nunca ser o único canal. Vale para cartão de opção
-(nível, objetivo), tecla de dia e chip de lesão.
+São **dois canais** para a mesma informação: o contorno virando bloco e o visto. A cor é o terceiro,
+e nunca o único — é a regra do projeto (E0-09). As cores vêm de `selectionAppearance(selected)`;
+nunca escolher a cor de seleção na tela.
 
-- Nunca escolher a cor de seleção na tela. Se `selectionAppearance` não serve, o caso é novo e a
-  discussão é sobre a regra, não sobre aquela tela.
-- Ícone de confirmação **só em escolha múltipla**, onde ele reforça "mais este". Em escolha única
-  seria um visto repetido em cada linha.
-- Escolha única usa `Role.RadioButton`; múltipla usa `Role.Checkbox`.
+- `multiSelect = true` quando as escolhas são independentes (dias, lesões) e `false` quando são
+  entre irmãs (nível, objetivo). É o que decide o papel anunciado: `Role.Checkbox` ou
+  `Role.RadioButton` — sem isso o TalkBack diz "caixa de seleção" onde deveria dizer "1 de 3".
+- `contentDescription` quando o rótulo visível é uma abreviação. "Seg" lido em voz alta é sopa de
+  letras.
+- **Opção com frase de apoio não vira chip** — chip não tem onde colocá-la. É o caso do nível: os
+  chips ficam na fileira e a descrição do escolhido aparece abaixo.
+- O retorno tátil vem embutido no componente. Não repetir na tela.
 
 ## Cor
 

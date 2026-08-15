@@ -2,6 +2,7 @@ package com.gabrielfreire.runandlift.feature.student.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,11 +33,13 @@ internal fun StudentHomeScreen(
     tabs: List<AppBottomBarItem>,
     onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     AppTabScaffold(
         title = stringResource(R.string.student_app_name),
         tabs = tabs,
         modifier = modifier,
+        snackbarHostState = snackbarHostState,
     ) { innerPadding ->
         AppScreenColumn(modifier = Modifier.padding(paddingValues = innerPadding)) {
             AppIdentityCard(

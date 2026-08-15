@@ -59,8 +59,15 @@ pior do que não ter mostrado nada.
 sumir é certo para "salvo" e errado para uma falha que a pessoa precisa resolver — ela sumiria
 justamente enquanto se relê o formulário procurando o que corrigir.
 
-**Salvar confirma e permanece na tela.** Trocamos o fechamento automático por um aviso de
-confirmação com a tela aberta. A seta de voltar continua no topo para quem terminou.
+**Salvar volta para a tela anterior, e a confirmação viaja junto.** A primeira versão desta decisão
+mantinha a tela aberta com o aviso; a revisão trocou por sair levando o recibo, e as duas metades
+importam. Sair é o que a pessoa espera — ela veio corrigir um dado, corrigiu, e não tem mais o que
+fazer ali. Sair **em silêncio** é que era o defeito original: torna o salvamento indistinguível de
+ter tocado na seta de voltar, porque nos dois casos a tela some e nada é dito.
+
+A mecânica é a mesma da seleção de estado e cidade — escrever o resultado no `SavedStateHandle` da
+entrada anterior da pilha antes de desempilhar —, só que o que volta não é uma escolha, é um recibo.
+Ver `SavedResult`, no módulo do aluno.
 
 **A navegação usa eixo compartilhado horizontal**, com as durações e curvas do Material 3 reunidas
 em `AppMotion`. A tela nova entra pela direita, a anterior sai pela esquerda, e o inverso ao voltar.
@@ -94,10 +101,8 @@ Duas coisas ficaram de fora, conscientemente:
 
 ## Alternativas descartadas
 
-**Manter o fechamento automático ao salvar e mostrar a confirmação na tela anterior.** É o padrão
-mais comum, e exigiria carregar o aviso através da fronteira de navegação até uma aba que pertence a
-outro módulo. Custo alto de encanamento para um resultado pior: a confirmação apareceria numa tela
-onde o dado corrigido nem está visível.
+**Salvar em silêncio, sem confirmação nenhuma.** É o que existia, e é o defeito que este ADR abre
+descrevendo: quem toca em "Salvar" e quem toca na seta de voltar veem exatamente a mesma coisa.
 
 **`enterAlwaysScrollBehavior` na barra superior**, que esconde a barra ao rolar e devolve espaço.
 Boa para lista longa de leitura, ruim aqui: as telas que mais rolam são formulários, e a barra

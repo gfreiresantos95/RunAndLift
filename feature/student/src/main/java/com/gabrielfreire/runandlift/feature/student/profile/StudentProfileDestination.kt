@@ -12,6 +12,7 @@ import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependenci
 @Composable
 internal fun StudentProfileDestination(
     dependencies: StudentDependencies,
+    onSaved: () -> Unit,
     onBack: () -> Unit,
     viewModel: StudentProfileViewModel = viewModel(
         factory = viewModelFactory {
@@ -31,8 +32,11 @@ internal fun StudentProfileDestination(
     StudentProfileScreen(
         state = state,
         form = form,
-        actions = viewModel.formActions,
-        onSubmit = viewModel::onSubmit,
-        onBack = onBack,
+        formActions = viewModel.formActions,
+        actions = StudentProfileActions(
+            onSubmit = viewModel::onSubmit,
+            onSaved = onSaved,
+            onBack = onBack,
+        ),
     )
 }

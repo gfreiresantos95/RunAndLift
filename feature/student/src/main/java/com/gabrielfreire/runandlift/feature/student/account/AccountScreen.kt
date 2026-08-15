@@ -4,10 +4,8 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -40,26 +38,18 @@ import com.gabrielfreire.runandlift.feature.student.validation.message
  * forma em que ela foi feita — `São Paulo - SP`. O banco guarda só a sigla; o nome por extenso é
  * remontado na carga, uma vez.
  *
- * **Salvar confirma e fica.** A tela fechava sozinha ao gravar, sem dizer nada: a pessoa tocava em
- * "Salvar", tudo sumia, e não havia como distinguir "salvou" de "voltou sem salvar". Agora aparece
- * a confirmação e a tela permanece — quem veio corrigir um dado precisa **ver** a correção pegar, e
- * a seta de voltar está no topo para quem já terminou.
+ * **Salvar volta para o menu, e o recibo vai junto.** Quem veio corrigir um dado corrigiu e não tem
+ * mais o que fazer aqui, então a tela sai de cena. O que não pode é sair em silêncio — assim,
+ * salvar ficaria indistinguível de ter tocado na seta de voltar. A confirmação viaja com a volta e
+ * aparece na tela de destino; ver `SavedResult`.
  *
  * @param actions os eventos da tela, reunidos: com estado e cidade a assinatura passaria de seis
  *   parâmetros, e seis lambdas soltas em sequência é onde duas trocadas de lugar compilam.
  */
 @Composable
 internal fun AccountScreen(state: AccountUiState, actions: AccountActions, modifier: Modifier = Modifier) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val savedMessage = stringResource(R.string.student_saved)
-
     LaunchedEffect(state.saved) {
-        if (!state.saved) return@LaunchedEffect
-
-        // Baixa o sinal **antes** de esperar o aviso sumir: sem isso, uma segunda gravação enquanto
-        // o primeiro aviso ainda está na tela não dispararia o efeito de novo.
-        actions.onSavedShown()
-        snackbarHostState.showSnackbar(message = savedMessage)
+        if (state.saved) actions.onSaved()
     }
 
     AppScreenScaffold(
@@ -67,7 +57,6 @@ internal fun AccountScreen(state: AccountUiState, actions: AccountActions, modif
         modifier = modifier,
         onBack = actions.onBack,
         backContentDescription = stringResource(R.string.student_action_back),
-        snackbarHostState = snackbarHostState,
     ) {
         // Um indicador, e não a tela em branco que havia aqui — branco não é "carregando", é
         // "quebrado". Ele só aparece se a carga demorar; ver `AppLoadingState`.
@@ -218,6 +207,6 @@ private fun previewAccountActions() = AccountActions(
     onOpenStatePicker = {},
     onOpenCityPicker = {},
     onSubmit = {},
-    onSavedShown = {},
+    onSaved = {},
     onBack = {},
 )

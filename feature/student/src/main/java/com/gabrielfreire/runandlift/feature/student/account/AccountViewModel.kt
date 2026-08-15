@@ -64,9 +64,6 @@ internal class AccountViewModel(
 
     fun onCityPicked(city: String) = _uiState.update { it.copy(city = city, cityError = null) }
 
-    /** A tela já mostrou a confirmação. Ver `AccountActions.onSavedShown`. */
-    fun onSavedShown() = _uiState.update { it.copy(saved = false) }
-
     fun onSubmit() {
         val current = _uiState.value
         if (current.saving) return

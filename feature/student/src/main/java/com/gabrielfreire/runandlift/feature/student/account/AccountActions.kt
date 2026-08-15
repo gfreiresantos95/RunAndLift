@@ -22,11 +22,11 @@ internal data class AccountActions(
     val onOpenCityPicker: () -> Unit,
     val onSubmit: () -> Unit,
     /**
-     * A confirmação de salvamento já foi exibida.
+     * A gravação deu certo.
      *
-     * Existe para o sinal de "salvou" ser **um evento**, e não um estado que fica ligado: sem
-     * baixá-lo, a segunda gravação não dispararia aviso nenhum, porque o valor já era verdadeiro.
+     * Separado de [onBack] porque as duas voltam para o mesmo lugar e só uma delas leva o recibo
+     * junto — sair pela seta não confirma coisa nenhuma, porque nada foi salvo.
      */
-    val onSavedShown: () -> Unit,
+    val onSaved: () -> Unit,
     val onBack: () -> Unit,
 )
