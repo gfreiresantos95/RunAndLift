@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
+import com.gabrielfreire.runandlift.core.designsystem.component.AppLoadingState
 import com.gabrielfreire.runandlift.data.auth.AuthFailure
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.feature.auth.R
@@ -73,9 +74,13 @@ internal fun CompleteProfileScreen(
 
         Spacer(modifier = Modifier.height(Dimens.SpaceLarge))
 
-        // Enquanto se descobre o que falta, nada é desenhado: campos que aparecem preenchidos um
-        // instante depois dão a impressão de que a tela se corrigiu sozinha.
-        if (state.loading) return@AuthScreenLayout
+        // Enquanto se descobre o que falta, um indicador — campos que aparecem preenchidos um
+        // instante depois dão a impressão de que a tela se corrigiu sozinha, e a tela vazia que
+        // havia aqui no lugar deles dava a impressão de que ela quebrou.
+        if (state.loading) {
+            AppLoadingState(contentDescription = stringResource(id = R.string.auth_loading))
+            return@AuthScreenLayout
+        }
 
         val enabled = !state.submitting
 

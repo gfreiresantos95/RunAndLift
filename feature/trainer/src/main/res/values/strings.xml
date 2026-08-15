@@ -15,7 +15,10 @@
 
     <!-- Treinos. -->
     <string name="trainer_workouts_title">Treinos</string>
-    <string name="trainer_workouts_empty">Os programas que você montar aparecem aqui, prontos para
+    <!-- Título do vazio no presente, e não "nenhum treino": ele descreve o que a tela É, e a linha
+         de baixo diz o que falta acontecer. "Nada por aqui" não responde nem uma coisa nem outra. -->
+    <string name="trainer_workouts_empty_title">Seus programas aparecem aqui</string>
+    <string name="trainer_workouts_empty">Os programas que você montar ficam nesta aba, prontos para
         atribuir aos seus alunos.</string>
 
     <!-- Menu. -->

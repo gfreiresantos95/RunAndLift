@@ -13,6 +13,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
 import com.gabrielfreire.runandlift.core.designsystem.component.AppOutlinedButton
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.feature.trainer.R
@@ -39,11 +40,8 @@ internal fun TrainerMenuScreen(
         tabs = tabs,
         modifier = modifier,
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = Dimens.ScreenPadding),
+        AppScreenColumn(
+            modifier = Modifier.padding(paddingValues = innerPadding),
             verticalArrangement = Arrangement.spacedBy(Dimens.SpaceSmall),
         ) {
             if (onSwitchRole != null) {

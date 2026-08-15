@@ -12,15 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +53,7 @@ import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
  * Nada aqui conhece estado nem cidade: é uma lista de textos. É o que permite a mesma tela servir
  * ao cadastro e ao perfil, em dois módulos que não se enxergam.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSearchablePicker(
     texts: AppPickerTexts,
@@ -58,11 +62,22 @@ fun AppSearchablePicker(
     actions: AppPickerActions,
     modifier: Modifier = Modifier,
 ) {
+    // A lista tem oitocentos itens e o campo de busca fica acima dela: sem isto, os nomes passariam
+    // por trás do título transparente. `pinned` porque a busca e a seta de voltar não podem sumir.
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .nestedScroll(connection = scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AppTopBar(title = texts.title, onBack = actions.onBack, backContentDescription = texts.back)
+            AppTopBar(
+                title = texts.title,
+                onBack = actions.onBack,
+                backContentDescription = texts.back,
+                scrollBehavior = scrollBehavior,
+            )
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues = padding)) {

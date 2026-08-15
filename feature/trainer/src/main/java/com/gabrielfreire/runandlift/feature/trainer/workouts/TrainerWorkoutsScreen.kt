@@ -1,18 +1,14 @@
 package com.gabrielfreire.runandlift.feature.trainer.workouts
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
+import com.gabrielfreire.runandlift.core.designsystem.component.AppEmptyState
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.feature.trainer.R
 import com.gabrielfreire.runandlift.feature.trainer.navigation.TrainerTab
@@ -31,18 +27,11 @@ internal fun TrainerWorkoutsScreen(tabs: List<AppBottomBarItem>, modifier: Modif
         tabs = tabs,
         modifier = modifier,
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = Dimens.ScreenPadding),
-        ) {
-            Text(
-                text = stringResource(R.string.trainer_workouts_empty),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        AppEmptyState(
+            title = stringResource(R.string.trainer_workouts_empty_title),
+            description = stringResource(R.string.trainer_workouts_empty),
+            modifier = Modifier.padding(paddingValues = innerPadding),
+        )
     }
 }
 

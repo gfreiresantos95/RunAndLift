@@ -2,12 +2,9 @@ package com.gabrielfreire.runandlift.feature.student.menu
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +14,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
 import com.gabrielfreire.runandlift.core.designsystem.component.AppOutlinedButton
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.feature.student.R
@@ -39,6 +37,8 @@ import com.gabrielfreire.runandlift.feature.student.navigation.previewTabs
  *
  * @param onSwitchRole `null` quando a conta não tem o segundo papel — o alternador some, em vez de
  *   aparecer inerte.
+ * @param snackbarHostState onde a confirmação de salvamento aparece. Esta aba é a tela para a qual
+ *   se volta depois de editar, e é aqui que o recibo daquela gravação chega.
  */
 @Composable
 internal fun StudentMenuScreen(
@@ -46,18 +46,16 @@ internal fun StudentMenuScreen(
     actions: StudentMenuActions,
     modifier: Modifier = Modifier,
     onSwitchRole: (() -> Unit)? = null,
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     AppTabScaffold(
         title = stringResource(R.string.student_menu_title),
         tabs = tabs,
         modifier = modifier,
+        snackbarHostState = snackbarHostState,
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = Dimens.ScreenPadding)
-                .verticalScroll(rememberScrollState()),
+        AppScreenColumn(
+            modifier = Modifier.padding(paddingValues = innerPadding),
             verticalArrangement = Arrangement.spacedBy(Dimens.SpaceSmall),
         ) {
             MenuSectionTitle(text = stringResource(R.string.student_menu_section_profile))

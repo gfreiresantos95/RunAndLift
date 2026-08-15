@@ -1,10 +1,15 @@
 package com.gabrielfreire.runandlift.feature.student.menu
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.gabrielfreire.runandlift.feature.student.R
+import com.gabrielfreire.runandlift.feature.student.navigation.SavedConfirmation
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentDependencies
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentRoutes
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentTab
@@ -33,8 +38,20 @@ internal fun StudentMenuDestination(
         },
     ),
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Esta é a tela para a qual se volta depois de salvar em "Meus dados" ou no perfil de treino, e
+    // é aqui que o recibo daquela gravação aparece. Ver `SavedResult`.
+    SavedConfirmation(
+        navController = navController,
+        route = StudentRoutes.MENU,
+        snackbarHostState = snackbarHostState,
+        message = stringResource(R.string.student_saved),
+    )
+
     StudentMenuScreen(
         tabs = studentTabBar(navController = navController, current = StudentTab.MENU),
+        snackbarHostState = snackbarHostState,
         actions = StudentMenuActions(
             onOpenAccount = { onOpen(StudentRoutes.ACCOUNT) },
             onOpenTraining = { onOpen(StudentRoutes.PROFILE) },

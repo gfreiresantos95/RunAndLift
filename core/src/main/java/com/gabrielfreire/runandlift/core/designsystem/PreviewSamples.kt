@@ -124,6 +124,17 @@ internal object PreviewSamples {
         const val CITY_BLOCKED = "Escolha o estado primeiro."
     }
 
+    /** Carregando, vazio, falhou — os três estados que toda tela tem e que ninguém desenha. */
+    object State {
+        const val LOADING = "Carregando"
+        const val EMPTY_TITLE = "Seus treinos aparecem aqui"
+        const val EMPTY_DESCRIPTION = "Assim que seu treinador montar o primeiro, ele chega nesta aba."
+        const val EMPTY_ACTION = "Criar treino"
+        const val SAVE_FAILED = "Não deu para salvar agora. Confira sua conexão e tente de novo."
+        const val OFFLINE = "Você está sem conexão. O que registrar agora sobe quando a internet voltar."
+        const val SAVED = "Alterações salvas."
+    }
+
     /** Identidade de quem está logado, para o card de saudação. */
     object Identity {
         const val GREETING = "Olá, Ana"

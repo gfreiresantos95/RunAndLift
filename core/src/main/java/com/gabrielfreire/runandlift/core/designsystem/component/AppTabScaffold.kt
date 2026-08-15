@@ -4,11 +4,15 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import com.gabrielfreire.runandlift.core.designsystem.AppIcons
 import com.gabrielfreire.runandlift.core.designsystem.PreviewSamples
@@ -30,19 +34,32 @@ import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
  *
  * @param title o que a barra superior mostra. Na home é o nome do app; nas outras, o nome da tela.
  * @param tabs as abas, já com a ativa marcada.
+ * @param snackbarHostState onde as confirmações aparecem, ou `null` na aba que não confirma nada.
+ *   Uma aba precisa disso porque é para ela que se **volta** depois de salvar em outra tela — e o
+ *   recibo do salvamento chega junto. Ver `SavedResult`, no módulo do aluno.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTabScaffold(
     title: String,
     tabs: List<AppBottomBarItem>,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    // A barra ganha fundo quando há conteúdo rolando por baixo dela. `pinned` e não `enterAlways`:
+    // numa aba, o título é a única indicação de onde se está, e escondê-lo ao rolar tira a
+    // referência justamente de quem está procurando alguma coisa na lista.
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .nestedScroll(connection = scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { AppTopBar(title = title) },
+        topBar = { AppTopBar(title = title, scrollBehavior = scrollBehavior) },
         bottomBar = { AppBottomBar(items = tabs) },
+        snackbarHost = { snackbarHostState?.let { AppSnackbarHost(hostState = it) } },
         content = content,
     )
 }

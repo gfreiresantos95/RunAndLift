@@ -1,26 +1,17 @@
 package com.gabrielfreire.runandlift.feature.student.profile
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
-import com.gabrielfreire.runandlift.core.designsystem.component.AppTopBar
+import com.gabrielfreire.runandlift.core.designsystem.component.AppLoadingState
+import com.gabrielfreire.runandlift.core.designsystem.component.AppMessageCard
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenScaffold
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormActions
 import com.gabrielfreire.runandlift.feature.student.trainingform.TrainingFormState
@@ -37,58 +28,43 @@ import com.gabrielfreire.runandlift.feature.student.trainingform.previewTraining
  * tela com os dois juntos esconderia essa diferença de quem precisa dela para decidir o que
  * preencher — e é a diferença que o consentimento de dado de saúde torna concreta.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun StudentProfileScreen(
     state: StudentProfileUiState,
     form: TrainingFormState,
-    actions: TrainingFormActions,
-    onSubmit: () -> Unit,
-    onBack: () -> Unit,
+    formActions: TrainingFormActions,
+    actions: StudentProfileActions,
     modifier: Modifier = Modifier,
 ) {
+    // Volta ao salvar, como "Meus dados", e o recibo viaja junto: sair em silêncio faria salvar
+    // ficar indistinguível de ter tocado na seta de voltar. Ver `SavedResult`.
     LaunchedEffect(state.saved) {
-        if (state.saved) onBack()
+        if (state.saved) actions.onSaved()
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            AppTopBar(
-                title = stringResource(R.string.student_profile_title),
-                onBack = onBack,
-                backContentDescription = stringResource(R.string.student_action_back),
-            )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = padding)
-                .padding(paddingValues = Dimens.ScreenPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
-        ) {
-            if (state.loading) return@Column
-
-            TrainingFormFields(form = form, actions = actions)
-
-            if (state.failed) {
-                Text(
-                    text = stringResource(R.string.student_save_failed),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-
-            AppButton(
-                text = stringResource(R.string.student_action_save),
-                onClick = onSubmit,
-                loading = state.saving,
-                modifier = Modifier.fillMaxWidth(),
-            )
+    AppScreenScaffold(
+        title = stringResource(R.string.student_profile_title),
+        modifier = modifier,
+        onBack = actions.onBack,
+        backContentDescription = stringResource(R.string.student_action_back),
+    ) {
+        if (state.loading) {
+            AppLoadingState(contentDescription = stringResource(R.string.student_loading))
+            return@AppScreenScaffold
         }
+
+        TrainingFormFields(form = form, actions = formActions)
+
+        if (state.failed) {
+            AppMessageCard(text = stringResource(R.string.student_save_failed))
+        }
+
+        AppButton(
+            text = stringResource(R.string.student_action_save),
+            onClick = actions.onSubmit,
+            loading = state.saving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -105,9 +81,8 @@ private fun StudentProfileScreenPreview() {
         StudentProfileScreen(
             state = StudentProfileUiState(loading = false, name = "Ana Ribeiro"),
             form = TrainingFormState(healthConsent = true, weight = "72,5", height = "175"),
-            actions = previewTrainingFormActions(),
-            onSubmit = {},
-            onBack = {},
+            formActions = previewTrainingFormActions(),
+            actions = StudentProfileActions(onSubmit = {}, onSaved = {}, onBack = {}),
         )
     }
 }

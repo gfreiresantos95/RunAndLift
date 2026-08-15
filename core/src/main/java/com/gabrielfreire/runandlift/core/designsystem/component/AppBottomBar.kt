@@ -30,6 +30,12 @@ import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
  * O [NavigationBarItem] do Material 3 já nasce com altura de alvo adequada, então o piso de 48dp do
  * projeto está atendido sem ajuste.
  *
+ * **O fundo é `surfaceContainer`, e não `surface`.** Neste esquema `surface` e `background` têm o
+ * mesmo valor, então a barra estava exatamente da cor do conteúdo atrás dela: uma faixa de ícones
+ * flutuando sem borda, sem separação e sem chão. `surfaceContainer` é o papel que o Material 3
+ * reserva justamente para superfícies de navegação, e é o degrau mínimo que separa a barra da tela
+ * sem desenhar uma linha para isso.
+ *
  * @param items as abas, na ordem em que aparecem. Espera-se de três a cinco — abaixo disso a barra
  *   inferior não se justifica, acima o alvo de toque fica estreito demais.
  */
@@ -37,7 +43,7 @@ import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 fun AppBottomBar(items: List<AppBottomBarItem>, modifier: Modifier = Modifier) {
     NavigationBar(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         items.forEach { item ->
             NavigationBarItem(

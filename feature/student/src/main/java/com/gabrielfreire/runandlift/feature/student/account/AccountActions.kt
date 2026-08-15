@@ -21,5 +21,12 @@ internal data class AccountActions(
     val onOpenStatePicker: () -> Unit,
     val onOpenCityPicker: () -> Unit,
     val onSubmit: () -> Unit,
+    /**
+     * A gravação deu certo.
+     *
+     * Separado de [onBack] porque as duas voltam para o mesmo lugar e só uma delas leva o recibo
+     * junto — sair pela seta não confirma coisa nenhuma, porque nada foi salvo.
+     */
+    val onSaved: () -> Unit,
     val onBack: () -> Unit,
 )

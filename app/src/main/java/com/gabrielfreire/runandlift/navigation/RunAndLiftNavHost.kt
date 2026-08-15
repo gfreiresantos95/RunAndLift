@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.gabrielfreire.runandlift.R
+import com.gabrielfreire.runandlift.core.designsystem.AppMotion
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.di.AppContainer
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRepositories
@@ -53,6 +54,13 @@ fun RunAndLiftNavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
+        // Eixo compartilhado horizontal, e não o esmaecimento de 700 ms que vem por padrão: aquele
+        // é lento o bastante para parecer travamento e, por não ter direção, faz ir e voltar
+        // parecerem o mesmo movimento. Os valores vivem em `AppMotion` — ver o porquê de cada um lá.
+        enterTransition = { AppMotion.forwardEnter },
+        exitTransition = { AppMotion.forwardExit },
+        popEnterTransition = { AppMotion.backEnter },
+        popExitTransition = { AppMotion.backExit },
     ) {
         authGraph(
             navController = navController,

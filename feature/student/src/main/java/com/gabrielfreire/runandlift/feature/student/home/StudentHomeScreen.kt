@@ -1,18 +1,16 @@
 package com.gabrielfreire.runandlift.feature.student.home
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
 import com.gabrielfreire.runandlift.core.designsystem.component.AppIdentityCard
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentTab
@@ -35,19 +33,15 @@ internal fun StudentHomeScreen(
     tabs: List<AppBottomBarItem>,
     onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     AppTabScaffold(
         title = stringResource(R.string.student_app_name),
         tabs = tabs,
         modifier = modifier,
+        snackbarHostState = snackbarHostState,
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = Dimens.ScreenPadding),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
-        ) {
+        AppScreenColumn(modifier = Modifier.padding(paddingValues = innerPadding)) {
             AppIdentityCard(
                 greeting = state.displayName
                     ?.let { stringResource(R.string.student_home_greeting, it) }

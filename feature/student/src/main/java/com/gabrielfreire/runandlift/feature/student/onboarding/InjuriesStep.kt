@@ -6,18 +6,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import com.gabrielfreire.runandlift.core.designsystem.AppIcons
 import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.LightDarkPreviews
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
+import com.gabrielfreire.runandlift.core.designsystem.component.AppChoiceChip
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextField
 import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.feature.student.R
@@ -97,50 +93,28 @@ private fun InjuryChips(form: TrainingFormState, actions: TrainingFormActions) {
         verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXSmall),
     ) {
         InjuryArea.entries.forEach { area ->
-            InjuryChip(
+            AppChoiceChip(
                 label = area.label(),
                 selected = area in form.injuries,
                 onClick = { actions.onInjuryToggle(area) },
+                multiSelect = true,
             )
         }
 
-        InjuryChip(
+        AppChoiceChip(
             label = stringResource(R.string.student_injury_none),
             selected = form.noInjuries,
             onClick = actions.onNoInjuriesToggle,
+            multiSelect = true,
         )
 
-        InjuryChip(
+        AppChoiceChip(
             label = stringResource(R.string.student_injury_other),
             selected = form.otherInjury,
             onClick = actions.onOtherInjuryToggle,
+            multiSelect = true,
         )
     }
-}
-
-/**
- * Um chip da lista.
- *
- * `FilterChip` e não um botão qualquer: é o componente do Material para escolha múltipla, e anuncia
- * o estado de marcado ao leitor de tela sem semântica escrita à mão. Ele tem 32 dp de altura
- * desenhada e 48 dp de área de toque, que é a mesma regra dos ícones do app — o desenho pode ser
- * menor que o piso, o alvo não.
- *
- * O marcado ganha **ícone de confirmação além da cor**: cor sozinha nunca carrega a informação
- * (E0-09).
- */
-@Composable
-private fun InjuryChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(text = label) },
-        leadingIcon = if (selected) {
-            { Icon(painter = painterResource(AppIcons.Check), contentDescription = null) }
-        } else {
-            null
-        },
-    )
 }
 
 /** Nada marcado — o estado em que a lista precisa parecer um convite, e não um formulário vazio. */

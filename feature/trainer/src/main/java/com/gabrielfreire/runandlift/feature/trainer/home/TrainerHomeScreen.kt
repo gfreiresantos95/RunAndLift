@@ -13,6 +13,7 @@ import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppBottomBarItem
 import com.gabrielfreire.runandlift.core.designsystem.component.AppIdentityCard
+import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTabScaffold
 import com.gabrielfreire.runandlift.feature.trainer.R
 import com.gabrielfreire.runandlift.feature.trainer.navigation.TrainerTab
@@ -38,13 +39,7 @@ internal fun TrainerHomeScreen(
         tabs = tabs,
         modifier = modifier,
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = Dimens.ScreenPadding),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
-        ) {
+        AppScreenColumn(modifier = Modifier.padding(paddingValues = innerPadding)) {
             AppIdentityCard(
                 greeting = state.displayName
                     ?.let { stringResource(R.string.trainer_home_greeting, it) }

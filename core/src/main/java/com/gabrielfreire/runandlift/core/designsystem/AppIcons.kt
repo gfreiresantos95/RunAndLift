@@ -48,4 +48,8 @@ object AppIcons {
     /** Confirmação. Acompanha a cor onde "marcado" precisa de um segundo canal além dela. */
     @DrawableRes
     val Check: Int = R.drawable.ic_check
+
+    /** Falha ou pendência. Acompanha toda mensagem em que a cor sozinha carregaria o recado. */
+    @DrawableRes
+    val Alert: Int = R.drawable.ic_error
 }
