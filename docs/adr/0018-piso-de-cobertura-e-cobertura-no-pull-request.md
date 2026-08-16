@@ -78,7 +78,8 @@ vale mais que um que se suprime na primeira semana.
 
 **Piso sobre branches em vez de linhas.** Branches (61,1%) medem melhor a qualidade do teste, já que
 linha coberta sem o ramo alternativo é cobertura de fachada. Rejeitado por ora: são duas métricas
-para explicar e negociar, e linha é a que a action publica no PR. Entra quando o piso chegar a 75.
+para explicar e negociar, e uma só já exige alinhar action e Gradle (ver abaixo). Entra quando o
+piso chegar a 75.
 
 **`madrapps/jacoco-report` na v1.8.0**, o último release estável (junho/2026). Rejeitado depois de
 ler o código da action: na v1.8.0 o input chama-se `min-coverage-changed-files` e cobra a cobertura
@@ -117,6 +118,11 @@ o piso viraria enfeite — comentaria o número e deixaria o merge passar.
 
 O passo do relatório é separado do passo de testes para que o XML exista mesmo quando a cobertura
 reprova. Sem isso, o PR que mais precisa do comentário seria o que não recebe nenhum.
+
+A action declara `coverage-counter-type: LINE`. O padrão dela é `INSTRUCTION`, e a primeira execução
+publicou 64,97% enquanto o `koverVerify` cobrava sobre 63,4% de linhas — a diferença é real (a
+medição deu 65,0% de instruções) e passageira só na aparência: comentário e gate mediriam coisas
+diferentes para sempre, e a discrepância recorrente é o que ensina a ignorar o número.
 
 O comentário é pulado em PR vindo de fork, onde o `GITHUB_TOKEN` é somente leitura. Como o
 repositório é de um autor só, a alternativa — falhar com erro de permissão em vez de por cobertura —

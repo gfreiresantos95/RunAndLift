@@ -62,6 +62,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: Cobertura de testes
           update-comment: true
+          # LINE porque o padrão da action é INSTRUCTION, e o piso do `koverVerify` é sobre linhas.
+          # Sem isto o comentário publica um número (65,0%) e o gate cobra outro (63,4%) — duas
+          # métricas no mesmo PR é o que faz alguém parar de acreditar nas duas.
+          coverage-counter-type: LINE
           min-coverage-overall: 60
           min-coverage-changed-lines: 80
           continue-on-error: false
