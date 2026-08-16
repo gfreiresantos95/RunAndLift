@@ -1,5 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import kotlinx.kover.gradle.plugin.dsl.AggregationType
+import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 plugins {
@@ -61,11 +63,70 @@ fun editorConfigProperties(vararg sections: String): Map<String, String> {
 
 val ktlintSettings = editorConfigProperties("*", "*.{kt,kts}")
 
-// Kover: apenas relatório, sem piso de cobertura. Percentual mínimo em projeto nesta fase
-// premiaria teste de getter e não diria nada sobre a política que realmente importa. O relatório
-// serve para enxergar o que ficou descoberto, não para barrar build.
+// Kover mede o projeto inteiro, e não só o :data — dos 44 arquivos de teste, 37 vivem nos módulos
+// de feature, que ficavam de fora da agregação e portanto do relatório.
 dependencies {
+    kover(project(":app"))
+    kover(project(":core"))
     kover(project(":data"))
+    kover(project(":feature:auth"))
+    kover(project(":feature:student"))
+    kover(project(":feature:trainer"))
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                // Não há teste de UI por decisão (ver a seção Testing do CLAUDE.md): a tela se
+                // confere pelo @Preview. Sem esta exclusão, todo composable entraria como zero e o
+                // percentual passaria a medir uma decisão documentada em vez de uma lacuna.
+                annotatedBy("androidx.compose.runtime.Composable")
+
+                // Sobra do compilador do Compose: as classes que guardam as lambdas de composable
+                // não carregam a anotação e escapariam do filtro acima.
+                classes("*ComposableSingletons*")
+
+                // R, BuildConfig e Manifest — código gerado pelo AGP, que ninguém escreve nem testa.
+                androidGeneratedClasses()
+
+                // DAOs e banco gerados pelo Room via KSP. São 300 linhas que ninguém escreveu, e
+                // testá-las seria testar o Room. O que é nosso na persistência — a query e o
+                // esquema — se verifica por teste de migração, não por cobertura de linha.
+                classes("*_Impl", "*_Impl\$*")
+
+                // Dados de exemplo dos @Preview: existem para desenhar a tela, não rodam em produção.
+                classes("*PreviewFixtures*")
+
+                // Tokens do design system: rampa de cor, tipografia, formas, espaçamento e duração.
+                // São declarações constantes, sem ramo nem decisão; o teste possível repetiria o
+                // literal do fonte. A verificação real é a galeria ThemePreviews, em light e dark.
+                classes(
+                    "com.gabrielfreire.runandlift.core.designsystem.ColorKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.ColorSchemeKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.ExtendedColorSchemeKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.TypeKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.ShapeKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.Dimens",
+                    "com.gabrielfreire.runandlift.core.designsystem.AppMotion",
+                    "com.gabrielfreire.runandlift.core.designsystem.AppIcons",
+                )
+            }
+        }
+
+        // O piso vale a partir da branch, não só do CI: quem roda `./gradlew koverVerify` antes de
+        // abrir o PR descobre em casa. 60 e não 75 porque a medição de agosto/2026 deu 63,4% — piso
+        // acima do real deixaria o main vermelho e faria a cobertura pautar o roadmap. Ver ADR 0018.
+        verify {
+            rule("Piso de cobertura do projeto") {
+                bound {
+                    minValue = 60
+                    coverageUnits = CoverageUnit.LINE
+                    aggregationForGroup = AggregationType.COVERED_PERCENTAGE
+                }
+            }
+        }
+    }
 }
 
 spotless {

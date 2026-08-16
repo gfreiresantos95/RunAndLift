@@ -29,7 +29,7 @@ se pensou na época é justamente o que se quer preservar.
 | [0003](0003-estrutura-de-modulos-e-injecao-de-dependencia.md) | Estrutura de módulos e injeção de dependência | Aceito |
 | [0004](0004-configuracao-do-firebase.md) | Configuração do Firebase | Aceito |
 | [0005](0005-firestore-edicao-e-banco-padrao.md) | Firestore em edição Standard, banco `(default)` | Aceito |
-| [0006](0006-repositorio-cache-first-e-estrategia-de-teste.md) | Repositório cache-first e estratégia de teste | Aceito |
+| [0006](0006-repositorio-cache-first-e-estrategia-de-teste.md) | Repositório cache-first e estratégia de teste | Aceito (piso de cobertura revisto pelo 0018) |
 | [0007](0007-security-rules-e-id-de-vinculo-deterministico.md) | Security Rules e id de vínculo determinístico | Aceito |
 | [0008](0008-zero-anuncio.md) | Zero anúncio, sempre | Aceito |
 | [0009](0009-navegacao-por-papel-e-fronteira-de-feature.md) | Navegação por papel e fronteira do módulo de feature | Aceito |
@@ -41,3 +41,4 @@ se pensou na época é justamente o que se quer preservar.
 | [0015](0015-protecao-da-branch-principal.md) | Proteção da branch principal por ruleset | Aceito |
 | [0016](0016-um-modulo-por-papel-e-navegacao-por-abas.md) | Um módulo por papel e navegação por abas | Aceito |
 | [0017](0017-estados-de-tela-movimento-e-largura-de-conteudo.md) | Estados de tela, movimento e largura de conteúdo | Aceito |
+| [0018](0018-piso-de-cobertura-e-cobertura-no-pull-request.md) | Piso de cobertura e cobertura medida no Pull Request | Aceito |
