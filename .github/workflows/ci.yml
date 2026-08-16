@@ -15,6 +15,12 @@ jobs:
   verify:
     runs-on: ubuntu-latest
 
+    # O token do job precisa escrever no PR para publicar o comentário de cobertura. Só isso: o
+    # resto continua leitura, que é o padrão quando `permissions` é declarado.
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -36,6 +42,35 @@ jobs:
       - name: Formatação, análise estática, lint e testes
         run: ./gradlew spotlessCheck detekt lint test
 
+      # Passo próprio, e antes do piso, para que o XML exista mesmo quando a cobertura reprova — o
+      # comentário no PR é justamente o que diz onde faltou teste.
+      - name: Relatório de cobertura
+        run: ./gradlew :koverXmlReport
+
+      # Fixado por SHA e não por tag: esta é a revisão de `main` que renomeou o piso do diff para
+      # `min-coverage-changed-lines`, medindo só as linhas que o PR mudou. A v1.8.0, último release,
+      # ainda cobra o arquivo inteiro — o que reprovaria um PR de uma linha em arquivo antigo sem
+      # teste. Ver ADR 0018. Quando a v2.0 sair, trocar o SHA pela tag.
+      #
+      # `continue-on-error: false` é obrigatório: o padrão da action é `true`, e com ele o piso
+      # viraria enfeite — comentaria o número e deixaria o merge passar.
+      - name: Comentar cobertura no PR
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: madrapps/jacoco-report@dc464cf1e7d917b8a8e073ab95f8c08484957839
+        with:
+          paths: ${{ github.workspace }}/build/reports/kover/report.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Cobertura de testes
+          update-comment: true
+          min-coverage-overall: 60
+          min-coverage-changed-lines: 80
+          continue-on-error: false
+
+      # Vale para push em main também, onde não há PR para comentar. É a mesma regra do
+      # `./gradlew koverVerify` local, então ninguém descobre o piso só aqui.
+      - name: Piso de cobertura do projeto
+        run: ./gradlew :koverVerify
+
       - name: Publicar relatórios
         if: always()
         uses: actions/upload-artifact@v7
@@ -48,6 +83,7 @@ jobs:
             app/build/reports/lint-results-*.html
             app/build/reports/tests/
             data/build/reports/tests/
+            build/reports/kover/
           if-no-files-found: ignore
           retention-days: 14
 

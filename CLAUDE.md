@@ -65,7 +65,9 @@ All versions go through the version catalog at `gradle/libs.versions.toml` and a
 
 ## Code quality
 
-`./gradlew spotlessApply` formats (ktlint), `spotlessCheck` verifies without writing, `detekt` runs static analysis. CI runs `spotlessCheck detekt lint test`; there is deliberately **no detekt baseline**, so the violation count must stay at zero — fix the cause rather than suppress.
+`./gradlew spotlessApply` formats (ktlint), `spotlessCheck` verifies without writing, `detekt` runs static analysis. CI runs `spotlessCheck detekt lint test`, then `:koverXmlReport` and `:koverVerify`; there is deliberately **no detekt baseline**, so the violation count must stay at zero — fix the cause rather than suppress.
+
+**Coverage has two floors, and they answer different questions**: the project stays at **≥ 60% of lines** (`koverVerify`, so it fails on your machine before it fails in CI), and a PR's **diff stays at ≥ 80%** — measured over the lines the PR changed, commented on the PR, and failing the `verify` job when it doesn't. Aggregation covers all six modules, and the report **excludes `@Composable`, Room-generated `*_Impl`, `*PreviewFixtures*` and the design-system tokens**: without those cuts the percentage measures documented decisions (there are no UI tests by choice) rather than gaps. What is *not* excluded is the Firebase adapter layer in `:data` — it holds the health-data consent gate, which is where the largest real gap is. 75% is the declared target, one work item away: the three Firestore repositories are the 190 lines that get there. The PR comment comes from `madrapps/jacoco-report` pinned **by SHA, not by tag** — the released v1.8.0 gates on whole changed *files*, which would fail a one-line PR touching an old untested file. See `docs/adr/0018`.
 
 `main` is protected by a GitHub ruleset: work enters through a branch and a Pull Request, the `verify` and `firestore-rules` checks must pass before merging, history is linear (squash only), and force-push and deletion are blocked. Those two check names are the **job ids** in `ci.yml` — renaming a job without updating the ruleset stalls every later PR. See `docs/adr/0015`.
 
@@ -125,7 +127,7 @@ Four rules every repository follows — they are what makes offline real rather 
 3. **Network failure is a return value, not an exception** — the app keeps working on disk data.
 4. **Every network call states its Firestore read cost** in KDoc, and avoids the call when it can.
 
-Room schemas are exported to `data/schemas/` and committed — migrations (E0-13) have nothing to migrate from otherwise. Never add `fallbackToDestructiveMigration`. Tests use hand-written fakes, not MockK; `./gradlew koverHtmlReport` gives coverage, with no minimum threshold by design.
+Room schemas are exported to `data/schemas/` and committed — migrations (E0-13) have nothing to migrate from otherwise. Never add `fallbackToDestructiveMigration`. Tests use hand-written fakes, not MockK.
 
 ## Testing
 

@@ -115,10 +115,27 @@ Requer Android Studio recente e um dispositivo ou emulador com API 26+. Não é 
 .\gradlew.bat installDebug       # instala no dispositivo conectado
 .\gradlew.bat test               # testes unitários (JVM) — 121 hoje
 .\gradlew.bat lint               # Android Lint + compose-lints
-.\gradlew.bat koverHtmlReport    # cobertura do :data, sem mínimo exigido por decisão
+.\gradlew.bat koverHtmlReport    # cobertura dos seis módulos, em build/reports/kover/html
+.\gradlew.bat koverVerify        # reprova se o projeto cair abaixo de 60% de linhas
 ```
 
 Em Linux/macOS, use `./gradlew` no lugar de `.\gradlew.bat`.
+
+### Cobertura
+
+São dois pisos, e eles medem coisas diferentes ([ADR-0018](adr/0018-piso-de-cobertura-e-cobertura-no-pull-request.md)):
+
+- **Projeto ≥ 60%** de linhas, conferido pelo `koverVerify` — no CI e na sua máquina, antes do push.
+- **Diff ≥ 80%**, só sobre as linhas que o PR mudou. O CI publica o número como comentário no PR e
+  reprova o job `verify` quando não atinge.
+
+O relatório exclui `@Composable`, código gerado pelo Room, fixtures de `@Preview` e os tokens do
+design system — sem isso o percentual mediria decisões documentadas (não há teste de UI por
+escolha) em vez de lacunas. Medição de 2026-08-15: **63,4%** de linhas.
+
+A meta é 75%, e ela está a um item de distância: cobrir `FirestoreUserRepository`,
+`FirestoreStudentRepository` e `FirebaseAuthRepository` são as 190 linhas que faltam. O piso sobe
+junto com esse trabalho.
 
 Rodar um teste específico:
 

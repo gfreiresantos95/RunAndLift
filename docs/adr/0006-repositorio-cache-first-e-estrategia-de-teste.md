@@ -1,6 +1,6 @@
 # ADR-0006: Repositório cache-first e estratégia de teste
 
-- **Status:** Aceito
+- **Status:** Aceito — o trecho "Kover só com relatório, sem piso" foi revisto pelo [ADR-0018](0018-piso-de-cobertura-e-cobertura-no-pull-request.md)
 - **Data:** 2026-08-06
 - **Item do backlog:** E0-03
 
