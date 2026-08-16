@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
                     authRepository = container.authRepository,
                     userRepository = container.userRepository,
                     studentRepository = container.studentRepository,
+                    trainerRepository = container.trainerRepository,
                 )
             }
         }

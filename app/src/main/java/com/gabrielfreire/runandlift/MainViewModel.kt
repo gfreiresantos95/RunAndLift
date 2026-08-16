@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.model.ActiveRole
 import com.gabrielfreire.runandlift.data.student.StudentRepository
+import com.gabrielfreire.runandlift.data.trainer.TrainerRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.feature.auth.completeprofile.ProfileCompletion
 import com.gabrielfreire.runandlift.feature.auth.navigation.AuthRoutes
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentRoutes
+import com.gabrielfreire.runandlift.feature.trainer.navigation.TrainerRoutes
 import com.gabrielfreire.runandlift.navigation.RoleRoutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +38,7 @@ class MainViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val studentRepository: StudentRepository,
+    private val trainerRepository: TrainerRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -55,18 +58,15 @@ class MainViewModel(
             val incomplete = account != null && role != null &&
                 ProfileCompletion.missing(userRepository, account.uid, role).any
 
-            // Documento inexistente em `students/{uid}` significa que o passo a passo nunca
-            // aconteceu — é a marca de "primeiro acesso como aluno", e não uma contagem de campos
-            // vazios: quem pulou tudo já tem documento, e não deve rever o onboarding.
-            //
-            // Leitura que falha responde "já aconteceu", pela mesma razão de ProfileCompletion:
-            // sem rede e sem cache, repetir o onboarding é pior do que deixá-lo passar.
-            val needsOnboarding = account != null && role == ActiveRole.STUDENT && !incomplete &&
-                runCatching { studentRepository.profile(account.uid) }.map { it == null }.getOrDefault(false)
+            val onboarding = if (account != null && role != null && !incomplete) {
+                onboardingRouteFor(account.uid, role)
+            } else {
+                null
+            }
 
             _uiState.value = MainUiState(
                 ready = true,
-                startDestination = startDestinationFor(account != null, role, incomplete, needsOnboarding),
+                startDestination = startDestinationFor(account != null, role, incomplete, onboarding),
                 activeRole = role,
                 canSwitchRole = profile?.roles?.hasBoth == true,
             )
@@ -76,14 +76,12 @@ class MainViewModel(
     /**
      * Para onde ir **assim que a conta é autenticada**, e não só na abertura seguinte.
      *
-     * Existe porque quem acabou de criar conta como aluno precisa responder o onboarding **antes**
-     * de ver a home — do contrário o passo a passo só apareceria no próximo lançamento do app, que
-     * é tarde demais: a essa altura a pessoa já viu a home vazia e formou a impressão de que não há
+     * Existe porque quem acabou de criar conta precisa responder o passo a passo do seu papel
+     * **antes** de ver a home — do contrário ele só apareceria no próximo lançamento do app, que é
+     * tarde demais: a essa altura a pessoa já viu a home vazia e formou a impressão de que não há
      * nada a fazer ali.
      *
-     * A pergunta é a mesma da abertura, e a resposta vem da mesma fonte: documento inexistente em
-     * `students/{uid}` significa que o passo a passo nunca aconteceu. Quem entra numa conta antiga,
-     * que já tem documento, vai direto para a home.
+     * A pergunta é a mesma da abertura, e a resposta vem da mesma fonte: [onboardingRouteFor].
      *
      * Custo declarado: **0 leitura** com o documento em cache — que é o caso logo depois do
      * cadastro, porque a gravação do perfil acabou de passar por ali.
@@ -92,10 +90,35 @@ class MainViewModel(
         viewModelScope.launch {
             val uid = authRepository.currentAccountOrNull()?.uid
 
-            val needsOnboarding = uid != null && role == ActiveRole.STUDENT &&
-                runCatching { studentRepository.profile(uid) }.map { it == null }.getOrDefault(false)
+            onResolved(uid?.let { onboardingRouteFor(it, role) } ?: RoleRoutes.graphFor(role))
+        }
+    }
 
-            onResolved(if (needsOnboarding) StudentRoutes.ONBOARDING else RoleRoutes.graphFor(role))
+    /**
+     * A rota do passo a passo do papel, ou `null` quando ele já aconteceu.
+     *
+     * **Os dois papéis têm passo a passo, e a marca de "já aconteceu" é diferente em cada um** —
+     * porque os documentos nascem em momentos diferentes:
+     *
+     * - **Aluno**: documento inexistente em `students/{uid}`. Nada o cria antes do fim do fluxo,
+     *   então a existência dele é a marca — inclusive para quem pulou tudo, que já tem documento e
+     *   não deve rever o passo a passo.
+     * - **Treinador**: o carimbo `onboarded` em `trainerProfiles/{uid}`. Ali a existência não diz
+     *   nada: o cadastro abre o documento com o registro no CREF dentro, e usar "existe" mandaria
+     *   todo treinador direto para a home sem nunca ter respondido nada.
+     *
+     * Leitura que falha responde "já aconteceu", pela mesma razão de `ProfileCompletion`: sem rede
+     * e sem cache, repetir um passo a passo é pior do que deixá-lo passar.
+     *
+     * Custo declarado: **0 leitura** com o documento em cache, 1 quando não está.
+     */
+    private suspend fun onboardingRouteFor(uid: String, role: ActiveRole): String? = when (role) {
+        ActiveRole.STUDENT -> StudentRoutes.ONBOARDING.takeIf {
+            runCatching { studentRepository.profile(uid) }.map { it == null }.getOrDefault(false)
+        }
+
+        ActiveRole.TRAINER -> TrainerRoutes.ONBOARDING.takeIf {
+            runCatching { trainerRepository.profile(uid) }.map { it?.onboarded != true }.getOrDefault(false)
         }
     }
 
@@ -123,7 +146,7 @@ class MainViewModel(
         hasAccount: Boolean,
         role: ActiveRole?,
         incomplete: Boolean,
-        needsOnboarding: Boolean,
+        onboarding: String?,
     ): String = when {
         !hasAccount -> AuthRoutes.GRAPH
 
@@ -131,11 +154,11 @@ class MainViewModel(
 
         incomplete -> AuthRoutes.completeProfile(role)
 
-        // Depois do cadastro completo, e só para o aluno: o passo a passo que apresenta quem ele é
-        // ao treinador. Vem **depois** da conclusão de cadastro porque aquela é obrigação legal e
-        // esta é conversa de produto — inverter a ordem pediria dado de saúde antes do aceite dos
-        // termos.
-        needsOnboarding -> StudentRoutes.ONBOARDING
+        // Depois do cadastro completo: o passo a passo do papel — quem o aluno é para o treinador,
+        // ou quem o treinador é para o aluno. Vem **depois** da conclusão de cadastro porque aquela
+        // é obrigação legal e esta é conversa de produto; inverter a ordem pediria dado de saúde
+        // antes do aceite dos termos, e apresentação profissional antes do registro no CREF.
+        onboarding != null -> onboarding
 
         else -> RoleRoutes.graphFor(role)
     }

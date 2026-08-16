@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.trainer.home
 
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeAuthRepository
+import com.gabrielfreire.runandlift.feature.trainer.fake.FakeTrainerRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeUserRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,7 +15,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * O que o preview da home não mostra: de onde vem o nome, e o que acontece quando ele não vem.
+ * O que o preview da home não mostra: de onde vem o nome, o que acontece quando ele não vem, e
+ * quando o aviso de perfil incompleto aparece.
  *
  * As três formas de não haver nome são casos distintos e todas terminam na mesma tela utilizável —
  * é isso que se afirma aqui, porque a tentação de "tratar depois" costuma virar uma home presa em
@@ -44,6 +46,42 @@ class TrainerHomeViewModelTest {
         // desenhada e o nome ainda não chegou.
         assertTrue(viewModel.uiState.value.loading)
         assertNull(viewModel.uiState.value.displayName)
+        assertFalse(
+            "aviso que aparece antes da leitura sumiria um instante depois",
+            viewModel.uiState.value.missing.any,
+        )
+    }
+
+    @Test
+    fun `perfil pela metade vira aviso na home`() = runTest {
+        val viewModel = viewModel()
+
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.missing.any)
+        assertTrue(viewModel.uiState.value.missing.specialties)
+    }
+
+    @Test
+    fun `perfil completo nao mostra aviso`() = runTest {
+        val viewModel = viewModel(trainers = FakeTrainerRepository(stored = FakeTrainerRepository.complete()))
+
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.missing.any)
+    }
+
+    @Test
+    fun `leitura do perfil que falha nao inventa aviso`() = runTest {
+        val viewModel = viewModel(trainers = FakeTrainerRepository(failReading = true))
+
+        advanceUntilIdle()
+
+        assertFalse(
+            "acusar cadastro incompleto por palpite treina a pessoa a ignorar avisos",
+            viewModel.uiState.value.missing.any,
+        )
+        assertFalse(viewModel.uiState.value.loading)
     }
 
     @Test
@@ -67,12 +105,13 @@ class TrainerHomeViewModelTest {
     }
 
     @Test
-    fun `sem sessao nao ha nome a mostrar`() = runTest {
+    fun `sem sessao nao ha nome nem aviso a mostrar`() = runTest {
         val viewModel = viewModel(auth = FakeAuthRepository(signedIn = null))
 
         advanceUntilIdle()
 
         assertNull(viewModel.uiState.value.displayName)
+        assertFalse(viewModel.uiState.value.missing.any)
         assertFalse(viewModel.uiState.value.loading)
     }
 
@@ -85,8 +124,21 @@ class TrainerHomeViewModelTest {
         assertNull(viewModel.uiState.value.displayName)
     }
 
+    @Test
+    fun `recarregar e o que faz o aviso sumir depois da edicao`() = runTest {
+        val viewModel = viewModel(trainers = FakeTrainerRepository(stored = FakeTrainerRepository.complete()))
+        advanceUntilIdle()
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.missing.any)
+        assertEquals("Carlos Pereira", viewModel.uiState.value.displayName)
+    }
+
     private fun viewModel(
         auth: FakeAuthRepository = FakeAuthRepository(),
         users: FakeUserRepository = FakeUserRepository(),
-    ) = TrainerHomeViewModel(authRepository = auth, userRepository = users)
+        trainers: FakeTrainerRepository = FakeTrainerRepository(),
+    ) = TrainerHomeViewModel(authRepository = auth, userRepository = users, trainerRepository = trainers)
 }

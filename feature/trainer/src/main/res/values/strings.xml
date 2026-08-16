@@ -13,6 +13,15 @@
     <string name="trainer_home_greeting_anonymous">Olá!</string>
     <string name="trainer_home_role">Treinador</string>
 
+    <!-- Aviso de perfil incompleto. Diz quantas faltam para a pessoa decidir se agora é hora, e a
+         linha de baixo diz o que se ganha respondendo — que aqui é ser encontrado. -->
+    <plurals name="trainer_home_reminder_title">
+        <item quantity="one">Falta %1$d resposta no seu perfil</item>
+        <item quantity="other">Faltam %1$d respostas no seu perfil</item>
+    </plurals>
+    <string name="trainer_home_reminder_body">Um perfil completo é o que faz um aluno escolher você
+        em vez de rolar a lista. Toque para completar.</string>
+
     <!-- Treinos. -->
     <string name="trainer_workouts_title">Treinos</string>
     <!-- Título do vazio no presente, e não "nenhum treino": ele descreve o que a tela É, e a linha
@@ -21,8 +30,187 @@
     <string name="trainer_workouts_empty">Os programas que você montar ficam nesta aba, prontos para
         atribuir aos seus alunos.</string>
 
-    <!-- Menu. -->
+    <!-- Menu. Duas linhas de perfil porque são dois documentos com dois públicos: "Meus dados" só o
+         titular lê, "Perfil profissional" o aluno vinculado — e a vitrine, quem estiver procurando. -->
     <string name="trainer_menu_title">Menu</string>
+    <string name="trainer_menu_section_profile">Perfil</string>
+    <string name="trainer_menu_section_account">Conta</string>
+    <string name="trainer_menu_account">Meus dados</string>
+    <string name="trainer_menu_account_description">Nome, contato e como você entra no app.</string>
+    <string name="trainer_menu_profile">Perfil profissional</string>
+    <string name="trainer_menu_profile_description">Registro, experiência, especialidades e o que
+        seus alunos veem sobre você.</string>
     <string name="trainer_menu_sign_out">Sair da conta</string>
     <string name="trainer_menu_switch_role">Trocar de papel</string>
+
+    <string name="trainer_action_back">Voltar</string>
+    <string name="trainer_action_save">Salvar</string>
+    <string name="trainer_save_failed">Não deu para salvar agora. Confira sua conexão e tente de
+        novo.</string>
+    <!-- Confirmação de salvamento. No passado e sem exclamação: é um recibo, não uma comemoração. -->
+    <string name="trainer_saved">Alterações salvas.</string>
+    <!-- Anunciado pelo leitor de tela quando o indicador de carregamento entra. Sem isto, quem usa
+         TalkBack não recebe sinal nenhum de que algo está em curso. -->
+    <string name="trainer_loading">Carregando</string>
+
+    <!-- Meus dados. -->
+    <string name="trainer_account_title">Meus dados</string>
+    <string name="trainer_field_name">Nome completo</string>
+    <string name="trainer_field_name_support">É o nome que aparece para os seus alunos, ao lado do
+        seu registro.</string>
+    <!-- Obrigatório para o treinador, ao contrário do aluno: quem presta o serviço precisa ter como
+         ser alcançado fora do app. A linha de apoio diz isso antes de o erro aparecer. -->
+    <string name="trainer_field_phone">Celular (WhatsApp)</string>
+    <string name="trainer_field_phone_support">É por onde um aluno fala com você fora do app.</string>
+    <string name="trainer_field_birth_date">Data de nascimento</string>
+    <string name="trainer_field_birth_date_support">Confirma que a conta é de maior de idade, e por
+        isso não muda por aqui.</string>
+    <string name="trainer_field_email">E-mail</string>
+    <string name="trainer_field_email_support">É como você entra no app, e por isso não muda por
+        aqui.</string>
+
+    <!-- Localidade. Os dois campos abrem uma lista em vez de aceitarem digitação. -->
+    <string name="trainer_field_state">Estado</string>
+    <string name="trainer_field_state_support">Escolha o seu estado na lista.</string>
+    <string name="trainer_field_city">Cidade</string>
+    <string name="trainer_field_city_support">É por ela que alunos da sua região te encontram.</string>
+    <!-- Substitui a linha de apoio enquanto não há estado: campo cinza sem explicação parece
+         defeito, e a dúvida que ele levanta é a que vira mensagem de suporte. -->
+    <string name="trainer_field_city_needs_state">Escolha o estado primeiro.</string>
+
+    <!-- Telas de seleção. Título é o substantivo do que se escolhe: a tela inteira já é a pergunta. -->
+    <string name="trainer_state_picker_title">Estado</string>
+    <string name="trainer_state_picker_search">Buscar estado</string>
+    <string name="trainer_state_picker_empty">Nenhum estado com esse nome.</string>
+    <string name="trainer_city_picker_title">Cidade</string>
+    <string name="trainer_city_picker_search">Buscar cidade</string>
+    <string name="trainer_city_picker_empty">Nenhuma cidade com esse nome neste estado.</string>
+    <string name="trainer_picker_clear">Limpar busca</string>
+    <!-- A lista vem do IBGE, e por isso depende de rede. A frase diz o que aconteceu e oferece o
+         botão, que é a única coisa acionável. -->
+    <string name="trainer_picker_failure">Não deu para carregar a lista agora. Confira sua
+        conexão.</string>
+    <string name="trainer_picker_retry">Tentar de novo</string>
+
+    <!-- Erros dos dados cadastrais. -->
+    <string name="trainer_error_name_required">Informe o seu nome.</string>
+    <string name="trainer_error_name_incomplete">Informe nome e sobrenome.</string>
+    <string name="trainer_error_phone_required">Informe um celular para os seus alunos.</string>
+    <string name="trainer_error_phone_invalid">Informe DDD e número, com 10 ou 11 dígitos.</string>
+    <!-- Localidade não se digita, então o erro manda escolher e não conferir: "estado inválido"
+         seria acusar a pessoa de um valor que quem ofereceu foi o app. -->
+    <string name="trainer_error_state_required">Escolha o seu estado.</string>
+    <string name="trainer_error_city_required">Escolha a sua cidade.</string>
+
+    <!-- Onboarding: cabeçalho e navegação. -->
+    <string name="trainer_onboarding_progress">Passo %1$d de %2$d</string>
+    <string name="trainer_onboarding_next">Continuar</string>
+    <string name="trainer_onboarding_finish">Concluir</string>
+    <string name="trainer_onboarding_skip">Pular por agora</string>
+    <string name="trainer_onboarding_save_failed">Não deu para salvar agora. Você pode tentar de
+        novo, ou seguir e completar depois pelo seu perfil.</string>
+
+    <!-- Onboarding: títulos em segunda pessoa, porque é uma conversa. A linha de apoio diz sempre
+         para quem a resposta serve — que aqui é quase sempre o aluno do outro lado. -->
+    <string name="trainer_onboarding_experience_title">Há quanto tempo você atende?</string>
+    <!-- O primeiro passo carrega a promessa do fluxo inteiro: é curto, e nada aqui é definitivo.
+         Sem isso, quem acabou de criar a conta lê sete perguntas como um segundo cadastro. -->
+    <string name="trainer_onboarding_experience_subtitle">É a primeira coisa que um aluno olha ao
+        escolher. Leva menos de um minuto, e você pode mudar tudo depois no seu perfil.</string>
+    <string name="trainer_onboarding_specialties_title">O que você atende?</string>
+    <string name="trainer_onboarding_specialties_subtitle">Marque quantas quiser. São elas que
+        colocam você na frente de quem procura exatamente isso.</string>
+    <string name="trainer_onboarding_modes_title">Como você atende?</string>
+    <string name="trainer_onboarding_modes_subtitle">Presencial e online juntos querem dizer que
+        você faz os dois.</string>
+    <string name="trainer_onboarding_days_title">Em quais dias você atende?</string>
+    <string name="trainer_onboarding_days_subtitle">É a sua disponibilidade, não a sua agenda cheia
+        — serve para o aluno não pedir vínculo num dia em que você nunca poderia.</string>
+    <string name="trainer_onboarding_showcase_title">Quer aparecer para novos alunos?</string>
+    <string name="trainer_onboarding_showcase_subtitle">Seu perfil só fica visível na busca com a
+        sua autorização, e você desliga quando quiser.</string>
+    <string name="trainer_onboarding_bio_title">Como você trabalha?</string>
+    <string name="trainer_onboarding_bio_subtitle">É o que faz um aluno escolher você entre dois
+        perfis com as mesmas especialidades.</string>
+    <string name="trainer_onboarding_capacity_title">Quantos alunos você atende ao mesmo tempo?</string>
+    <string name="trainer_onboarding_capacity_subtitle">Quando você encher, seu perfil sai da busca
+        sozinho — e volta quando abrir vaga.</string>
+
+    <!-- Onboarding: dias. -->
+    <string name="trainer_onboarding_days_none">Nenhum dia escolhido ainda.</string>
+    <plurals name="trainer_onboarding_days_count">
+        <item quantity="one">%1$d dia por semana</item>
+        <item quantity="other">%1$d dias por semana</item>
+    </plurals>
+
+    <!-- Consentimento da vitrine. O aviso vem antes da caixa: primeiro o que fica visível, para
+         quem, e como se desliga; só então a pergunta. -->
+    <string name="trainer_onboarding_showcase_notice">Com a vitrine ligada, seu nome, cidade,
+        registro no CREF, especialidades e apresentação ficam visíveis para quem procura treinador no
+        app. Seus dados de contato não aparecem — quem quiser falar com você pede vínculo primeiro.
+        Você pode desligar a qualquer momento, e seus alunos atuais continuam com você.</string>
+    <string name="trainer_onboarding_showcase_consent">Autorizo exibir meu perfil profissional na
+        busca por treinadores.</string>
+
+    <!-- Perfil profissional. -->
+    <string name="trainer_profile_title">Perfil profissional</string>
+    <string name="trainer_field_cref">Registro no CREF</string>
+    <string name="trainer_field_cref_support">É a sua habilitação para prescrever, conferida no
+        cadastro. Para alterá-la, fale com o suporte.</string>
+
+    <!-- Faixas de experiência. -->
+    <string name="trainer_experience_up_to_two">Até 2 anos</string>
+    <string name="trainer_experience_two_to_five">2 a 5 anos</string>
+    <string name="trainer_experience_five_to_ten">5 a 10 anos</string>
+    <string name="trainer_experience_over_ten">Mais de 10 anos</string>
+
+    <!-- Especialidades. As cinco primeiras são, palavra por palavra, os objetivos que o aluno
+         escolhe: é o que permite casar os dois lados sem tabela de tradução. -->
+    <string name="trainer_specialty_hypertrophy">Ganhar massa muscular</string>
+    <string name="trainer_specialty_strength">Ficar mais forte</string>
+    <string name="trainer_specialty_weight_loss">Perder gordura</string>
+    <string name="trainer_specialty_conditioning">Ganhar fôlego e resistência</string>
+    <string name="trainer_specialty_health">Saúde e disposição</string>
+    <string name="trainer_specialty_running">Corrida de rua</string>
+    <string name="trainer_specialty_rehab">Pós-reabilitação</string>
+    <string name="trainer_specialty_seniors">Terceira idade</string>
+
+    <!-- Modalidades de atendimento. Não há "híbrido": ele é presencial e online marcados juntos. -->
+    <string name="trainer_mode_in_person">Presencial</string>
+    <string name="trainer_mode_online">Online</string>
+    <string name="trainer_mode_home_visit">Na casa do aluno</string>
+
+    <!-- Dias da semana. Abreviados na tela, por extenso para o leitor de tela. -->
+    <string name="trainer_day_monday">Seg</string>
+    <string name="trainer_day_tuesday">Ter</string>
+    <string name="trainer_day_wednesday">Qua</string>
+    <string name="trainer_day_thursday">Qui</string>
+    <string name="trainer_day_friday">Sex</string>
+    <string name="trainer_day_saturday">Sáb</string>
+    <string name="trainer_day_sunday">Dom</string>
+    <string name="trainer_day_monday_full">Segunda-feira</string>
+    <string name="trainer_day_tuesday_full">Terça-feira</string>
+    <string name="trainer_day_wednesday_full">Quarta-feira</string>
+    <string name="trainer_day_thursday_full">Quinta-feira</string>
+    <string name="trainer_day_friday_full">Sexta-feira</string>
+    <string name="trainer_day_saturday_full">Sábado</string>
+    <string name="trainer_day_sunday_full">Domingo</string>
+
+    <!-- Campos da vitrine. -->
+    <string name="trainer_field_bio">Sua apresentação</string>
+    <string name="trainer_field_bio_support">Conte como você trabalha e com quem você já trabalhou.</string>
+    <!-- O contador substitui a sugestão assim que a pessoa começa a escrever: cada linha responde
+         uma pergunta de cada vez. -->
+    <plurals name="trainer_field_bio_remaining">
+        <item quantity="one">Resta %1$d caractere</item>
+        <item quantity="other">Restam %1$d caracteres</item>
+    </plurals>
+    <string name="trainer_field_bio_sample">Trabalho com quem está voltando a treinar depois de uma
+        lesão, sempre em conjunto com o fisioterapeuta.</string>
+    <string name="trainer_field_capacity">Alunos ao mesmo tempo</string>
+    <string name="trainer_field_capacity_support">Serve para o seu perfil sair da busca quando você
+        encher.</string>
+
+    <!-- Erros dos campos digitados. A frase fala de conferir o número, nunca do valor. -->
+    <string name="trainer_error_capacity_invalid">Confira o número de alunos. Exemplo: 20.</string>
 </resources>
