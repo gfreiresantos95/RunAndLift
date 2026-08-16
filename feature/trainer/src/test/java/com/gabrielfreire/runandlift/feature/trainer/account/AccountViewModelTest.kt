@@ -5,6 +5,7 @@ import com.gabrielfreire.runandlift.feature.trainer.fake.FakeLocationRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeUserRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.MainDispatcherRule
 import com.gabrielfreire.runandlift.feature.trainer.fake.SavedIdentity
+import com.gabrielfreire.runandlift.feature.trainer.validation.CityError
 import com.gabrielfreire.runandlift.feature.trainer.validation.PhoneError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -82,6 +83,36 @@ class AccountViewModelTest {
         viewModel.onStatePicked(uf = "SP", name = "São Paulo")
 
         assertEquals("Campinas", viewModel.uiState.value.city)
+    }
+
+    @Test
+    fun `escolher cidade preenche o campo e limpa o erro`() = runTest {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+
+        // Sem cidade o salvamento é barrado — é assim que o erro aparece antes de a lista abrir.
+        viewModel.onStatePicked(uf = "RJ", name = "Rio de Janeiro")
+        viewModel.onSubmit()
+        advanceUntilIdle()
+        assertEquals(CityError.REQUIRED, viewModel.uiState.value.cityError)
+
+        viewModel.onCityPicked("Niterói")
+
+        assertEquals("Niterói", viewModel.uiState.value.city)
+        assertNull("escolher na lista é a correção — o erro não sobrevive a ela", viewModel.uiState.value.cityError)
+    }
+
+    @Test
+    fun `gravacao que falha avisa e nao fecha a tela`() = runTest {
+        val viewModel = viewModel(users = FakeUserRepository(failWriting = true))
+        advanceUntilIdle()
+
+        viewModel.onSubmit()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.failed)
+        assertFalse("quem veio corrigir precisa saber que a correção não pegou", viewModel.uiState.value.saved)
+        assertFalse(viewModel.uiState.value.saving)
     }
 
     @Test

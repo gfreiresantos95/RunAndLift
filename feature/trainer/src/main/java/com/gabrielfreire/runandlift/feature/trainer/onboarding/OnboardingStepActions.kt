@@ -8,10 +8,3 @@ package com.gabrielfreire.runandlift.feature.trainer.onboarding
  * aquelas mudam a resposta, estas mudam de tela.
  */
 internal data class OnboardingStepActions(val onNext: () -> Unit, val onSkip: () -> Unit, val onBack: () -> Unit)
-
-/** As ações sem efeito, para os previews. */
-internal fun previewOnboardingStepActions() = OnboardingStepActions(
-    onNext = {},
-    onSkip = {},
-    onBack = {},
-)

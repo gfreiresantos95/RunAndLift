@@ -69,14 +69,3 @@ private fun TrainerFormState.withShowcase(accepted: Boolean): TrainerFormState =
 } else {
     copy(showcase = false, bio = "", maxStudents = "", maxStudentsError = null)
 }
-
-/** As ações sem efeito, para os previews — a tela se desenha, e nada acontece ao tocar. */
-internal fun previewTrainerFormActions() = TrainerFormActions(
-    onExperienceSelect = {},
-    onSpecialtyToggle = {},
-    onServiceModeToggle = {},
-    onDayToggle = {},
-    onBioChange = {},
-    onMaxStudentsChange = {},
-    onShowcaseChange = {},
-)

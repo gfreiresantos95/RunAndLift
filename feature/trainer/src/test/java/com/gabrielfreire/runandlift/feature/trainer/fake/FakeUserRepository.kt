@@ -16,6 +16,8 @@ import java.time.LocalDate
  *   a home abre mesmo assim ou fica presa em carregamento.
  * @param missingProfile documento inexistente, diferente de leitura que falha: aqui o servidor
  *   respondeu, e a resposta foi "não há nada".
+ * @param failWriting gravação que não completa. É o caso que decide se a tela de edição avisa e
+ *   fica aberta — quem veio corrigir um dado precisa saber que a correção não pegou.
  */
 internal class FakeUserRepository(
     private val displayName: String? = "Carlos Pereira",
@@ -23,6 +25,7 @@ internal class FakeUserRepository(
     private val missingProfile: Boolean = false,
     private val storedState: String? = "SP",
     private val storedCity: String? = "Campinas",
+    private val failWriting: Boolean = false,
 ) : UserRepository {
 
     override suspend fun profile(uid: String): UserProfile? {
@@ -62,6 +65,8 @@ internal class FakeUserRepository(
         state: String?,
         city: String?,
     ) {
+        if (failWriting) error("gravação não completou")
+
         lastIdentity = SavedIdentity(displayName = displayName, phone = phone, state = state, city = city)
     }
 }

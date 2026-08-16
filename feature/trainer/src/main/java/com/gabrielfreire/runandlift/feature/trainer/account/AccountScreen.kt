@@ -188,13 +188,3 @@ private fun AccountScreenWithoutLocationPreview() {
         )
     }
 }
-
-private fun previewAccountActions() = AccountActions(
-    onNameChange = {},
-    onPhoneChange = {},
-    onOpenStatePicker = {},
-    onOpenCityPicker = {},
-    onSubmit = {},
-    onSaved = {},
-    onBack = {},
-)
