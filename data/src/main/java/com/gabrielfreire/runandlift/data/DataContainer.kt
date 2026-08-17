@@ -13,6 +13,8 @@ import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
 import com.gabrielfreire.runandlift.data.repository.OfflineFirstExerciseRepository
 import com.gabrielfreire.runandlift.data.student.FirestoreStudentRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
+import com.gabrielfreire.runandlift.data.trainer.FirestoreTrainerRepository
+import com.gabrielfreire.runandlift.data.trainer.TrainerRepository
 import com.gabrielfreire.runandlift.data.user.FirestoreUserRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 import com.gabrielfreire.runandlift.data.util.AppDispatchers
@@ -64,6 +66,10 @@ class DataContainer(
 
     val studentRepository: StudentRepository by lazy {
         FirestoreStudentRepository(firestore = firestore, dispatchers = dispatchers)
+    }
+
+    val trainerRepository: TrainerRepository by lazy {
+        FirestoreTrainerRepository(firestore = firestore, dispatchers = dispatchers)
     }
 
     /**

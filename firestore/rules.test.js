@@ -390,6 +390,37 @@ describe('perfil profissional do treinador', () => {
     await assertFails(stranger.doc(`trainerProfiles/${TRAINER}`).get());
   });
 
+  it('abre o perfil para estranho quando a vitrine está ligada', async () => {
+    await seed(async (db) => {
+      await db.doc(`trainerProfiles/${TRAINER}`).set({
+        cref: '012345-G/SP',
+        // A forma exata que o app grava ao aceitar a vitrine — ver `TrainerDocument`.
+        showcase: { enabled: true, version: '2026-08-16', acceptedAt: new Date() },
+        specialties: ['HYPERTROPHY'],
+        bio: 'Atendo em estúdio.',
+      });
+    });
+
+    // É o ponto do opt-in: quem procura treinador precisa achar quem autorizou ser achado.
+    const stranger = testEnv.authenticatedContext(OTHER_STUDENT).firestore();
+    await assertSucceeds(stranger.doc(`trainerProfiles/${TRAINER}`).get());
+  });
+
+  it('tira o perfil do ar quando o treinador se retira da vitrine', async () => {
+    await seed(async (db) => {
+      await db.doc(`trainerProfiles/${TRAINER}`).set({
+        cref: '012345-G/SP',
+        // A retirada mantém versão e momento — são o registro de que o aceite existiu —, e o que
+        // muda é só `enabled`. Se a regra olhasse a versão em vez deste campo, o perfil de quem se
+        // retirou continuaria público.
+        showcase: { enabled: false, version: '2026-08-16', acceptedAt: new Date() },
+      });
+    });
+
+    const stranger = testEnv.authenticatedContext(OTHER_STUDENT).firestore();
+    await assertFails(stranger.doc(`trainerProfiles/${TRAINER}`).get());
+  });
+
   it('NÃO deixa ninguém escrever registro no perfil de outro treinador', async () => {
     const other = testEnv.authenticatedContext(OTHER_TRAINER).firestore();
     await assertFails(other.doc(`trainerProfiles/${TRAINER}`).set({ cref: '999999-G/RJ' }));

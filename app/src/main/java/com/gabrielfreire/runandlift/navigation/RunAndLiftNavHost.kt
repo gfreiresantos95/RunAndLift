@@ -86,6 +86,8 @@ fun RunAndLiftNavHost(
             dependencies = TrainerDependencies(
                 authRepository = container.authRepository,
                 userRepository = container.userRepository,
+                trainerRepository = container.trainerRepository,
+                locationRepository = container.locationRepository,
             ),
             onSignedOut = { navController.navigateToAuth() },
             onSwitchRole = switchRole,

@@ -63,3 +63,9 @@ que está em disco. Usa dublês escritos à mão — as interfaces são pequenas
 
 O DAO em si só pode ser testado com banco de verdade, o que exige `androidTest` ou Robolectric.
 Ainda não feito.
+
+`TrainerDocumentTest` cobre a outra ponta: o **mapa que vai ao Firestore**, e não a conversa com
+ele. É o que permite afirmar a regra da vitrine — sem aceite, apresentação e capacidade não são
+gravadas — num teste comum de JVM, sem emulador. O truque é a separação: `TrainerDocument` monta o
+mapa e `FirestoreTrainerRepository` só o entrega. Os outros três repositórios sobre o Firestore
+ainda não têm essa divisão, e é por isso que continuam sem teste — este é o caminho para eles.

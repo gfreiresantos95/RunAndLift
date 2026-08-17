@@ -5,9 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * A confirmação de que a gravação deu certo, viajando da tela de edição para a tela de volta.
@@ -58,13 +60,33 @@ internal fun SavedConfirmation(
     // observador novo toda vez, e o lint do Navigation cobra isso. A chave é a entrada atual porque
     // é ela que muda quando a pilha muda — que é o único momento em que a busca precisa refazer.
     val currentEntry by navController.currentBackStackEntryAsState()
-    val handle = remember(currentEntry) { navController.getBackStackEntry(route) }.savedStateHandle
-    val saved by handle.getStateFlow(SavedResult.KEY, false).collectAsStateWithLifecycle()
+    val handle = remember(currentEntry) { navController.savedStateHandleOf(route) }
+    val saved by remember(handle) {
+        handle?.getStateFlow(SavedResult.KEY, false) ?: MutableStateFlow(false)
+    }.collectAsStateWithLifecycle()
 
     LaunchedEffect(saved) {
         if (!saved) return@LaunchedEffect
 
-        handle[SavedResult.KEY] = false
+        handle?.set(SavedResult.KEY, false)
         snackbarHostState.showSnackbar(message = message)
     }
 }
+
+/**
+ * A `SavedStateHandle` da entrada de [route], **ou `null` se ela não estiver mais visível**.
+ *
+ * A ausência não é um caso excepcional, é a saída normal desta tela. A recomposição disparada pela
+ * mudança de pilha alcança também a tela que está saindo — ela continua composta durante a animação
+ * —, e nesse instante a sua própria rota já foi desempilhada. É o que acontece ao sair da conta (a
+ * pilha inteira é esvaziada) e ao tocar na aba de início vindo do menu (`popUpTo(HOME)` desempilha
+ * o menu). `getBackStackEntry` lança `IllegalArgumentException` nos dois casos, derrubando o app na
+ * saída de uma tela que já tinha feito o seu trabalho.
+ *
+ * A busca é em `visibleEntries`, e não na pilha: `currentBackStack` é `@RestrictTo` do Navigation —
+ * existe para os seus próprios testes, não para quem o usa. E `visibleEntries` responde melhor a
+ * esta pergunta, porque **inclui a entrada que está saindo enquanto a animação corre**: é
+ * exatamente a tela que ainda está composta e ainda pode precisar do recibo.
+ */
+private fun NavHostController.savedStateHandleOf(route: String): SavedStateHandle? =
+    visibleEntries.value.lastOrNull { it.destination.route == route }?.savedStateHandle

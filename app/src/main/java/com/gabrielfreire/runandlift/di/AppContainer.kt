@@ -6,6 +6,7 @@ import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
+import com.gabrielfreire.runandlift.data.trainer.TrainerRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 
 /**
@@ -40,6 +41,9 @@ class AppContainer(context: Context) {
 
     /** Perfil de treino do aluno, em `students/{uid}` (E2-01). */
     val studentRepository: StudentRepository get() = dataContainer.studentRepository
+
+    /** Perfil profissional do treinador, em `trainerProfiles/{uid}` (E3-02). */
+    val trainerRepository: TrainerRepository get() = dataContainer.trainerRepository
 
     /**
      * Estados e municípios, servidos da API do IBGE com cache em memória.

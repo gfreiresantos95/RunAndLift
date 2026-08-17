@@ -5,6 +5,7 @@ import com.gabrielfreire.runandlift.data.model.SignUpDetails
 import com.gabrielfreire.runandlift.data.model.UserProfile
 import com.gabrielfreire.runandlift.data.model.UserRoles
 import com.gabrielfreire.runandlift.data.user.UserRepository
+import java.time.LocalDate
 
 /**
  * [UserRepository] de mentira.
@@ -15,11 +16,16 @@ import com.gabrielfreire.runandlift.data.user.UserRepository
  *   a home abre mesmo assim ou fica presa em carregamento.
  * @param missingProfile documento inexistente, diferente de leitura que falha: aqui o servidor
  *   respondeu, e a resposta foi "não há nada".
+ * @param failWriting gravação que não completa. É o caso que decide se a tela de edição avisa e
+ *   fica aberta — quem veio corrigir um dado precisa saber que a correção não pegou.
  */
 internal class FakeUserRepository(
     private val displayName: String? = "Carlos Pereira",
     private val failReading: Boolean = false,
     private val missingProfile: Boolean = false,
+    private val storedState: String? = "SP",
+    private val storedCity: String? = "Campinas",
+    private val failWriting: Boolean = false,
 ) : UserRepository {
 
     override suspend fun profile(uid: String): UserProfile? {
@@ -31,6 +37,10 @@ internal class FakeUserRepository(
             displayName = displayName,
             roles = UserRoles(trainer = true),
             activeRole = ActiveRole.TRAINER,
+            birthDate = LocalDate.of(1988, 11, 3),
+            phone = "11987654321",
+            state = storedState,
+            city = storedCity,
         )
     }
 
@@ -39,14 +49,15 @@ internal class FakeUserRepository(
 
     override suspend fun setActiveRole(uid: String, role: ActiveRole) = error("a troca de papel é decidida pelo :app")
 
-    override suspend fun trainerRegistration(uid: String): String? = null
+    /**
+     * O registro mora em `trainerProfiles/{uid}` e chega às telas pelo `TrainerRepository`, junto do
+     * resto do perfil. Este método existe para o fluxo de entrada, que não passa por aqui.
+     */
+    override suspend fun trainerRegistration(uid: String): String? = FakeTrainerRepository.CREF
 
-    var lastIdentity: Pair<String, String?>? = null
+    var lastIdentity: SavedIdentity? = null
         private set
 
-    // Localidade é aceita e descartada: o módulo do treinador ainda não tem tela de edição de
-    // dados cadastrais, então nenhum teste daqui a exercita. Ver `:feature:student`, onde ela é
-    // guardada e conferida.
     override suspend fun updateIdentity(
         uid: String,
         displayName: String,
@@ -54,6 +65,8 @@ internal class FakeUserRepository(
         state: String?,
         city: String?,
     ) {
-        lastIdentity = displayName to phone
+        if (failWriting) error("gravação não completou")
+
+        lastIdentity = SavedIdentity(displayName = displayName, phone = phone, state = state, city = city)
     }
 }
