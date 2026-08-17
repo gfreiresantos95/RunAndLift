@@ -30,6 +30,15 @@ object StudentRoutes {
     const val PROFILE = "student/profile"
 
     /**
+     * Quem treina este aluno — e, quando não há ninguém, o campo do código de convite.
+     *
+     * Fora das abas como as outras duas: é uma tela que se abre para resolver uma coisa (entrar com
+     * um código, aceitar um convite, encerrar) e se fecha. O dia em que o aluno tiver treino de
+     * verdade, o treinador aparece junto do treino, e não numa tela só dele.
+     */
+    internal const val TRAINER = "student/trainer"
+
+    /**
      * Dados cadastrais — nome e contato, em `users/{uid}`.
      *
      * Rota separada de [PROFILE] porque são dois documentos com dois públicos: este só o titular

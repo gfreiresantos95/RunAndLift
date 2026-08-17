@@ -10,6 +10,7 @@ import com.gabrielfreire.runandlift.feature.student.location.LocationPickerDesti
 import com.gabrielfreire.runandlift.feature.student.menu.StudentMenuDestination
 import com.gabrielfreire.runandlift.feature.student.onboarding.OnboardingDestination
 import com.gabrielfreire.runandlift.feature.student.profile.StudentProfileDestination
+import com.gabrielfreire.runandlift.feature.student.trainer.MyTrainerDestination
 import com.gabrielfreire.runandlift.feature.student.workouts.StudentWorkoutsDestination
 
 /**
@@ -38,64 +39,93 @@ fun NavGraphBuilder.studentGraph(
     onSwitchRole: (() -> Unit)?,
 ) {
     navigation(startDestination = StudentRoutes.HOME, route = StudentRoutes.GRAPH) {
-        composable(StudentRoutes.HOME) {
-            StudentHomeDestination(
-                navController = navController,
-                dependencies = dependencies,
-                onOpenProfile = { navController.navigate(StudentRoutes.PROFILE) },
-            )
-        }
-        composable(StudentRoutes.WORKOUTS) {
-            StudentWorkoutsDestination(navController = navController)
-        }
-        composable(StudentRoutes.MENU) {
-            StudentMenuDestination(
-                navController = navController,
-                dependencies = dependencies,
-                onSignedOut = onSignedOut,
-                onSwitchRole = onSwitchRole,
-                onOpen = { route -> navController.navigate(route) },
-            )
-        }
-        composable(StudentRoutes.ACCOUNT) { entry ->
-            AccountDestination(
-                navController = navController,
-                entry = entry,
-                dependencies = dependencies,
-                // Salvar volta levando o recibo; a seta volta sem ele, porque nada foi gravado.
-                onSaved = { navController.popWithSavedResult() },
-                onBack = { navController.popBackStack() },
-            )
-        }
+        studentTabs(
+            navController = navController,
+            dependencies = dependencies,
+            onSignedOut = onSignedOut,
+            onSwitchRole = onSwitchRole,
+        )
+        studentFlows(navController = navController, dependencies = dependencies)
+    }
+}
 
-        // As duas listas de localidade, abertas por "Meus dados". Ficam no mesmo grafo porque a
-        // escolha volta pela entrada anterior da pilha — quem as abre é uma tela daqui.
-        composable(StudentRoutes.STATE_PICKER) {
-            LocationPickerDestination(navController = navController, dependencies = dependencies, uf = null)
-        }
-        composable(route = StudentRoutes.CITY_PICKER_PATTERN, arguments = ufArgument()) { entry ->
-            LocationPickerDestination(
-                navController = navController,
-                dependencies = dependencies,
-                uf = entry.arguments?.getString(StudentRoutes.UF_ARG),
-            )
-        }
-        composable(StudentRoutes.ONBOARDING) {
-            OnboardingDestination(
-                dependencies = dependencies,
-                onFinished = {
-                    navController.navigate(StudentRoutes.HOME) {
-                        popUpTo(StudentRoutes.ONBOARDING) { inclusive = true }
-                    }
-                },
-            )
-        }
-        composable(StudentRoutes.PROFILE) {
-            StudentProfileDestination(
-                dependencies = dependencies,
-                onSaved = { navController.popWithSavedResult() },
-                onBack = { navController.popBackStack() },
-            )
-        }
+/**
+ * As três abas, que são irmãs e ficam sempre no mesmo nível da pilha.
+ *
+ * Separadas dos fluxos por tamanho, e o corte não é arbitrário: **aba não é fluxo**. O que está aqui
+ * a barra inferior alcança de qualquer lugar; o que está em [studentFlows] se abre, se resolve e se
+ * fecha.
+ */
+private fun NavGraphBuilder.studentTabs(
+    navController: NavHostController,
+    dependencies: StudentDependencies,
+    onSignedOut: () -> Unit,
+    onSwitchRole: (() -> Unit)?,
+) {
+    composable(StudentRoutes.HOME) {
+        StudentHomeDestination(
+            navController = navController,
+            dependencies = dependencies,
+            onOpenProfile = { navController.navigate(StudentRoutes.PROFILE) },
+        )
+    }
+    composable(StudentRoutes.WORKOUTS) {
+        StudentWorkoutsDestination(navController = navController)
+    }
+    composable(StudentRoutes.MENU) {
+        StudentMenuDestination(
+            navController = navController,
+            dependencies = dependencies,
+            onSignedOut = onSignedOut,
+            onSwitchRole = onSwitchRole,
+            onOpen = { route -> navController.navigate(route) },
+        )
+    }
+}
+
+/** As telas com começo e fim: dados cadastrais, localidade, passo a passo, perfil e treinador. */
+private fun NavGraphBuilder.studentFlows(navController: NavHostController, dependencies: StudentDependencies) {
+    composable(StudentRoutes.ACCOUNT) { entry ->
+        AccountDestination(
+            navController = navController,
+            entry = entry,
+            dependencies = dependencies,
+            // Salvar volta levando o recibo; a seta volta sem ele, porque nada foi gravado.
+            onSaved = { navController.popWithSavedResult() },
+            onBack = { navController.popBackStack() },
+        )
+    }
+
+    // As duas listas de localidade, abertas por "Meus dados". Ficam no mesmo grafo porque a
+    // escolha volta pela entrada anterior da pilha — quem as abre é uma tela daqui.
+    composable(StudentRoutes.STATE_PICKER) {
+        LocationPickerDestination(navController = navController, dependencies = dependencies, uf = null)
+    }
+    composable(route = StudentRoutes.CITY_PICKER_PATTERN, arguments = ufArgument()) { entry ->
+        LocationPickerDestination(
+            navController = navController,
+            dependencies = dependencies,
+            uf = entry.arguments?.getString(StudentRoutes.UF_ARG),
+        )
+    }
+    composable(StudentRoutes.ONBOARDING) {
+        OnboardingDestination(
+            dependencies = dependencies,
+            onFinished = {
+                navController.navigate(StudentRoutes.HOME) {
+                    popUpTo(StudentRoutes.ONBOARDING) { inclusive = true }
+                }
+            },
+        )
+    }
+    composable(StudentRoutes.PROFILE) {
+        StudentProfileDestination(
+            dependencies = dependencies,
+            onSaved = { navController.popWithSavedResult() },
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(StudentRoutes.TRAINER) {
+        MyTrainerDestination(dependencies = dependencies, onBack = { navController.popBackStack() })
     }
 }

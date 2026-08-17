@@ -43,3 +43,4 @@ se pensou na época é justamente o que se quer preservar.
 | [0017](0017-estados-de-tela-movimento-e-largura-de-conteudo.md) | Estados de tela, movimento e largura de conteúdo | Aceito |
 | [0018](0018-piso-de-cobertura-e-cobertura-no-pull-request.md) | Piso de cobertura e cobertura medida no Pull Request | Aceito |
 | [0019](0019-onboarding-do-treinador-e-consentimento-de-vitrine.md) | Onboarding do treinador e consentimento de vitrine | Aceito |
+| [0020](0020-vinculo-por-codigo-de-convite.md) | Vínculo por código de convite, com confirmação do treinador | Aceito |

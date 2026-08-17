@@ -26,6 +26,10 @@ object AppIcons {
     @DrawableRes
     val Workouts: Int = R.drawable.ic_workouts
 
+    /** Duas pessoas: a carteira de alunos. Uma silhueta sozinha diria "meu perfil". */
+    @DrawableRes
+    val Students: Int = R.drawable.ic_students
+
     @DrawableRes
     val Menu: Int = R.drawable.ic_menu
 

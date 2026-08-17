@@ -31,6 +31,19 @@ internal object TrainerDocument {
     const val FIELD_MAX_STUDENTS = "maxStudents"
     const val FIELD_ONBOARDED_AT = "onboardingCompletedAt"
 
+    /**
+     * Código de convite vigente do treinador, escrito e lido por `FirestoreLinkRepository`.
+     *
+     * Mora neste documento porque o convite é ferramenta **dele**, e porque guardá-lo aqui é o que
+     * dispensa procurar o código pelo dono: `inviteCodes` é legível por qualquer autenticado, e uma
+     * consulta por `trainerId` ali transformaria "ler o código que me deram" em "listar todos os
+     * códigos que existem".
+     *
+     * Não entra em [fields] nem em `TrainerProfile`: não é campo de formulário de perfil, e não é
+     * coisa que o aluno veja ao abrir um treinador.
+     */
+    const val FIELD_INVITE_CODE = "inviteCode"
+
     const val FIELD_SHOWCASE = "showcase"
     const val FIELD_ENABLED = "enabled"
     const val FIELD_VERSION = "version"

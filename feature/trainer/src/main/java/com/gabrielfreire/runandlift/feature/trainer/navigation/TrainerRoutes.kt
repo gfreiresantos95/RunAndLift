@@ -9,17 +9,29 @@ package com.gabrielfreire.runandlift.feature.trainer.navigation
  * As rotas do treinador e as do aluno **não se cruzam**, e por serem módulos separados isso deixa
  * de ser disciplina: o código do aluno não enxerga estas constantes nem para escrevê-las por engano.
  *
- * [HOME], [WORKOUTS] e [MENU] são **irmãs**, e é o que a barra inferior significa. [ONBOARDING],
- * [PROFILE] e [ACCOUNT] ficam **fora** das abas de propósito: são fluxos com começo e fim — um se
- * percorre uma vez, os outros se abrem para corrigir algo e se fecham —, e uma barra inferior no
- * rodapé deles ofereceria uma saída lateral no meio de uma tarefa.
+ * [HOME], [STUDENTS], [WORKOUTS] e [MENU] são **irmãs**, e é o que a barra inferior significa.
+ * [ONBOARDING], [PROFILE], [ACCOUNT] e [INVITE] ficam **fora** das abas de propósito: são fluxos com
+ * começo e fim — um se percorre uma vez, os outros se abrem para resolver algo e se fecham —, e uma
+ * barra inferior no rodapé deles ofereceria uma saída lateral no meio de uma tarefa.
  */
 object TrainerRoutes {
     const val GRAPH = "trainer"
 
     const val HOME = "trainer/home"
+
+    /** Carteira de alunos: quem pediu, quem treina e quem saiu. */
+    const val STUDENTS = "trainer/students"
+
     const val WORKOUTS = "trainer/workouts"
     const val MENU = "trainer/menu"
+
+    /**
+     * O código de convite, aberto pela carteira.
+     *
+     * Tela e não caixa de diálogo: o código existe para ser lido em voz alta, copiado e enviado, e
+     * uma caixa que some ao toque fora dela é o pior lugar possível para uma coisa que se copia.
+     */
+    internal const val INVITE = "trainer/invite"
 
     /**
      * Passo a passo do primeiro acesso como treinador.

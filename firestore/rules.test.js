@@ -295,6 +295,172 @@ describe('máquina de estados do vínculo', () => {
     const trainer = testEnv.authenticatedContext(TRAINER).firestore();
     await assertFails(trainer.doc(`links/${linkId(TRAINER, STUDENT)}`).delete());
   });
+
+  /*
+   * Reabrir é escrever no mesmo documento, e é consequência direta do id determinístico: voltar a
+   * treinar com quem já se treinou não tem como criar um segundo `{trainerId}_{studentId}`. Sem
+   * estas transições, encerrar seria proibir para sempre — e ninguém descobriria isso ao encerrar,
+   * só meses depois, ao tentar voltar.
+   */
+  it('o aluno reabre um vínculo encerrado como pedido', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set({
+        ...activeLink(TRAINER, STUDENT),
+        status: 'ended',
+      });
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(
+      student.doc(`links/${linkId(TRAINER, STUDENT)}`).update({ status: 'requested' }),
+    );
+  });
+
+  it('NÃO deixa reabrir já ativo, pulando a confirmação da contraparte', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set({
+        ...activeLink(TRAINER, STUDENT),
+        status: 'ended',
+      });
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertFails(student.doc(`links/${linkId(TRAINER, STUDENT)}`).update({ status: 'active' }));
+  });
+
+  it('o treinador reabre um vínculo encerrado como convite', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set({
+        ...activeLink(TRAINER, STUDENT),
+        status: 'ended',
+      });
+    });
+
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(
+      trainer.doc(`links/${linkId(TRAINER, STUDENT)}`).update({ status: 'invited' }),
+    );
+  });
+});
+
+/*
+ * A carteira do treinador e a lista do aluno são as duas primeiras consultas de coleção do app —
+ * tudo o mais lê documento por caminho. Consulta tem uma regra própria: o Firestore recusa a
+ * consulta **inteira** quando ela poderia alcançar documento que a regra nega, em vez de devolver
+ * o pedaço permitido. É por isso que o filtro por identificador não é escolha de desempenho.
+ */
+describe('listagem de vínculos', () => {
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set(activeLink(TRAINER, STUDENT));
+      await db.doc(`links/${linkId(OTHER_TRAINER, OTHER_STUDENT)}`).set(
+        activeLink(OTHER_TRAINER, OTHER_STUDENT),
+      );
+    });
+  });
+
+  it('o treinador lista os próprios vínculos', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(trainer.collection('links').where('trainerId', '==', TRAINER).get());
+  });
+
+  it('o aluno lista os próprios vínculos', async () => {
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(student.collection('links').where('studentId', '==', STUDENT).get());
+  });
+
+  it('NÃO deixa listar a coleção inteira', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertFails(trainer.collection('links').get());
+  });
+
+  it('NÃO deixa listar a carteira de outro treinador', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertFails(trainer.collection('links').where('trainerId', '==', OTHER_TRAINER).get());
+  });
+});
+
+/*
+ * O código de convite é o caminho pelo qual o vínculo nasce. Ele não é uma senha: quem o digita
+ * cria um pedido, e é a confirmação do treinador que separa "alguém digitou meu código" de "tenho
+ * um aluno novo". O que estas regras protegem é outra coisa — que ninguém convide em nome de
+ * outro, e que o dono consiga trocar o próprio código quando ele circular demais.
+ */
+describe('convite por código', () => {
+  const CODE = 'ABC234';
+  const invite = { trainerId: TRAINER, trainerName: 'Carlos Pereira' };
+
+  it('o treinador cria o próprio convite', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(trainer.doc(`inviteCodes/${CODE}`).set(invite));
+  });
+
+  it('NÃO deixa convidar em nome de outro treinador', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertFails(
+      trainer.doc(`inviteCodes/${CODE}`).set({ trainerId: OTHER_TRAINER, trainerName: 'Outro' }),
+    );
+  });
+
+  it('quem recebeu o código consegue ler de quem ele é', async () => {
+    await seed(async (db) => {
+      await db.doc(`inviteCodes/${CODE}`).set(invite);
+    });
+
+    // Ler exige conhecer o caminho inteiro, e é isso que faz a coleção legível não ser um vazamento.
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(student.doc(`inviteCodes/${CODE}`).get());
+  });
+
+  it('o treinador apaga o convite antigo ao trocar de código', async () => {
+    await seed(async (db) => {
+      await db.doc(`inviteCodes/${CODE}`).set(invite);
+    });
+
+    // Na remoção não existe `request.resource`: era este o caso que a regra antiga lia e negava,
+    // deixando dois códigos valendo para o mesmo treinador.
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(trainer.doc(`inviteCodes/${CODE}`).delete());
+  });
+
+  it('NÃO deixa apagar convite de outro treinador', async () => {
+    await seed(async (db) => {
+      await db.doc(`inviteCodes/${CODE}`).set(invite);
+    });
+
+    const other = testEnv.authenticatedContext(OTHER_TRAINER).firestore();
+    await assertFails(other.doc(`inviteCodes/${CODE}`).delete());
+  });
+
+  it('o aluno que digitou o código cria pedido, e o treinador confirma', async () => {
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(
+      student.doc(`links/${linkId(TRAINER, STUDENT)}`).set({
+        trainerId: TRAINER,
+        studentId: STUDENT,
+        status: 'requested',
+        origin: 'invite_code',
+      }),
+    );
+
+    // Ter o código não põe ninguém dentro da carteira: quem confirma é o dono dela.
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(
+      trainer.doc(`links/${linkId(TRAINER, STUDENT)}`).update({ status: 'active' }),
+    );
+  });
+
+  it('NÃO deixa quem tem o código entrar direto como aluno ativo', async () => {
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertFails(
+      student.doc(`links/${linkId(TRAINER, STUDENT)}`).set({
+        trainerId: TRAINER,
+        studentId: STUDENT,
+        status: 'active',
+        origin: 'invite_code',
+      }),
+    );
+  });
 });
 
 describe('catálogo de exercícios', () => {

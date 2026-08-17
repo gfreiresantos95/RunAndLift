@@ -72,6 +72,14 @@ internal fun StudentMenuScreen(
                 onClick = actions.onOpenTraining,
             )
 
+            // Terceira linha da mesma seção, e não de uma seção própria: quem treina este aluno é
+            // parte de quem ele é aqui dentro, junto do cadastro e do perfil de treino.
+            MenuRow(
+                title = stringResource(R.string.student_menu_trainer),
+                description = stringResource(R.string.student_menu_trainer_description),
+                onClick = actions.onOpenTrainer,
+            )
+
             MenuSectionTitle(
                 text = stringResource(R.string.student_menu_section_account),
                 modifier = Modifier.padding(top = Dimens.SpaceLarge),

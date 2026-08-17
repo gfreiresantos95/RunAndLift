@@ -100,6 +100,12 @@ service cloud.firestore {
         );
 
       // Quem confirma é sempre a contraparte de quem propôs. As demais transições são dos dois.
+      //
+      // A última linha do bloco reabre um vínculo encerrado, e ela existe porque o id é
+      // determinístico: `{trainerId}_{studentId}` significa que voltar a treinar com quem já se
+      // treinou não cria documento novo, escreve neste. Sem essa transição, encerrar seria proibir
+      // para sempre — e quem propõe de novo continua sendo quem espera a confirmação do outro,
+      // exatamente como na primeira vez.
       allow update: if (isSelf(resource.data.trainerId) || isSelf(resource.data.studentId))
         && request.resource.data.trainerId == resource.data.trainerId
         && request.resource.data.studentId == resource.data.studentId
@@ -110,6 +116,10 @@ service cloud.firestore {
             && isSelf(resource.data.trainerId))
           || (resource.data.status == 'active' && request.resource.data.status in ['paused', 'ended'])
           || (resource.data.status == 'paused' && request.resource.data.status in ['active', 'ended'])
+          || (resource.data.status == 'ended' && request.resource.data.status == 'requested'
+            && isSelf(resource.data.studentId))
+          || (resource.data.status == 'ended' && request.resource.data.status == 'invited'
+            && isSelf(resource.data.trainerId))
         );
 
       // Encerrar é mudar status para 'ended'. Apagar destruiria o histórico que os dois lados têm
@@ -118,11 +128,19 @@ service cloud.firestore {
     }
 
     match /inviteCodes/{code} {
-      // O código é o próprio segredo: quem o digitou já o recebeu do treinador. Ler exige conhecer
+      // O código é o próprio caminho: quem o digitou já o recebeu do treinador. Ler exige conhecer
       // o caminho exato, e enumerar 6 caracteres é o que o App Check (E0-07) vai barrar.
+      //
+      // As três operações são declaradas separadas porque `request.resource` e `resource` não
+      // existem nas mesmas horas: na criação não há documento gravado, na remoção não há documento
+      // chegando. Uma linha só para as três lia o lado ausente em metade dos casos — e regra que
+      // erra ao avaliar nega, então a rotação de código do treinador falharia sem nada nas regras
+      // parecer errado.
       allow read: if isSignedIn();
-      allow create, update, delete: if isSelf(request.resource.data.trainerId)
-        || isSelf(resource.data.trainerId);
+      allow create: if isSelf(request.resource.data.trainerId);
+      allow update: if isSelf(resource.data.trainerId)
+        && isSelf(request.resource.data.trainerId);
+      allow delete: if isSelf(resource.data.trainerId);
     }
 
     // ---------- catálogo ----------
