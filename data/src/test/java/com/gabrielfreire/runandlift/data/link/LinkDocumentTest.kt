@@ -19,6 +19,10 @@ import org.junit.Test
  *
  * O outro par de olhos sobre o mesmo assunto está em `firestore/rules.test.js`, contra o emulador.
  * Aqui se afirma o que o app **escreve**; lá, o que o servidor **aceita**.
+ *
+ * O último grupo é o caminho de volta, e ele tem uma regra própria: **documento estranho vira
+ * ausência na lista, e não exceção**. Uma linha perdida é menos grave que a carteira inteira
+ * falhando — e é o que separa "um vínculo sumiu" de "o app não abre a aba de alunos".
  */
 class LinkDocumentTest {
 
@@ -89,6 +93,53 @@ class LinkDocumentTest {
         val fields = LinkDocument.renewFields(link(LinkStatus.REQUESTED).copy(studentName = "Ana Souza Lima"))
 
         assertEquals("Ana Souza Lima", fields[LinkDocument.FIELD_STUDENT_NAME])
+    }
+
+    @Test
+    fun `o documento gravado volta a ser vinculo`() {
+        val link = LinkDocument.link(
+            trainerId = "treinador-1",
+            studentId = "aluno-1",
+            status = "active",
+            origin = "showcase",
+            trainerName = "Carlos Pereira",
+            studentName = "Ana Souza",
+        )
+
+        assertEquals(LinkStatus.ACTIVE, link?.status)
+        assertEquals(LinkOrigin.SHOWCASE, link?.origin)
+        assertEquals("Ana Souza", link?.studentName)
+    }
+
+    @Test
+    fun `documento sem identificador some da lista, em vez de derruba-la`() {
+        // Escrito por uma versão futura ou por engano: uma linha perdida é menos grave que a
+        // carteira inteira falhando para quem está tentando trabalhar agora.
+        assertNull(LinkDocument.link(trainerId = null, studentId = "aluno-1", status = "active"))
+        assertNull(LinkDocument.link(trainerId = "treinador-1", studentId = null, status = "active"))
+    }
+
+    @Test
+    fun `estado que nao se reconhece some, porque sem ele nao ha o que mostrar`() {
+        assertNull(LinkDocument.link("treinador-1", "aluno-1", status = "arquivado"))
+        assertNull(LinkDocument.link("treinador-1", "aluno-1", status = null))
+    }
+
+    @Test
+    fun `origem ausente ou estranha vira convite, e o vinculo entra assim mesmo`() {
+        // Descartar um aluno por causa do campo que diz de onde ele veio seria perder um dado
+        // central por causa de um estatístico.
+        assertEquals(LinkOrigin.INVITE_CODE, LinkDocument.link("t", "a", "active", origin = null)?.origin)
+        assertEquals(LinkOrigin.INVITE_CODE, LinkDocument.link("t", "a", "active", origin = "SHOWCASE")?.origin)
+    }
+
+    @Test
+    fun `nome ausente vira vazio, e nao impede o vinculo de existir`() {
+        val link = LinkDocument.link("treinador-1", "aluno-1", "requested")
+
+        // A tela mostra o identificador ou um espaço; ela não deixa de mostrar a linha.
+        assertEquals("", link?.trainerName)
+        assertEquals("", link?.studentName)
     }
 
     private fun link(status: LinkStatus) = Link(

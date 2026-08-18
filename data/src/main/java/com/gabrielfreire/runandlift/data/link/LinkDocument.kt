@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.data.link
 
 import com.gabrielfreire.runandlift.data.model.Link
+import com.gabrielfreire.runandlift.data.model.LinkOrigin
 import com.gabrielfreire.runandlift.data.model.LinkStatus
 import com.google.firebase.firestore.FieldValue
 
@@ -12,9 +13,9 @@ import com.google.firebase.firestore.FieldValue
  * afirmada por um teste comum, sem emulador — e esta é a regra que, quebrada, não dá erro nenhum:
  * grava um documento perfeitamente válido que nenhuma regra consegue encontrar depois.
  *
- * A leitura fica no repositório, e não aqui, porque `DocumentSnapshot` é tipo do Firebase e não se
- * constrói num teste de JVM. O que se ganha trazendo o mapeamento de leitura para cá seria menos do
- * que se perde: um objeto testável com metade dos métodos intestáveis.
+ * A **decisão** da leitura também mora aqui, em [link], recebendo `String?` em vez de
+ * `DocumentSnapshot` — que é tipo do Firebase e não se constrói num teste de JVM. Do outro lado da
+ * fronteira, em `LinkSnapshot`, sobra só ler campo por nome, que é chamada ao SDK e não decisão.
  */
 internal object LinkDocument {
 
@@ -81,6 +82,42 @@ internal object LinkDocument {
         FIELD_STUDENT_NAME to link.studentName,
         FIELD_UPDATED_AT to FieldValue.serverTimestamp(),
     )
+
+    /**
+     * O caminho de volta: os campos gravados virando [Link], ou `null` quando não dá.
+     *
+     * **Documento com campo faltando ou estranho vira ausência na lista, e não exceção.** Um
+     * documento escrito por uma versão futura não pode derrubar a carteira de quem está tentando
+     * trabalhar agora — e derrubaria a lista inteira, não só aquela linha.
+     *
+     * A origem é a exceção da exceção: ausente ou desconhecida, o vínculo entra assim mesmo como
+     * convite. Perder um aluno da lista porque o campo que diz **de onde ele veio** não foi escrito
+     * seria descartar um dado central por causa de um estatístico.
+     *
+     * Recebe `String?` em vez de `DocumentSnapshot` de propósito: assim a decisão fica deste lado da
+     * fronteira, onde um teste comum a alcança, e do outro lado sobra só a leitura dos campos.
+     */
+    fun link(
+        trainerId: String?,
+        studentId: String?,
+        status: String?,
+        origin: String? = null,
+        trainerName: String? = null,
+        studentName: String? = null,
+    ): Link? {
+        val parsedStatus = LinkStatus.fromStored(status)
+
+        if (trainerId == null || studentId == null || parsedStatus == null) return null
+
+        return Link(
+            trainerId = trainerId,
+            studentId = studentId,
+            status = parsedStatus,
+            origin = LinkOrigin.fromStored(origin) ?: LinkOrigin.INVITE_CODE,
+            trainerName = trainerName.orEmpty(),
+            studentName = studentName.orEmpty(),
+        )
+    }
 
     /**
      * O mapa que muda o estado, e **só** o estado.

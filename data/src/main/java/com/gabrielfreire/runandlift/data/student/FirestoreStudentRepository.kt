@@ -1,7 +1,5 @@
 package com.gabrielfreire.runandlift.data.student
 
-import com.gabrielfreire.runandlift.data.model.HealthDataConsent
-import com.gabrielfreire.runandlift.data.model.InjuryArea
 import com.gabrielfreire.runandlift.data.model.StudentProfile
 import com.gabrielfreire.runandlift.data.model.StudentProfileDetails
 import com.gabrielfreire.runandlift.data.model.TrainingGoal
@@ -9,19 +7,17 @@ import com.gabrielfreire.runandlift.data.model.TrainingLevel
 import com.gabrielfreire.runandlift.data.util.AppDispatchers
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.time.DayOfWeek
 
 /**
  * [StudentRepository] sobre o Firestore.
  *
- * Os dias da semana são gravados pelo **número ISO** (1 = segunda … 7 = domingo), e não pelo nome
- * do enum: é a forma que ordena sozinha na consulta e que não muda se a biblioteca de data mudar.
+ * Aqui ficaram só as chamadas ao SDK: o que decide — o mapa gravado, a trava do consentimento de
+ * saúde e a leitura das duas listas — mora em [StudentDocument], onde um teste comum o alcança.
  */
 internal class FirestoreStudentRepository(
     private val firestore: FirebaseFirestore,
@@ -35,19 +31,20 @@ internal class FirestoreStudentRepository(
 
         StudentProfile(
             uid = uid,
-            level = TrainingLevel.fromStored(document.getString(FIELD_LEVEL)),
-            goal = TrainingGoal.fromStored(document.getString(FIELD_GOAL)),
-            availableDays = document.readDays(),
+            level = TrainingLevel.fromStored(document.getString(StudentDocument.FIELD_LEVEL)),
+            goal = TrainingGoal.fromStored(document.getString(StudentDocument.FIELD_GOAL)),
+            availableDays = StudentDocument.days(document.get(StudentDocument.FIELD_DAYS)),
             // Peso e altura chegam como número; qualquer coisa fora disso vira ausência em vez de
             // exceção — campo corrompido não pode impedir alguém de abrir o app.
-            weightKg = document.getDouble(FIELD_WEIGHT),
-            heightCm = document.getLong(FIELD_HEIGHT)?.toInt(),
-            injuries = document.readInjuries(),
+            weightKg = document.getDouble(StudentDocument.FIELD_WEIGHT),
+            heightCm = document.getLong(StudentDocument.FIELD_HEIGHT)?.toInt(),
+            injuries = StudentDocument.injuries(document.get(StudentDocument.FIELD_INJURIES)),
             // O texto livre do campo antigo vira a observação do novo. Quem escreveu "dói o ombro
             // direito quando levanto acima da cabeça" antes de a lista existir não pode ver isso
             // sumir porque o formato mudou — reaparece no campo "Outra", já preenchido.
-            injuryNotes = document.getString(FIELD_INJURY_NOTES) ?: document.getString(FIELD_LEGACY_RESTRICTIONS),
-            healthConsentVersion = document.getString(FIELD_HEALTH_CONSENT_VERSION),
+            injuryNotes = document.getString(StudentDocument.FIELD_INJURY_NOTES)
+                ?: document.getString(StudentDocument.FIELD_LEGACY_RESTRICTIONS),
+            healthConsentVersion = document.getString(StudentDocument.FIELD_HEALTH_CONSENT_VERSION),
         )
     }
 
@@ -60,81 +57,12 @@ internal class FirestoreStudentRepository(
             val stored = profile(uid)
             val consented = details.healthConsent != null || stored?.hasHealthConsent == true
 
-            document(uid).set(fieldsFor(details, consented), SetOptions.merge()).await()
+            document(uid).set(StudentDocument.fields(details, consented), SetOptions.merge()).await()
 
             // Devolve o estado resultante em vez de reler: uma segunda leitura custaria do
             // orçamento para responder o que esta função acabou de escrever.
-            (stored ?: StudentProfile(uid = uid)).mergedWith(details, consented)
+            StudentDocument.merged(stored ?: StudentProfile(uid = uid), details, consented)
         }
-
-    /**
-     * Só o que veio preenchido entra no mapa.
-     *
-     * `SetOptions.merge()` sobrescreve campo presente e preserva campo ausente, então mandar `null`
-     * explícito apagaria dado bom — omitir é o que faz a gravação parcial ser segura.
-     *
-     * @param consented quando falso, os três campos de saúde não entram **mesmo vindo
-     *   preenchidos**. É o ponto único onde a regra do consentimento é aplicada.
-     */
-    private fun fieldsFor(details: StudentProfileDetails, consented: Boolean): Map<String, Any> {
-        val fields = mutableMapOf<String, Any>()
-
-        details.level?.let { fields[FIELD_LEVEL] = it.name }
-        details.goal?.let { fields[FIELD_GOAL] = it.name }
-        // Conjunto vazio é resposta legítima e é gravado; `null` é que significa "não mexa nisto".
-        details.availableDays?.let { days -> fields[FIELD_DAYS] = days.map { it.value }.sorted() }
-
-        details.healthConsent?.let { fields[FIELD_HEALTH_CONSENT] = healthConsentFields(it) }
-
-        if (consented) {
-            details.weightKg?.let { fields[FIELD_WEIGHT] = it }
-            details.heightCm?.let { fields[FIELD_HEIGHT] = it }
-            // Lista vazia é resposta ("não tenho lesão") e é gravada; `null` significa "não mexa".
-            details.injuries?.let { areas -> fields[FIELD_INJURIES] = areas.map { it.name }.sorted() }
-            // Texto **vazio** aqui é "apaguei a observação", e não "não informei": é a única forma
-            // de desmarcar "Outra" numa tela de edição e o texto de fato ir embora. Ausente
-            // continua querendo dizer "não mexa nisto", como em todo o resto deste mapa.
-            details.injuryNotes?.let { fields[FIELD_INJURY_NOTES] = it.ifEmpty { FieldValue.delete() } }
-
-            // O campo antigo é apagado na primeira gravação que passa por aqui. Sem isso ele
-            // sobreviveria em silêncio e voltaria a ser lido no dia em que a observação nova fosse
-            // esvaziada — o texto que a pessoa apagou reaparecendo sozinho.
-            if (details.injuries != null || details.injuryNotes != null) {
-                fields[FIELD_LEGACY_RESTRICTIONS] = FieldValue.delete()
-            }
-        }
-
-        return fields
-    }
-
-    /**
-     * Momento do aceite vem do **servidor**: prova de consentimento carimbada pelo relógio do
-     * aparelho, que o titular pode alterar, não prova nada (LGPD art. 8º, §2º).
-     */
-    private fun healthConsentFields(consent: HealthDataConsent): Map<String, Any> = mapOf(
-        FIELD_VERSION to consent.version,
-        FIELD_ACCEPTED_AT to FieldValue.serverTimestamp(),
-    )
-
-    private fun DocumentSnapshot.readDays(): Set<DayOfWeek> {
-        val stored = get(FIELD_DAYS) as? List<*> ?: return emptySet()
-
-        return stored
-            .mapNotNull { (it as? Number)?.toInt() }
-            .mapNotNull { runCatching { DayOfWeek.of(it) }.getOrNull() }
-            .toSet()
-    }
-
-    /**
-     * As regiões lesionadas, ou `null` quando o campo **não existe** no documento.
-     *
-     * A diferença entre ausente e vazio é o dado: ausente é "não respondeu", vazio é "respondeu que
-     * não tem nenhuma". Por isso não há queda para `emptySet()` no fim — é exatamente ela que
-     * transformaria as duas coisas na mesma, e o campo ausente do `get` já devolve o nulo certo.
-     */
-    private fun DocumentSnapshot.readInjuries(): Set<InjuryArea>? = (get(FIELD_INJURIES) as? List<*>)
-        ?.mapNotNull { InjuryArea.fromStored(it as? String) }
-        ?.toSet()
 
     /**
      * Cache primeiro, servidor só quando não há nada em disco — regra 3 do orçamento (§2.4).
@@ -148,55 +76,5 @@ internal class FirestoreStudentRepository(
             ?.takeIf { it.exists() }
             ?: reference.get(Source.SERVER).await()
 
-    private fun document(uid: String) = firestore.collection(COLLECTION).document(uid)
-
-    private companion object {
-        const val COLLECTION = "students"
-        const val FIELD_LEVEL = "level"
-        const val FIELD_GOAL = "goal"
-        const val FIELD_DAYS = "availableDays"
-        const val FIELD_WEIGHT = "weightKg"
-        const val FIELD_HEIGHT = "heightCm"
-        const val FIELD_INJURIES = "injuries"
-        const val FIELD_INJURY_NOTES = "injuryNotes"
-
-        /**
-         * O texto livre que existia antes de a lista de regiões existir.
-         *
-         * Continua sendo **lido** como queda de [FIELD_INJURY_NOTES], para não sumir com o que já
-         * foi escrito, e é apagado na primeira gravação que passa pelo campo novo.
-         */
-        const val FIELD_LEGACY_RESTRICTIONS = "restrictions"
-
-        const val FIELD_HEALTH_CONSENT = "healthConsent"
-        const val FIELD_VERSION = "version"
-        const val FIELD_ACCEPTED_AT = "acceptedAt"
-
-        // Na leitura o ponto é caminho, então aqui a forma achatada está correta.
-        const val FIELD_HEALTH_CONSENT_VERSION = "$FIELD_HEALTH_CONSENT.$FIELD_VERSION"
-    }
+    private fun document(uid: String) = firestore.collection(StudentDocument.COLLECTION).document(uid)
 }
-
-/**
- * O perfil gravado somado ao que acabou de ser escrito.
- *
- * Extensão privada do arquivo, e não método do modelo: é a regra de **gravação parcial** — nulo
- * preserva, valor substitui, saúde só entra com consentimento —, e ela pertence a quem escreve, não
- * ao tipo que só carrega dado.
- */
-private fun StudentProfile.mergedWith(details: StudentProfileDetails, consented: Boolean) = copy(
-    level = details.level ?: level,
-    goal = details.goal ?: goal,
-    availableDays = details.availableDays ?: availableDays,
-    weightKg = details.weightKg.takeIf { consented } ?: weightKg,
-    heightCm = details.heightCm.takeIf { consented } ?: heightCm,
-    injuries = details.injuries.takeIf { consented } ?: injuries,
-    // Espelha a gravação: ausente preserva, vazio apaga. Um `?:` simples devolveria o texto antigo
-    // justamente no caso em que a pessoa acabou de apagá-lo.
-    injuryNotes = if (consented && details.injuryNotes != null) {
-        details.injuryNotes.takeIf { it.isNotEmpty() }
-    } else {
-        injuryNotes
-    },
-    healthConsentVersion = details.healthConsent?.version ?: healthConsentVersion,
-)

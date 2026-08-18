@@ -16,11 +16,3 @@ internal data class StudentMenuActions(
     val onOpenTrainer: () -> Unit,
     val onSignOut: () -> Unit,
 )
-
-/** As ações sem efeito, para os previews. */
-internal fun previewStudentMenuActions() = StudentMenuActions(
-    onOpenAccount = {},
-    onOpenTraining = {},
-    onOpenTrainer = {},
-    onSignOut = {},
-)

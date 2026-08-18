@@ -11,9 +11,10 @@ import com.gabrielfreire.runandlift.data.model.BrazilState
  * a lista completa.
  *
  * @param failing simula o IBGE fora do ar. É o caso que decide se a conclusão de cadastro abre com
- *   o campo vazio ou não abre.
+ *   o campo vazio ou não abre. É `var` porque a rede volta: sem poder religá-la no meio do teste,
+ *   não há como afirmar que a nova tentativa de fato tenta.
  */
-internal class FakeLocationRepository(private val failing: Boolean = false) : LocationRepository {
+internal class FakeLocationRepository(var failing: Boolean = false) : LocationRepository {
 
     override suspend fun states(): List<BrazilState> {
         if (failing) error("IBGE indisponível")

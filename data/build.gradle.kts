@@ -19,6 +19,20 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    // Existe por uma razão só: o construtor de `FirebaseException` chama `TextUtils.isEmpty`, e sem
+    // isto nenhuma exceção do SDK pode ser construída num teste de JVM — o que deixaria a tradução
+    // de erro de autenticação (`AuthFailureMapping`) sem como ser afirmada.
+    //
+    // O preço: método do Android não mockado passa a devolver null/0/false em vez de lançar. Um
+    // teste que encoste sem querer numa API do Android recebe resposta errada em silêncio, em vez
+    // de erro alto. É por isso que os testes deste módulo continuam sendo sobre regra em Kotlin
+    // puro; a alternativa era o Robolectric, que resolveria isto sem o efeito colateral e custaria
+    // uma dependência e segundos por classe. O gatilho para trocar é o primeiro teste que precisar
+    // de um comportamento do Android de verdade, e não de uma exceção construída.
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 // O esquema exportado é versionado em data/schemas/. Sem ele não há como escrever nem testar

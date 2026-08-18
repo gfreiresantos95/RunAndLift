@@ -78,17 +78,3 @@ private fun TrainingFormState.withHealthConsent(accepted: Boolean): TrainingForm
         injuryNotes = "",
     )
 }
-
-/** As ações sem efeito, para os previews — a tela se desenha, e nada acontece ao tocar. */
-internal fun previewTrainingFormActions() = TrainingFormActions(
-    onLevelSelect = {},
-    onGoalSelect = {},
-    onDayToggle = {},
-    onWeightChange = {},
-    onHeightChange = {},
-    onInjuryToggle = {},
-    onNoInjuriesToggle = {},
-    onOtherInjuryToggle = {},
-    onInjuryNotesChange = {},
-    onHealthConsentChange = {},
-)

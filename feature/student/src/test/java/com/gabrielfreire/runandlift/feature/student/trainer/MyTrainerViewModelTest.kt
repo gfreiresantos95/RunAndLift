@@ -251,6 +251,28 @@ class MyTrainerViewModelTest {
     }
 
     @Test
+    fun `sessao perdida com a tela aberta nao cria vinculo em nome de ninguem`() = runTest {
+        val links = FakeLinkRepository(invite = INVITE)
+        val viewModel = MyTrainerViewModel(
+            authRepository = FakeAuthRepository(signedIn = null),
+            userRepository = FakeUserRepository(),
+            linkRepository = links,
+        )
+        advanceUntilIdle()
+
+        // Procurar o código não precisa de sessão; confirmar precisa, e é onde a falta aparece.
+        viewModel.onCodeChange(CODE)
+        viewModel.onSubmitCode()
+        advanceUntilIdle()
+        viewModel.onConfirmInvite()
+        advanceUntilIdle()
+
+        assertEquals(0, links.requestCount)
+        assertEquals(TrainerCodeError.UNKNOWN, viewModel.uiState.value.error)
+        assertNull(viewModel.uiState.value.current)
+    }
+
+    @Test
     fun `campo vazio nao procura nada`() = runTest {
         val viewModel = viewModel(FakeLinkRepository(invite = INVITE))
         advanceUntilIdle()

@@ -191,6 +191,46 @@ class TrainerDocumentTest {
         )
     }
 
+    // -- A volta do banco -----------------------------------------------------------------------
+
+    @Test
+    fun `os dias voltam do numero ISO`() {
+        assertEquals(setOf(DayOfWeek.TUESDAY, DayOfWeek.SATURDAY), TrainerDocument.days(listOf(2L, 6L)))
+    }
+
+    @Test
+    fun `dia fora da semana some, e nao derruba o perfil`() {
+        // Documento escrito por uma versão futura não pode impedir um treinador de abrir o app.
+        assertEquals(setOf(DayOfWeek.FRIDAY), TrainerDocument.days(listOf(5L, 0L, 8L, "sexta")))
+    }
+
+    @Test
+    fun `campo de dias ausente ou com tipo errado vira conjunto vazio`() {
+        assertEquals(emptySet<DayOfWeek>(), TrainerDocument.days(null))
+        assertEquals(emptySet<DayOfWeek>(), TrainerDocument.days("segunda"))
+    }
+
+    @Test
+    fun `especialidade desconhecida some sem levar as outras junto`() {
+        val specialties = TrainerDocument.specialties(listOf("HYPERTROPHY", "PILATES_QUANTICO", null))
+
+        assertEquals(setOf(TrainerSpecialty.HYPERTROPHY), specialties)
+    }
+
+    @Test
+    fun `forma de atendimento desconhecida some sem levar as outras junto`() {
+        val modes = TrainerDocument.modes(listOf("IN_PERSON", "HIBRIDO"))
+
+        // Não há "híbrido" de propósito: é presencial e online marcados juntos.
+        assertEquals(setOf(ServiceMode.IN_PERSON), modes)
+    }
+
+    @Test
+    fun `campo ausente de especialidade e de modo vira conjunto vazio`() {
+        assertEquals(emptySet<TrainerSpecialty>(), TrainerDocument.specialties(null))
+        assertEquals(emptySet<ServiceMode>(), TrainerDocument.modes(null))
+    }
+
     private companion object {
         const val CREF = "012345-G/SP"
     }

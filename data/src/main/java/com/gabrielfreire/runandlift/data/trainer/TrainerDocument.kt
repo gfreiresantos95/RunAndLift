@@ -1,9 +1,12 @@
 package com.gabrielfreire.runandlift.data.trainer
 
+import com.gabrielfreire.runandlift.data.model.ServiceMode
 import com.gabrielfreire.runandlift.data.model.ShowcaseConsent
 import com.gabrielfreire.runandlift.data.model.TrainerProfile
 import com.gabrielfreire.runandlift.data.model.TrainerProfileDetails
+import com.gabrielfreire.runandlift.data.model.TrainerSpecialty
 import com.google.firebase.firestore.FieldValue
+import java.time.DayOfWeek
 
 /**
  * Como o perfil profissional vira documento — os nomes dos campos e o mapa de gravação.
@@ -105,6 +108,31 @@ internal object TrainerDocument {
     } else {
         mapOf(FIELD_ENABLED to false)
     }
+
+    /**
+     * Os dias gravados virando [DayOfWeek], pelo **número ISO** (1 = segunda … 7 = domingo).
+     *
+     * É a forma que ordena sozinha na consulta e que não muda se a biblioteca de data mudar. O que
+     * está fora de 1..7 some em vez de explodir — vale para os três decodificadores abaixo, e é a
+     * mesma escolha do perfil do aluno: campo estranho não pode impedir alguém de abrir o app.
+     */
+    fun days(stored: Any?): Set<DayOfWeek> = (stored as? List<*>)
+        .orEmpty()
+        .mapNotNull { (it as? Number)?.toInt() }
+        .mapNotNull { runCatching { DayOfWeek.of(it) }.getOrNull() }
+        .toSet()
+
+    /** As especialidades reconhecidas. Uma desconhecida some sem levar as outras junto. */
+    fun specialties(stored: Any?): Set<TrainerSpecialty> = (stored as? List<*>)
+        .orEmpty()
+        .mapNotNull { TrainerSpecialty.fromStored(it as? String) }
+        .toSet()
+
+    /** As formas de atendimento. Não há "híbrido": é presencial e online marcados juntos. */
+    fun modes(stored: Any?): Set<ServiceMode> = (stored as? List<*>)
+        .orEmpty()
+        .mapNotNull { ServiceMode.fromStored(it as? String) }
+        .toSet()
 }
 
 /**

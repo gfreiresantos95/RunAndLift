@@ -91,6 +91,35 @@ class LocationPickerViewModelTest {
         assertNull(viewModel.stateOf("Campinas"))
     }
 
+    @Test
+    fun `nova tentativa depois da falha carrega de verdade`() = runTest(mainDispatcherRule.dispatcher) {
+        val locations = FakeLocationRepository(failing = true)
+        val viewModel = viewModel(locations = locations)
+        testScheduler.advanceUntilIdle()
+
+        // A rede volta com a tela de falha na frente, que é o caso comum: a pessoa vê o aviso,
+        // espera um instante e toca em tentar de novo.
+        locations.failing = false
+        viewModel.onRetry()
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(listOf("Minas Gerais - MG", "Rio de Janeiro - RJ", "São Paulo - SP"), options(viewModel))
+    }
+
+    @Test
+    fun `nova tentativa que tambem falha volta a ser falha, e nao lista vazia`() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val viewModel = viewModel(locations = FakeLocationRepository(failing = true))
+            testScheduler.advanceUntilIdle()
+
+            viewModel.onRetry()
+            testScheduler.advanceUntilIdle()
+
+            // "Nada encontrado" e "não consegui carregar" são telas diferentes de propósito: uma
+            // pede outra busca, a outra oferece tentar de novo.
+            assertEquals(AppPickerState.Failed, viewModel.uiState.value)
+        }
+
     private fun options(viewModel: LocationPickerViewModel): List<String>? =
         (viewModel.uiState.value as? AppPickerState.Options)?.items
 

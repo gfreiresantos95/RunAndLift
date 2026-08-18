@@ -44,6 +44,16 @@ class InviteCodeDocumentTest {
     }
 
     @Test
+    fun `sem semente, o gerador padrao obedece as mesmas regras`() {
+        // O parâmetro tem padrão, e é o padrão que roda em produção: um teste que só passa semente
+        // deixaria justamente esse caminho sem ninguém olhando.
+        val codigo = InviteCodeDocument.newCode()
+
+        assertEquals(InviteCodeDocument.LENGTH, codigo.length)
+        assertEquals(codigo, InviteCodeDocument.normalize(codigo))
+    }
+
+    @Test
     fun `minuscula digitada vira o codigo certo`() {
         assertEquals("ABC234", InviteCodeDocument.normalize("abc234"))
     }

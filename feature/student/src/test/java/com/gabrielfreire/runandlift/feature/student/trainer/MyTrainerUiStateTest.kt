@@ -57,6 +57,21 @@ class MyTrainerUiStateTest {
     }
 
     @Test
+    fun `convite recebido ganha de um pedido que o aluno mandou a outro treinador`() {
+        val state = MyTrainerUiState(
+            loading = false,
+            links = listOf(
+                link(LinkStatus.REQUESTED, trainerId = "treinador-2"),
+                link(LinkStatus.INVITED, trainerId = "treinador-1"),
+            ),
+        )
+
+        // Um convite já tem alguém do outro lado esperando o aluno responder; um pedido ainda não
+        // tem ninguém. Mostrar o pedido faria a tela esconder a única coisa acionável ali.
+        assertEquals("treinador-1", state.current?.trainerId)
+    }
+
+    @Test
     fun `pausado vale mais que um pedido a outro treinador`() {
         val state = MyTrainerUiState(
             loading = false,
