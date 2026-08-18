@@ -6,7 +6,10 @@
 ## Contexto
 
 O ADR-0018 criou dois pisos: projeto ≥ 60% e **diff ≥ 80%**, este último medido só sobre as linhas
-que o PR muda, reprovando o job `verify`. Ele também rejeitou, explicitamente, excluir os
+que o PR muda. (Aquele ADR afirma que o piso do diff reprova o job `verify`; ele não reprovava — a
+action só publicava o número. O [ADR-0022](0022-piso-do-diff-que-reprova-de-fato.md), do mesmo dia,
+descobriu isso e passou a reprovar de fato num passo próprio. O que se decide aqui vale nos dois
+mundos, e passou a ter dente com aquele.) O ADR-0018 também rejeitou, explicitamente, excluir os
 adaptadores Firebase do denominador — "levaria o número para perto de 80% sem uma linha de teste
 nova, e apagaria da vista justamente a `FirestoreStudentRepository`, onde vive a trava de
 consentimento de saúde".
@@ -30,7 +33,8 @@ exigiria 332 linhas cobertas no mesmo PR; havia 224, e o que dava para extrair d
 sido extraído: o id determinístico e os mapas de gravação em `LinkDocument`, o alfabeto e a
 normalização do código em `InviteCodeDocument`, e a decisão entre criar, reabrir e recusar em
 `LinkRequest` — os três com teste. O piso, nesse formato, cobra de um PR de integração uma coisa que
-ele não pode entregar, e o efeito prático seria ensinar a usar o bypass de administrador.
+ele não pode entregar — e o efeito prático, depois que ele passou a reprovar de verdade, seria
+ensinar a usar o bypass de administrador.
 
 ## Decisão
 
@@ -89,9 +93,10 @@ o custo de cada um), e travar o vínculo até lá seria deixar o produto parado 
 
 ## Consequências
 
-A cobertura do diff do PR do vínculo passa de 68,5% para acima de 90%, sem que uma linha de teste
-tenha mudado de lugar — e é por isso que o critério de entrada na lista precisa ser cobrado na
-revisão. **A pergunta do revisor deixa de ser "isto tem teste?" e passa a ser, para adaptador, "o que
+A cobertura do diff do PR do vínculo, no recorte do código novo, passa de 68,5% para 91,8% sem que
+uma linha de teste tenha mudado de lugar — e é por isso que o critério de entrada na lista precisa
+ser cobrado na revisão. (No recorte que o CI mede, que inclui a fiação de navegação e injeção, esta
+exclusão sozinha levou o número a 78,93%; quem fechou a conta foi o ADR-0022.) **A pergunta do revisor deixa de ser "isto tem teste?" e passa a ser, para adaptador, "o que
 saiu daqui, e onde está o teste do que saiu?"**
 
 A lista cresce devagar por construção: são quatro nomes, e cada um custa uma extração e um teste
@@ -99,7 +104,8 @@ antes de existir.
 
 O número do projeto sobe por mudança de denominador, o que polui a série histórica. A medição de
 2026-08-17 fica registrada nos dois recortes — 67,1% com os adaptadores do vínculo, 69,5% sem — para
-a comparação com agosto continuar possível.
+a comparação com agosto continuar possível. O ADR-0022, do mesmo dia, acrescenta um terceiro degrau
+ao excluir a fiação declarativa, e registra os quatro números juntos.
 
 O risco assumido é conhecido: **as 83 linhas excluídas continuam sem teste nenhum**. O que as protege
 hoje são os 49 testes de Security Rules contra o emulador, que exercitam do lado do servidor

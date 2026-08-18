@@ -112,6 +112,22 @@ kover {
                     "com.gabrielfreire.runandlift.core.designsystem.AppIcons",
                 )
 
+                // Fiação declarativa: grafo de navegação, container de injeção e os `data class`
+                // que só reúnem callbacks. São listas de "isto liga naquilo", sem ramo nem
+                // decisão — a mesma natureza dos tokens do design system logo acima, e o que os
+                // verifica é abrir o app, não uma linha coberta. Sem esta exclusão, acrescentar
+                // uma rota reprova por cobertura um PR cujo código de verdade está testado.
+                //
+                // O que **não** entra: `*Routes`, porque montar rota é string com regra dentro
+                // (ver `TrainerRoutesTest`), e `*ViewModel`, que é onde a decisão mora.
+                classes(
+                    "*.navigation.*GraphKt",
+                    "*.navigation.*Dependencies",
+                    "*.di.AppContainer",
+                    "com.gabrielfreire.runandlift.data.DataContainer",
+                    "*.*Actions",
+                )
+
                 // Adaptadores do Firestore **sem regra dentro**, nomeados um a um.
                 //
                 // O ADR-0018 rejeitou excluir a camada de adaptadores inteira, e essa rejeição

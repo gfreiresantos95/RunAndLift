@@ -52,9 +52,13 @@ jobs:
       # ainda cobra o arquivo inteiro — o que reprovaria um PR de uma linha em arquivo antigo sem
       # teste. Ver ADR 0018. Quando a v2.0 sair, trocar o SHA pela tag.
       #
-      # `continue-on-error: false` é obrigatório: o padrão da action é `true`, e com ele o piso
-      # viraria enfeite — comentaria o número e deixaria o merge passar.
+      # `continue-on-error: false` decide o que acontece quando a **action lança erro** — XML
+      # ausente, token inválido. Ele NÃO reprova por cobertura baixa: na revisão fixada, os dois
+      # limiares abaixo escolhem só o emoji do comentário (✅/❌), e os únicos `setFailed` do fonte
+      # são para input faltando e para exceção capturada. Quem reprova por cobertura é o passo
+      # seguinte, que lê a saída da action. Ver ADR 0022.
       - name: Comentar cobertura no PR
+        id: cobertura
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         uses: madrapps/jacoco-report@dc464cf1e7d917b8a8e073ab95f8c08484957839
         with:
@@ -69,6 +73,29 @@ jobs:
           min-coverage-overall: 60
           min-coverage-changed-lines: 80
           continue-on-error: false
+
+      # O piso do diff, aqui e não na action — que comenta o número e devolve verde.
+      #
+      # Roda mesmo quando o passo acima é pulado (PR de fork, push em main): ali a saída chega
+      # vazia, e vazio é "não há diff para medir", não "reprovado". Comparação em `awk` porque o
+      # shell só compara inteiro, e a cobertura tem casa decimal.
+      - name: Piso de cobertura do diff
+        if: always() && steps.cobertura.outcome == 'success'
+        env:
+          DIFF: ${{ steps.cobertura.outputs.coverage-changed-lines }}
+          PISO: '80'
+        run: |
+          if [ -z "$DIFF" ]; then
+            echo "Sem linhas medíveis no diff; nada a cobrar."
+            exit 0
+          fi
+
+          echo "Cobertura das linhas mudadas: $DIFF% (piso $PISO%)"
+
+          if awk -v d="$DIFF" -v p="$PISO" 'BEGIN { exit !(d < p) }'; then
+            echo "::error::Cobertura do diff em $DIFF%, abaixo do piso de $PISO%. Ver ADR 0018."
+            exit 1
+          fi
 
       # Vale para push em main também, onde não há PR para comentar. É a mesma regra do
       # `./gradlew koverVerify` local, então ninguém descobre o piso só aqui.

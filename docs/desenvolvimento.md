@@ -127,17 +127,19 @@ São dois pisos, e eles medem coisas diferentes ([ADR-0018](adr/0018-piso-de-cob
 
 - **Projeto ≥ 60%** de linhas, conferido pelo `koverVerify` — no CI e na sua máquina, antes do push.
 - **Diff ≥ 80%**, só sobre as linhas que o PR mudou. O CI publica o número como comentário no PR e
-  reprova o job `verify` quando não atinge.
+  **reprova o job `verify`** quando não atinge — num passo próprio, que lê a saída da action: ela
+  publica o número e devolve verde por conta própria ([ADR-0022](adr/0022-piso-do-diff-que-reprova-de-fato.md)).
 
 O relatório exclui `@Composable`, código gerado pelo Room, fixtures de `@Preview`, os tokens do
-design system e os **adaptadores do Firestore de onde toda a regra já saiu** — sem isso o percentual
+design system, a **fiação declarativa** (grafo de navegação, containers de injeção, holders de
+callback) e os **adaptadores do Firestore de onde toda a regra já saiu** — sem isso o percentual
 mediria decisões documentadas (não há teste de UI por escolha) em vez de lacunas. Medição de
-2026-08-17: **69,5%** de linhas, ou 67,1% contando os adaptadores excluídos pelo ADR-0021.
+2026-08-17: **74,8%** de linhas, contra 67,1% com tudo dentro.
 
-A meta é 75%, e ela está a um item de distância: cobrir `FirestoreUserRepository`,
-`FirestoreStudentRepository` e `FirebaseAuthRepository` são as 190 linhas que faltam. O piso sobe
-junto com esse trabalho — e é o mesmo trabalho que esvazia a lista de exclusões do parágrafo
-seguinte.
+A meta é 75%, **medida com os adaptadores do vínculo de volta no denominador** — 72,0% hoje —, e ela
+está a um item de distância: cobrir `FirestoreUserRepository`, `FirestoreStudentRepository` e
+`FirebaseAuthRepository` são as 190 linhas que faltam. O número do relatório encostar em 75% por
+mudança de denominador não é a meta cumprida, e o piso não sobe por isso.
 
 **Adaptador só sai do denominador depois de não ter mais regra dentro**
 ([ADR-0021](adr/0021-exclusao-de-adaptador-sem-regra-da-cobertura.md)). Para acrescentar um nome
