@@ -41,6 +41,7 @@ se pensou na época é justamente o que se quer preservar.
 | [0015](0015-protecao-da-branch-principal.md) | Proteção da branch principal por ruleset | Aceito |
 | [0016](0016-um-modulo-por-papel-e-navegacao-por-abas.md) | Um módulo por papel e navegação por abas | Aceito |
 | [0017](0017-estados-de-tela-movimento-e-largura-de-conteudo.md) | Estados de tela, movimento e largura de conteúdo | Aceito |
-| [0018](0018-piso-de-cobertura-e-cobertura-no-pull-request.md) | Piso de cobertura e cobertura medida no Pull Request | Aceito |
+| [0018](0018-piso-de-cobertura-e-cobertura-no-pull-request.md) | Piso de cobertura e cobertura medida no Pull Request | Aceito (critério de exclusão revisto pelo 0021) |
 | [0019](0019-onboarding-do-treinador-e-consentimento-de-vitrine.md) | Onboarding do treinador e consentimento de vitrine | Aceito |
 | [0020](0020-vinculo-por-codigo-de-convite.md) | Vínculo por código de convite, com confirmação do treinador | Aceito |
+| [0021](0021-exclusao-de-adaptador-sem-regra-da-cobertura.md) | Adaptador sem regra sai do denominador da cobertura | Aceito (critério de exclusão do 0018 revisto) |

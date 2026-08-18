@@ -111,6 +111,26 @@ kover {
                     "com.gabrielfreire.runandlift.core.designsystem.AppMotion",
                     "com.gabrielfreire.runandlift.core.designsystem.AppIcons",
                 )
+
+                // Adaptadores do Firestore **sem regra dentro**, nomeados um a um.
+                //
+                // O ADR-0018 rejeitou excluir a camada de adaptadores inteira, e essa rejeição
+                // continua de pé: ela esconderia a trava de consentimento de saúde da
+                // `FirestoreStudentRepository`, que é regra de LGPD sem teste. O que muda com o
+                // ADR-0021 é o critério — entra nesta lista o adaptador de quem **já tirou de
+                // dentro de si tudo o que decidia**, e a coisa extraída tem teste próprio. A
+                // exclusão passa a ser o prêmio por extrair a lógica, e não o esconderijo dela.
+                //
+                // Requisito para acrescentar um nome aqui: apontar, no PR, onde mora a regra que
+                // saiu e qual teste a afirma. Sem esse par, o nome não entra.
+                classes(
+                    // Regras extraídas: LinkDocument (id e mapas), LinkRequest (criar, reabrir ou
+                    // recusar) e InviteCodeDocument (alfabeto e normalização), com teste cada.
+                    "com.gabrielfreire.runandlift.data.link.FirestoreLinkRepository",
+                    "com.gabrielfreire.runandlift.data.link.FirestoreLinkRepository\$*",
+                    "com.gabrielfreire.runandlift.data.link.FirestoreInviteCodes",
+                    "com.gabrielfreire.runandlift.data.link.LinkSnapshotKt",
+                )
             }
         }
 

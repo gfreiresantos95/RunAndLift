@@ -129,20 +129,22 @@ São dois pisos, e eles medem coisas diferentes ([ADR-0018](adr/0018-piso-de-cob
 - **Diff ≥ 80%**, só sobre as linhas que o PR mudou. O CI publica o número como comentário no PR e
   reprova o job `verify` quando não atinge.
 
-O relatório exclui `@Composable`, código gerado pelo Room, fixtures de `@Preview` e os tokens do
-design system — sem isso o percentual mediria decisões documentadas (não há teste de UI por
-escolha) em vez de lacunas. Medição de 2026-08-17: **67,0%** de linhas.
+O relatório exclui `@Composable`, código gerado pelo Room, fixtures de `@Preview`, os tokens do
+design system e os **adaptadores do Firestore de onde toda a regra já saiu** — sem isso o percentual
+mediria decisões documentadas (não há teste de UI por escolha) em vez de lacunas. Medição de
+2026-08-17: **69,5%** de linhas, ou 67,1% contando os adaptadores excluídos pelo ADR-0021.
 
 A meta é 75%, e ela está a um item de distância: cobrir `FirestoreUserRepository`,
 `FirestoreStudentRepository` e `FirebaseAuthRepository` são as 190 linhas que faltam. O piso sobe
-junto com esse trabalho — que é o mesmo que resolveria o limite descrito abaixo.
+junto com esse trabalho — e é o mesmo trabalho que esvazia a lista de exclusões do parágrafo
+seguinte.
 
-**O piso do diff encosta num limite conhecido quando o PR é adaptador novo.** O vínculo
-([ADR-0020](adr/0020-vinculo-por-codigo-de-convite.md)) trouxe ~80 linhas de chamada ao SDK do
-Firestore que nenhum teste de JVM alcança, e nenhuma quantidade de teste no resto do PR compensa
-isso na conta das linhas mudadas. O que dá para tirar do adaptador deve ser tirado — id, mapas de
-gravação, alfabeto do código e a decisão entre criar, reabrir e recusar saíram, e todos têm teste —,
-mas o resto é irredutível sem infraestrutura de teste para o `:data`.
+**Adaptador só sai do denominador depois de não ter mais regra dentro**
+([ADR-0021](adr/0021-exclusao-de-adaptador-sem-regra-da-cobertura.md)). Para acrescentar um nome
+àquela lista é preciso apontar, no PR, **onde mora a regra que saiu da classe e qual teste a
+afirma** — a exclusão é o prêmio por extrair a lógica, não o esconderijo dela. `FirestoreStudentRepository`
+continua no denominador porque a trava de consentimento de saúde ainda mora dentro dela, e é lacuna
+real.
 
 Rodar um teste específico:
 
