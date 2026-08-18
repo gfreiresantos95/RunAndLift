@@ -1,7 +1,6 @@
 package com.gabrielfreire.runandlift.feature.trainer.invite
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +18,6 @@ import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppLoadingState
 import com.gabrielfreire.runandlift.core.designsystem.component.AppMessageCard
 import com.gabrielfreire.runandlift.core.designsystem.component.AppNoticeCard
-import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenScaffold
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.feature.trainer.R
@@ -50,45 +48,50 @@ internal fun InviteScreen(state: InviteUiState, actions: InviteActions, modifier
     }
 }
 
+/**
+ * O miolo, emitido **direto** no `ColumnScope` do scaffold.
+ *
+ * Sem coluna própria: o conteúdo do [AppScreenScaffold] já chega dentro de um `AppScreenColumn`, com
+ * a rolagem e o espaçamento aplicados. Abrir outro aqui aninharia duas rolagens verticais, e a de
+ * dentro seria medida com altura infinita — que não desalinha nada, derruba a tela.
+ */
 @Composable
 private fun InviteContent(state: InviteUiState, actions: InviteActions) {
-    AppScreenColumn(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge)) {
-        if (state.failed) {
-            AppMessageCard(text = stringResource(R.string.trainer_invite_failed))
-            AppTextButton(text = stringResource(R.string.trainer_invite_retry), onClick = actions.onRetry)
-        }
+    if (state.failed) {
+        AppMessageCard(text = stringResource(R.string.trainer_invite_failed))
+        AppTextButton(text = stringResource(R.string.trainer_invite_retry), onClick = actions.onRetry)
+    }
 
-        val code = state.code
+    val code = state.code
 
-        if (code == null) {
-            AppNoticeCard(text = stringResource(R.string.trainer_invite_none))
-        } else {
-            CodeCard(code = code)
-            AppNoticeCard(text = stringResource(R.string.trainer_invite_explanation))
-            AppButton(
-                text = stringResource(R.string.trainer_invite_share),
-                onClick = { actions.onShare(code) },
-                enabled = !state.working,
-            )
-        }
-
-        AppTextButton(
-            text = stringResource(
-                if (code == null) R.string.trainer_invite_generate else R.string.trainer_invite_regenerate,
-            ),
-            onClick = actions.onGenerate,
+    if (code == null) {
+        AppNoticeCard(text = stringResource(R.string.trainer_invite_none))
+    } else {
+        CodeCard(code = code)
+        AppNoticeCard(text = stringResource(R.string.trainer_invite_explanation))
+        AppButton(
+            text = stringResource(R.string.trainer_invite_share),
+            onClick = { actions.onShare(code) },
             enabled = !state.working,
         )
+    }
 
-        // O aviso da troca só aparece quando há o que perder: dito antes do primeiro código, seria
-        // uma advertência sobre uma consequência que ainda não existe.
-        if (code != null) {
-            Text(
-                text = stringResource(R.string.trainer_invite_regenerate_warning),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    AppTextButton(
+        text = stringResource(
+            if (code == null) R.string.trainer_invite_generate else R.string.trainer_invite_regenerate,
+        ),
+        onClick = actions.onGenerate,
+        enabled = !state.working,
+    )
+
+    // O aviso da troca só aparece quando há o que perder: dito antes do primeiro código, seria
+    // uma advertência sobre uma consequência que ainda não existe.
+    if (code != null) {
+        Text(
+            text = stringResource(R.string.trainer_invite_regenerate_warning),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

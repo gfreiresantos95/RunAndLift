@@ -1,7 +1,6 @@
 package com.gabrielfreire.runandlift.feature.student.trainer
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,13 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import com.gabrielfreire.runandlift.core.designsystem.Dimens
 import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppButton
 import com.gabrielfreire.runandlift.core.designsystem.component.AppLoadingState
 import com.gabrielfreire.runandlift.core.designsystem.component.AppMessageCard
 import com.gabrielfreire.runandlift.core.designsystem.component.AppNoticeCard
-import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenColumn
 import com.gabrielfreire.runandlift.core.designsystem.component.AppScreenScaffold
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextField
 import com.gabrielfreire.runandlift.feature.student.R
@@ -45,27 +42,32 @@ internal fun MyTrainerScreen(state: MyTrainerUiState, actions: MyTrainerActions,
     }
 }
 
+/**
+ * O miolo, emitido **direto** no `ColumnScope` do scaffold.
+ *
+ * Sem coluna própria: o conteúdo do [AppScreenScaffold] já chega dentro de um `AppScreenColumn`, com
+ * a rolagem e o espaçamento aplicados. Abrir outro aqui aninharia duas rolagens verticais, e a de
+ * dentro seria medida com altura infinita — que não desalinha nada, derruba a tela.
+ */
 @Composable
 private fun MyTrainerContent(state: MyTrainerUiState, actions: MyTrainerActions) {
-    AppScreenColumn(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge)) {
-        if (state.failed) {
-            AppMessageCard(text = stringResource(R.string.student_trainer_failed))
-        }
-
-        val current = state.current
-
-        if (current != null) {
-            TrainerLinkCard(
-                link = current,
-                enabled = !state.submitting,
-                onStatusChange = { status -> actions.onStatusChange(current, status) },
-            )
-        } else {
-            CodeEntry(state = state, actions = actions)
-        }
-
-        PastLinks(state = state)
+    if (state.failed) {
+        AppMessageCard(text = stringResource(R.string.student_trainer_failed))
     }
+
+    val current = state.current
+
+    if (current != null) {
+        TrainerLinkCard(
+            link = current,
+            enabled = !state.submitting,
+            onStatusChange = { status -> actions.onStatusChange(current, status) },
+        )
+    } else {
+        CodeEntry(state = state, actions = actions)
+    }
+
+    PastLinks(state = state)
 }
 
 /** O campo de código e o que ele produz: um erro, ou um treinador para confirmar. */

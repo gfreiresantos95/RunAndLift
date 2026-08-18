@@ -31,7 +31,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
  *   Ver [AppSnackbarHost] para a divisão entre confirmação e falha.
  * @param bottomBar ações fixas no rodapé, para a tela que as tem. Vazio por padrão — a maioria põe
  *   a ação no fim do conteúdo rolável.
- * @param content miolo, já dentro da coluna rolável e limitada.
+ * @param content miolo, já dentro da coluna rolável e limitada. **Não abra um [AppScreenColumn]
+ *   aqui dentro**: seriam duas rolagens verticais aninhadas, e a de dentro é medida com altura
+ *   infinita — o Compose lança `IllegalStateException` na medição e a tela não abre. O espaçamento e
+ *   a largura máxima que motivariam a segunda coluna já vêm aplicados; para mudar o espaçamento,
+ *   ponha os filhos em ordem e use `Modifier.padding`, e não outra coluna rolável.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
