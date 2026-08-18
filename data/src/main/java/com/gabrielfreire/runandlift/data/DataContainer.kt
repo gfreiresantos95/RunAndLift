@@ -3,6 +3,8 @@ package com.gabrielfreire.runandlift.data
 import android.content.Context
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.FirebaseAuthRepository
+import com.gabrielfreire.runandlift.data.link.FirestoreLinkRepository
+import com.gabrielfreire.runandlift.data.link.LinkRepository
 import com.gabrielfreire.runandlift.data.local.RunAndLiftDatabase
 import com.gabrielfreire.runandlift.data.location.CachedLocationRepository
 import com.gabrielfreire.runandlift.data.location.LocationRepository
@@ -70,6 +72,11 @@ class DataContainer(
 
     val trainerRepository: TrainerRepository by lazy {
         FirestoreTrainerRepository(firestore = firestore, dispatchers = dispatchers)
+    }
+
+    /** O vínculo entre os dois papéis. É o único repositório usado pelos dois grafos de tela. */
+    val linkRepository: LinkRepository by lazy {
+        FirestoreLinkRepository(firestore = firestore, dispatchers = dispatchers)
     }
 
     /**

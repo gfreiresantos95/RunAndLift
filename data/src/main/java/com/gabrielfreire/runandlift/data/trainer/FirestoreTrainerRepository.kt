@@ -1,10 +1,8 @@
 package com.gabrielfreire.runandlift.data.trainer
 
-import com.gabrielfreire.runandlift.data.model.ServiceMode
 import com.gabrielfreire.runandlift.data.model.TrainerExperience
 import com.gabrielfreire.runandlift.data.model.TrainerProfile
 import com.gabrielfreire.runandlift.data.model.TrainerProfileDetails
-import com.gabrielfreire.runandlift.data.model.TrainerSpecialty
 import com.gabrielfreire.runandlift.data.util.AppDispatchers
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -13,7 +11,6 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.time.DayOfWeek
 
 /**
  * [TrainerRepository] sobre o Firestore.
@@ -39,9 +36,9 @@ internal class FirestoreTrainerRepository(
             uid = uid,
             cref = document.getString(TrainerDocument.FIELD_CREF),
             experience = TrainerExperience.fromStored(document.getString(TrainerDocument.FIELD_EXPERIENCE)),
-            specialties = document.readSpecialties(),
-            serviceModes = document.readModes(),
-            availableDays = document.readDays(),
+            specialties = TrainerDocument.specialties(document.get(TrainerDocument.FIELD_SPECIALTIES)),
+            serviceModes = TrainerDocument.modes(document.get(TrainerDocument.FIELD_MODES)),
+            availableDays = TrainerDocument.days(document.get(TrainerDocument.FIELD_DAYS)),
             bio = document.getString(TrainerDocument.FIELD_BIO),
             // Campo corrompido vira ausência em vez de exceção — não pode impedir alguém de abrir
             // o app, como no perfil do aluno.
@@ -67,23 +64,6 @@ internal class FirestoreTrainerRepository(
             // orçamento para responder o que esta função acabou de escrever.
             (stored ?: TrainerProfile(uid = uid)).mergedWith(details, published)
         }
-
-    private fun DocumentSnapshot.readDays(): Set<DayOfWeek> = (get(TrainerDocument.FIELD_DAYS) as? List<*>)
-        .orEmpty()
-        .mapNotNull { (it as? Number)?.toInt() }
-        .mapNotNull { runCatching { DayOfWeek.of(it) }.getOrNull() }
-        .toSet()
-
-    private fun DocumentSnapshot.readSpecialties(): Set<TrainerSpecialty> =
-        (get(TrainerDocument.FIELD_SPECIALTIES) as? List<*>)
-            .orEmpty()
-            .mapNotNull { TrainerSpecialty.fromStored(it as? String) }
-            .toSet()
-
-    private fun DocumentSnapshot.readModes(): Set<ServiceMode> = (get(TrainerDocument.FIELD_MODES) as? List<*>)
-        .orEmpty()
-        .mapNotNull { ServiceMode.fromStored(it as? String) }
-        .toSet()
 
     /**
      * Cache primeiro, servidor só quando não há nada em disco — regra 3 do orçamento (§2.4).

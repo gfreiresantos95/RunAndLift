@@ -94,9 +94,9 @@ injeção manual e o grafo raiz com os três grafos irmãos: `auth`, `trainer` e
 
 ### Security Rules
 
-`firestore/firestore.rules` nega por padrão, com **27 testes** cobrindo acesso do treinador ao
-aluno, sessões de treino, máquina de estados do vínculo, catálogo, painel, trilha de auditoria,
-perfil profissional e coleção não declarada.
+`firestore/firestore.rules` nega por padrão, com **49 testes** cobrindo acesso do treinador ao
+aluno, sessões de treino, máquina de estados do vínculo, listagem, código de convite, catálogo,
+painel, trilha de auditoria, perfil profissional e coleção não declarada.
 
 ### O que ainda não existe
 
@@ -113,7 +113,7 @@ Requer Android Studio recente e um dispositivo ou emulador com API 26+. Não é 
 ```powershell
 .\gradlew.bat assembleDebug      # gera o APK de debug
 .\gradlew.bat installDebug       # instala no dispositivo conectado
-.\gradlew.bat test               # testes unitários (JVM) — 121 hoje
+.\gradlew.bat test               # testes unitários (JVM) — 426 hoje
 .\gradlew.bat lint               # Android Lint + compose-lints
 .\gradlew.bat koverHtmlReport    # cobertura dos seis módulos, em build/reports/kover/html
 .\gradlew.bat koverVerify        # reprova se o projeto cair abaixo de 60% de linhas
@@ -127,15 +127,26 @@ São dois pisos, e eles medem coisas diferentes ([ADR-0018](adr/0018-piso-de-cob
 
 - **Projeto ≥ 60%** de linhas, conferido pelo `koverVerify` — no CI e na sua máquina, antes do push.
 - **Diff ≥ 80%**, só sobre as linhas que o PR mudou. O CI publica o número como comentário no PR e
-  reprova o job `verify` quando não atinge.
+  **reprova o job `verify`** quando não atinge — num passo próprio, que lê a saída da action: ela
+  publica o número e devolve verde por conta própria ([ADR-0022](adr/0022-piso-do-diff-que-reprova-de-fato.md)).
 
-O relatório exclui `@Composable`, código gerado pelo Room, fixtures de `@Preview` e os tokens do
-design system — sem isso o percentual mediria decisões documentadas (não há teste de UI por
-escolha) em vez de lacunas. Medição de 2026-08-15: **63,4%** de linhas.
+O relatório exclui `@Composable`, código gerado pelo Room, fixtures de `@Preview`, os tokens do
+design system, a **fiação declarativa** (grafo de navegação, containers de injeção, holders de
+callback) e os **adaptadores do Firestore de onde toda a regra já saiu** — sem isso o percentual
+mediria decisões documentadas (não há teste de UI por escolha) em vez de lacunas. Medição de
+2026-08-17: **74,8%** de linhas, contra 67,1% com tudo dentro.
 
-A meta é 75%, e ela está a um item de distância: cobrir `FirestoreUserRepository`,
-`FirestoreStudentRepository` e `FirebaseAuthRepository` são as 190 linhas que faltam. O piso sobe
-junto com esse trabalho.
+A meta é 75%, **medida com os adaptadores do vínculo de volta no denominador** — 72,0% hoje —, e ela
+está a um item de distância: cobrir `FirestoreUserRepository`, `FirestoreStudentRepository` e
+`FirebaseAuthRepository` são as 190 linhas que faltam. O número do relatório encostar em 75% por
+mudança de denominador não é a meta cumprida, e o piso não sobe por isso.
+
+**Adaptador só sai do denominador depois de não ter mais regra dentro**
+([ADR-0021](adr/0021-exclusao-de-adaptador-sem-regra-da-cobertura.md)). Para acrescentar um nome
+àquela lista é preciso apontar, no PR, **onde mora a regra que saiu da classe e qual teste a
+afirma** — a exclusão é o prêmio por extrair a lógica, não o esconderijo dela. `FirestoreStudentRepository`
+continua no denominador porque a trava de consentimento de saúde ainda mora dentro dela, e é lacuna
+real.
 
 Rodar um teste específico:
 
@@ -366,8 +377,14 @@ O documento de vínculo tem **id obrigatoriamente no formato `{trainerId}_{stude
 estética: Security Rule não consulta, só faz `get()` por caminho exato, e é esse formato que torna
 "treinador só lê aluno com vínculo ativo" expressável ([ADR-0007](adr/0007-security-rules-e-id-de-vinculo-deterministico.md)).
 
-Dessas coleções, as que já têm código escrevendo ou lendo são `users`, `trainerProfiles` e
-`exercises`; as demais existem hoje como Security Rules e seus testes, à espera das telas.
+O vínculo nasce por **código de convite**: o treinador gera um código de seis caracteres, o aluno
+digita, o vínculo nasce em `requested` e o treinador confirma. O código não é senha — quem o digita
+cria um pedido, e é a confirmação que separa "alguém digitou meu código" de "tenho um aluno novo".
+A busca pela vitrine é o segundo caminho de entrada e vem depois ([ADR-0020](adr/0020-vinculo-por-codigo-de-convite.md)).
+
+Dessas coleções, as que já têm código escrevendo ou lendo são `users`, `trainerProfiles`, `links`,
+`inviteCodes` e `exercises`; as demais existem hoje como Security Rules e seus testes, à espera das
+telas.
 
 ### Acesso e privacidade
 

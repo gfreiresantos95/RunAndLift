@@ -213,4 +213,59 @@
 
     <!-- Erros dos campos digitados. A frase fala de conferir o número, nunca do valor. -->
     <string name="trainer_error_capacity_invalid">Confira o número de alunos. Exemplo: 20.</string>
+
+    <!-- Carteira de alunos. -->
+    <string name="trainer_tab_students">Alunos</string>
+    <string name="trainer_students_title">Alunos</string>
+    <string name="trainer_students_loading">Carregando seus alunos</string>
+    <!-- O vazio fala do próximo passo dele, e não do que falta ao sistema. -->
+    <string name="trainer_students_empty_title">Nenhum aluno por aqui</string>
+    <string name="trainer_students_empty">Gere um código de convite e mande para quem você treina.
+        Cada pedido ainda passa por você.</string>
+    <string name="trainer_students_invite">Convidar aluno</string>
+    <!-- "Não consegui carregar" e nunca "você não tem alunos": são a mesma tela em branco e duas
+         conversas diferentes. -->
+    <string name="trainer_students_failed">Não foi possível carregar sua carteira agora.</string>
+    <string name="trainer_students_retry">Tentar de novo</string>
+
+    <!-- Os três blocos da carteira. Quem espera resposta vem primeiro. -->
+    <string name="trainer_students_pending">Aguardando você</string>
+    <string name="trainer_students_current">Seus alunos</string>
+    <string name="trainer_students_past">Encerrados</string>
+    <string name="trainer_students_unnamed">Aluno sem nome no cadastro</string>
+
+    <!-- Ações de cada linha. Verbo no infinitivo: é o que o toque faz, não o que aconteceu. -->
+    <string name="trainer_students_accept">Aceitar</string>
+    <string name="trainer_students_decline">Recusar</string>
+    <string name="trainer_students_cancel">Cancelar convite</string>
+    <string name="trainer_students_pause">Pausar</string>
+    <string name="trainer_students_resume">Retomar</string>
+    <string name="trainer_students_end">Encerrar</string>
+
+    <!-- Estado do vínculo, dito do lado do treinador: o mesmo estado tem outra frase para o aluno. -->
+    <string name="trainer_link_invited">Você convidou. Aguardando resposta.</string>
+    <string name="trainer_link_requested">Pediu para treinar com você.</string>
+    <string name="trainer_link_active">Treinando com você</string>
+    <string name="trainer_link_paused">Pausado</string>
+    <string name="trainer_link_ended">Encerrado</string>
+
+    <!-- Código de convite. -->
+    <string name="trainer_invite_title">Convidar aluno</string>
+    <string name="trainer_invite_back">Voltar para os alunos</string>
+    <string name="trainer_invite_loading">Carregando seu código</string>
+    <string name="trainer_invite_none">Você ainda não tem um código de convite. Gere o seu e mande
+        para quem você treina.</string>
+    <!-- O aviso de que o código não é senha vem no corpo da tela, e não como letra miúda: é ele que
+         faz alguém mandar o código sem medo. -->
+    <string name="trainer_invite_explanation">Quem digitar este código envia um pedido para você.
+        Ninguém entra na sua carteira sem a sua confirmação.</string>
+    <string name="trainer_invite_generate">Gerar código</string>
+    <string name="trainer_invite_regenerate">Gerar outro código</string>
+    <string name="trainer_invite_regenerate_warning">Ao gerar outro código, o anterior deixa de
+        funcionar para quem ainda não o usou.</string>
+    <string name="trainer_invite_share">Compartilhar</string>
+    <string name="trainer_invite_share_message">Treine comigo no Run &amp; Lift. Meu código de
+        convite é %1$s.</string>
+    <string name="trainer_invite_failed">Não foi possível carregar seu código agora.</string>
+    <string name="trainer_invite_retry">Tentar de novo</string>
 </resources>

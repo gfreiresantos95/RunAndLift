@@ -3,6 +3,7 @@ package com.gabrielfreire.runandlift.di
 import android.content.Context
 import com.gabrielfreire.runandlift.data.DataContainer
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
+import com.gabrielfreire.runandlift.data.link.LinkRepository
 import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.repository.ExerciseRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
@@ -44,6 +45,9 @@ class AppContainer(context: Context) {
 
     /** Perfil profissional do treinador, em `trainerProfiles/{uid}` (E3-02). */
     val trainerRepository: TrainerRepository get() = dataContainer.trainerRepository
+
+    /** Vínculo entre treinador e aluno, em `links` e `inviteCodes` (E3-03). */
+    val linkRepository: LinkRepository get() = dataContainer.linkRepository
 
     /**
      * Estados e municípios, servidos da API do IBGE com cache em memória.

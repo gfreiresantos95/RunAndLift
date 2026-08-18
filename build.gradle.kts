@@ -98,25 +98,125 @@ kover {
                 // Dados de exemplo dos @Preview: existem para desenhar a tela, não rodam em produção.
                 classes("*PreviewFixtures*")
 
+                // Amostras de texto dos @Preview do :core. Existem pela mesma razão dos
+                // `*PreviewFixtures*` acima e escapavam só pelo nome — o módulo não tem strings.xml
+                // por decisão, então a cópia de exemplo dos previews mora aqui.
+                classes("*.PreviewSamples", "*.PreviewSamples\$*")
+
                 // Tokens do design system: rampa de cor, tipografia, formas, espaçamento e duração.
                 // São declarações constantes, sem ramo nem decisão; o teste possível repetiria o
                 // literal do fonte. A verificação real é a galeria ThemePreviews, em light e dark.
+                //
+                // A lista nomeia arquivo e objeto porque as duas formas existem: `TypeKt` cobre o
+                // topo de Type.kt, e não o `object MetricTextStyles` dentro dele — que é token do
+                // mesmo jeito, e ficava contando como lacuna.
                 classes(
                     "com.gabrielfreire.runandlift.core.designsystem.ColorKt",
                     "com.gabrielfreire.runandlift.core.designsystem.ColorSchemeKt",
                     "com.gabrielfreire.runandlift.core.designsystem.ExtendedColorSchemeKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.ExtendedColorScheme",
+                    "com.gabrielfreire.runandlift.core.designsystem.ColorRole",
                     "com.gabrielfreire.runandlift.core.designsystem.TypeKt",
+                    "com.gabrielfreire.runandlift.core.designsystem.MetricTextStyles",
                     "com.gabrielfreire.runandlift.core.designsystem.ShapeKt",
                     "com.gabrielfreire.runandlift.core.designsystem.Dimens",
+                    "com.gabrielfreire.runandlift.core.designsystem.DimensKt",
                     "com.gabrielfreire.runandlift.core.designsystem.AppMotion",
                     "com.gabrielfreire.runandlift.core.designsystem.AppIcons",
+                    "com.gabrielfreire.runandlift.core.designsystem.SelectionAppearance",
+                    "com.gabrielfreire.runandlift.core.designsystem.SelectionHaptics",
+                )
+
+                // Fiação declarativa: grafo de navegação, container de injeção e os `data class`
+                // que só reúnem callbacks. São listas de "isto liga naquilo", sem ramo nem
+                // decisão — a mesma natureza dos tokens do design system logo acima, e o que os
+                // verifica é abrir o app, não uma linha coberta. Sem esta exclusão, acrescentar
+                // uma rota reprova por cobertura um PR cujo código de verdade está testado.
+                //
+                // O que **não** entra: `*Routes`, porque montar rota é string com regra dentro
+                // (ver `TrainerRoutesTest`), e `*ViewModel`, que é onde a decisão mora.
+                //
+                // `*DestinationKt` entra pelo mesmo argumento: um destino liga rota a ViewModel e
+                // entrega a escolha pelo `NavHostController`, que não se constrói num teste de JVM.
+                // `*Tab` é a enumeração das abas — ícone, rótulo e rota, três literais por aba.
+                classes(
+                    "*.navigation.*GraphKt",
+                    "*.navigation.*Dependencies",
+                    "*.navigation.*Tab",
+                    "*.*DestinationKt",
+                    "*.di.AppContainer",
+                    "com.gabrielfreire.runandlift.data.DataContainer",
+                    "*.*Actions",
+                )
+
+                // Adaptadores do Firestore **sem regra dentro**, nomeados um a um.
+                //
+                // O ADR-0018 rejeitou excluir a camada de adaptadores inteira, e essa rejeição
+                // continua de pé: ela esconderia a trava de consentimento de saúde da
+                // `FirestoreStudentRepository`, que é regra de LGPD sem teste. O que muda com o
+                // ADR-0021 é o critério — entra nesta lista o adaptador de quem **já tirou de
+                // dentro de si tudo o que decidia**, e a coisa extraída tem teste próprio. A
+                // exclusão passa a ser o prêmio por extrair a lógica, e não o esconderijo dela.
+                //
+                // Requisito para acrescentar um nome aqui: apontar, no PR, onde mora a regra que
+                // saiu e qual teste a afirma. Sem esse par, o nome não entra.
+                classes(
+                    // Regras extraídas: LinkDocument (id, mapas e a leitura que descarta documento
+                    // incompleto), LinkRequest (criar, reabrir ou recusar) e InviteCodeDocument
+                    // (alfabeto e normalização) — LinkDocumentTest, LinkRequestTest,
+                    // InviteCodeDocumentTest.
+                    "com.gabrielfreire.runandlift.data.link.FirestoreLinkRepository",
+                    "com.gabrielfreire.runandlift.data.link.FirestoreLinkRepository\$*",
+                    "com.gabrielfreire.runandlift.data.link.FirestoreInviteCodes",
+                    "com.gabrielfreire.runandlift.data.link.LinkSnapshotKt",
+
+                    // Regra extraída: StudentDocument — a trava do consentimento de dado de saúde
+                    // (LGPD art. 11), os mapas de gravação parcial e a leitura que separa lesão
+                    // ausente de lesão vazia. StudentDocumentTest. Era a maior lacuna declarada do
+                    // projeto, e é o que o ADR-0018 se recusou a esconder enquanto não tivesse
+                    // teste — agora tem.
+                    "com.gabrielfreire.runandlift.data.student.FirestoreStudentRepository",
+                    "com.gabrielfreire.runandlift.data.student.FirestoreStudentRepository\$*",
+
+                    // Regra extraída: UserDocument — o acúmulo de papéis, o nome que só é escrito
+                    // quando não há nenhum, e a diferença entre o mapa do cadastro (nulo omite) e o
+                    // da edição (nulo apaga). UserDocumentTest.
+                    "com.gabrielfreire.runandlift.data.user.FirestoreUserRepository",
+                    "com.gabrielfreire.runandlift.data.user.FirestoreUserRepository\$*",
+
+                    // Regra extraída: TrainerDocument — a trava da vitrine e os três decodificadores
+                    // de lista. TrainerDocumentTest.
+                    "com.gabrielfreire.runandlift.data.trainer.FirestoreTrainerRepository",
+                    "com.gabrielfreire.runandlift.data.trainer.FirestoreTrainerRepository\$*",
+
+                    // Regras extraídas: AuthFailureMapping (qual exceção do SDK vira qual motivo, e
+                    // em que ordem) e ProviderName (nome vazio é ausência de nome).
+                    // AuthFailureMappingTest, ProviderNameTest.
+                    "com.gabrielfreire.runandlift.data.auth.FirebaseAuthRepository",
+                    "com.gabrielfreire.runandlift.data.auth.FirebaseAuthRepository\$*",
+
+                    // Regra extraída: ExerciseDocument — exercício sem nome não entra, campo
+                    // estranho não derruba a sincronização. ExerciseDocumentTest.
+                    "com.gabrielfreire.runandlift.data.remote.exercise.FirestoreExerciseRemoteDataSource",
+
+                    // Não é Firestore, mas é o mesmo caso: sobrou o HttpURLConnection. A regra
+                    // extraída é IbgePayload — a ordenação em pt-BR e a sigla que entra na URL.
+                    // IbgePayloadTest.
+                    "com.gabrielfreire.runandlift.data.remote.location.IbgeLocationRemoteDataSource",
                 )
             }
         }
 
         // O piso vale a partir da branch, não só do CI: quem roda `./gradlew koverVerify` antes de
-        // abrir o PR descobre em casa. 60 e não 75 porque a medição de agosto/2026 deu 63,4% — piso
-        // acima do real deixaria o main vermelho e faria a cobertura pautar o roadmap. Ver ADR 0018.
+        // abrir o PR descobre em casa.
+        //
+        // 60 era o piso quando a medição dava 63,4% (agosto/2026), e a regra era não pôr o piso
+        // acima do real — main vermelho faz a cobertura pautar o roadmap. Depois da extração das
+        // regras dos adaptadores do Firebase, a medição passou a 93,8%, e este 60 deixou de dizer
+        // qualquer coisa: hoje é um piso que só reprovaria uma queda que ninguém cometeria por
+        // acidente. Subi-lo é decisão de quem mantém o repositório, não efeito colateral da PR que
+        // escreveu os testes — o número novo deve sair de uma conversa sobre quanto se aceita
+        // perder, e não da medição de hoje virar exigência de amanhã.
         verify {
             rule("Piso de cobertura do projeto") {
                 bound {

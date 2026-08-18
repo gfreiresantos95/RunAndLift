@@ -1,9 +1,12 @@
 package com.gabrielfreire.runandlift.data.trainer
 
+import com.gabrielfreire.runandlift.data.model.ServiceMode
 import com.gabrielfreire.runandlift.data.model.ShowcaseConsent
 import com.gabrielfreire.runandlift.data.model.TrainerProfile
 import com.gabrielfreire.runandlift.data.model.TrainerProfileDetails
+import com.gabrielfreire.runandlift.data.model.TrainerSpecialty
 import com.google.firebase.firestore.FieldValue
+import java.time.DayOfWeek
 
 /**
  * Como o perfil profissional vira documento — os nomes dos campos e o mapa de gravação.
@@ -30,6 +33,19 @@ internal object TrainerDocument {
     const val FIELD_BIO = "bio"
     const val FIELD_MAX_STUDENTS = "maxStudents"
     const val FIELD_ONBOARDED_AT = "onboardingCompletedAt"
+
+    /**
+     * Código de convite vigente do treinador, escrito e lido por `FirestoreLinkRepository`.
+     *
+     * Mora neste documento porque o convite é ferramenta **dele**, e porque guardá-lo aqui é o que
+     * dispensa procurar o código pelo dono: `inviteCodes` é legível por qualquer autenticado, e uma
+     * consulta por `trainerId` ali transformaria "ler o código que me deram" em "listar todos os
+     * códigos que existem".
+     *
+     * Não entra em [fields] nem em `TrainerProfile`: não é campo de formulário de perfil, e não é
+     * coisa que o aluno veja ao abrir um treinador.
+     */
+    const val FIELD_INVITE_CODE = "inviteCode"
 
     const val FIELD_SHOWCASE = "showcase"
     const val FIELD_ENABLED = "enabled"
@@ -92,6 +108,31 @@ internal object TrainerDocument {
     } else {
         mapOf(FIELD_ENABLED to false)
     }
+
+    /**
+     * Os dias gravados virando [DayOfWeek], pelo **número ISO** (1 = segunda … 7 = domingo).
+     *
+     * É a forma que ordena sozinha na consulta e que não muda se a biblioteca de data mudar. O que
+     * está fora de 1..7 some em vez de explodir — vale para os três decodificadores abaixo, e é a
+     * mesma escolha do perfil do aluno: campo estranho não pode impedir alguém de abrir o app.
+     */
+    fun days(stored: Any?): Set<DayOfWeek> = (stored as? List<*>)
+        .orEmpty()
+        .mapNotNull { (it as? Number)?.toInt() }
+        .mapNotNull { runCatching { DayOfWeek.of(it) }.getOrNull() }
+        .toSet()
+
+    /** As especialidades reconhecidas. Uma desconhecida some sem levar as outras junto. */
+    fun specialties(stored: Any?): Set<TrainerSpecialty> = (stored as? List<*>)
+        .orEmpty()
+        .mapNotNull { TrainerSpecialty.fromStored(it as? String) }
+        .toSet()
+
+    /** As formas de atendimento. Não há "híbrido": é presencial e online marcados juntos. */
+    fun modes(stored: Any?): Set<ServiceMode> = (stored as? List<*>)
+        .orEmpty()
+        .mapNotNull { ServiceMode.fromStored(it as? String) }
+        .toSet()
 }
 
 /**

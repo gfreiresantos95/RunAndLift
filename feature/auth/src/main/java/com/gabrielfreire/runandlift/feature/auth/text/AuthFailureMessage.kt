@@ -20,7 +20,7 @@ import com.gabrielfreire.runandlift.feature.auth.R
 internal fun AuthFailure.message(): String = stringResource(messageRes())
 
 @StringRes
-private fun AuthFailure.messageRes(): Int = when (this) {
+internal fun AuthFailure.messageRes(): Int = when (this) {
     AuthFailure.INVALID_CREDENTIALS -> R.string.auth_error_invalid_credentials
     AuthFailure.EMAIL_ALREADY_IN_USE -> R.string.auth_error_email_in_use
     AuthFailure.WEAK_PASSWORD -> R.string.auth_error_weak_password

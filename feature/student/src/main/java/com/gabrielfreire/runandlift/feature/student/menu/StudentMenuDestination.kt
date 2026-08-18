@@ -55,6 +55,7 @@ internal fun StudentMenuDestination(
         actions = StudentMenuActions(
             onOpenAccount = { onOpen(StudentRoutes.ACCOUNT) },
             onOpenTraining = { onOpen(StudentRoutes.PROFILE) },
+            onOpenTrainer = { onOpen(StudentRoutes.TRAINER) },
             onSignOut = { viewModel.signOut(onSignedOut) },
         ),
         onSwitchRole = onSwitchRole,

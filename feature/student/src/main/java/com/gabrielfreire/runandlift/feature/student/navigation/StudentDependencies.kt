@@ -1,6 +1,7 @@
 package com.gabrielfreire.runandlift.feature.student.navigation
 
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
+import com.gabrielfreire.runandlift.data.link.LinkRepository
 import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
@@ -19,4 +20,6 @@ data class StudentDependencies(
     val userRepository: UserRepository,
     val studentRepository: StudentRepository,
     val locationRepository: LocationRepository,
+    /** O vínculo com o treinador. É o primeiro repositório que os dois grafos de papel compartilham. */
+    val linkRepository: LinkRepository,
 )

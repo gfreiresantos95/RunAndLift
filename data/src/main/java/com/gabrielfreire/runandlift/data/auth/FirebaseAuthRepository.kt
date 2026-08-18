@@ -5,10 +5,7 @@ import com.gabrielfreire.runandlift.data.util.AppDispatchers
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
@@ -74,29 +71,28 @@ internal class FirebaseAuthRepository(
     override suspend fun signOut() = withContext(dispatchers.io) { firebaseAuth.signOut() }
 
     /**
-     * Roda em I/O e traduz exceção do SDK para [AuthFailure].
+     * Roda em I/O e devolve falha em vez de propagar exceção do SDK.
      *
-     * A tradução mora aqui, e não na tela, porque código de erro do Firebase é detalhe do
-     * provedor: a UI decide a mensagem a partir de um conjunto fechado, que não muda se um dia o
-     * provedor mudar. A exceção original segue em `cause`, para a telemetria de E0-11.
+     * Qual motivo cada exceção vira é decisão, e mora em [AuthFailureMapping] — separada porque a
+     * **ordem** entre elas é regra (as classes do Firebase herdam umas das outras) e testar ordem
+     * dentro de um `try/catch` privado não é possível. A exceção original segue em `cause`, para a
+     * telemetria de E0-11.
+     *
+     * `FirebaseAuthException` inteira, e não as quatro subclasses uma a uma: o que o SDK lançar de
+     * novo vira [AuthFailure.UNKNOWN] e uma frase na tela, em vez de subir e derrubar o app. Quem
+     * escolhe a frase é a UI, e "não foi possível entrar" é sempre melhor do que fechar sozinho.
      */
     private suspend fun authCall(block: suspend () -> AuthResult): AuthResult = withContext(dispatchers.io) {
         try {
             block()
-        } catch (failure: FirebaseAuthWeakPasswordException) {
-            AuthResult.Failure(AuthFailure.WEAK_PASSWORD, failure)
-        } catch (failure: FirebaseAuthUserCollisionException) {
-            AuthResult.Failure(AuthFailure.EMAIL_ALREADY_IN_USE, failure)
-        } catch (failure: FirebaseAuthInvalidUserException) {
-            AuthResult.Failure(AuthFailure.INVALID_CREDENTIALS, failure)
-        } catch (failure: FirebaseAuthInvalidCredentialsException) {
-            AuthResult.Failure(AuthFailure.INVALID_CREDENTIALS, failure)
+        } catch (failure: FirebaseAuthException) {
+            AuthResult.Failure(AuthFailureMapping.reasonFor(failure), failure)
         } catch (failure: FirebaseTooManyRequestsException) {
-            AuthResult.Failure(AuthFailure.TOO_MANY_ATTEMPTS, failure)
+            AuthResult.Failure(AuthFailureMapping.reasonFor(failure), failure)
         } catch (failure: FirebaseNetworkException) {
-            AuthResult.Failure(AuthFailure.NO_NETWORK, failure)
+            AuthResult.Failure(AuthFailureMapping.reasonFor(failure), failure)
         } catch (failure: IOException) {
-            AuthResult.Failure(AuthFailure.NO_NETWORK, failure)
+            AuthResult.Failure(AuthFailureMapping.reasonFor(failure), failure)
         }
     }
 
@@ -104,9 +100,8 @@ internal class FirebaseAuthRepository(
         uid = uid,
         email = email,
         isEmailVerified = isEmailVerified,
-        // Vem preenchido pelo Google e vazio no cadastro por e-mail. `takeIf` porque o SDK devolve
-        // string vazia, e não nulo, quando o provedor não informou nome — e "" gravado como nome
-        // seria pior que nome nenhum: o app não teria como distinguir ausência de escolha.
-        displayName = displayName?.takeIf { it.isNotBlank() },
+        // Vem preenchido pelo Google e vazio no cadastro por e-mail. A regra de por que vazio vira
+        // ausência está em [ProviderName], que tem teste próprio.
+        displayName = ProviderName.of(displayName),
     )
 }

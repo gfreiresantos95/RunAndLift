@@ -44,6 +44,9 @@
     <string name="student_menu_training">Perfil de treino</string>
     <string name="student_menu_training_description">Nível, objetivo, dias e o que o seu treinador
         precisa saber para montar seu treino.</string>
+    <string name="student_menu_trainer">Meu treinador</string>
+    <string name="student_menu_trainer_description">Quem acompanha seus treinos, ou o código para
+        entrar com alguém.</string>
     <string name="student_menu_sign_out">Sair da conta</string>
     <string name="student_menu_switch_role">Trocar de papel</string>
 
@@ -224,4 +227,44 @@
 
     <!-- Edição de perfil. -->
     <string name="student_profile_title">Perfil de treino</string>
+
+    <!-- Meu treinador. -->
+    <string name="student_trainer_title">Meu treinador</string>
+    <string name="student_trainer_back">Voltar para o menu</string>
+    <string name="student_trainer_loading">Carregando seu treinador</string>
+    <string name="student_trainer_failed">Não foi possível carregar agora.</string>
+    <string name="student_trainer_unnamed">Treinador sem nome no cadastro</string>
+    <!-- Diz o que o código faz e o que ele não faz: quem entende que ainda vai ser aceito não fica
+         esperando treino aparecer na mesma hora. -->
+    <string name="student_trainer_explanation">Peça o código de convite ao seu treinador e digite
+        aqui. Ele ainda precisa aceitar o seu pedido.</string>
+    <string name="student_trainer_code">Código de convite</string>
+    <string name="student_trainer_code_support">Seis caracteres, como ABC234.</string>
+    <string name="student_trainer_search">Continuar</string>
+    <!-- A confirmação pergunta em vez de afirmar: o nome foi escrito por quem gerou o código, e
+         não é identidade verificada. -->
+    <string name="student_trainer_confirm_explanation">Este é o treinador do código. Ao continuar,
+        ele poderá ver seu perfil de treino, incluindo peso, altura e lesões.</string>
+    <string name="student_trainer_confirm">Pedir para treinar com ele</string>
+    <string name="student_trainer_dismiss">Não é ele</string>
+    <string name="student_trainer_accept">Aceitar convite</string>
+    <string name="student_trainer_cancel">Cancelar pedido</string>
+    <string name="student_trainer_end">Encerrar</string>
+    <string name="student_trainer_past">Treinadores anteriores</string>
+
+    <!-- Estado do vínculo, dito do lado do aluno: o mesmo estado tem outra frase para o treinador. -->
+    <string name="student_link_invited">Convidou você para treinar.</string>
+    <string name="student_link_requested">Aguardando a resposta dele.</string>
+    <string name="student_link_active">Acompanha seus treinos</string>
+    <string name="student_link_paused">Pausado</string>
+    <string name="student_link_ended">Encerrado</string>
+
+    <!-- Erros do código. Cada frase diz o que fazer, e três delas não são "tente de novo". -->
+    <string name="student_trainer_error_not_found">Não encontramos esse código. Confira as letras e
+        os números com quem enviou.</string>
+    <string name="student_trainer_error_own_code">Esse código é o seu, do seu perfil de treinador.</string>
+    <string name="student_trainer_error_already_linked">Você já tem um vínculo com esse
+        treinador.</string>
+    <string name="student_trainer_error_unknown">Não foi possível concluir agora. Confira sua
+        conexão e tente de novo.</string>
 </resources>

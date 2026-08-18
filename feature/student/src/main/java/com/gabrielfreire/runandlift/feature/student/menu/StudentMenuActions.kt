@@ -13,12 +13,6 @@ package com.gabrielfreire.runandlift.feature.student.menu
 internal data class StudentMenuActions(
     val onOpenAccount: () -> Unit,
     val onOpenTraining: () -> Unit,
+    val onOpenTrainer: () -> Unit,
     val onSignOut: () -> Unit,
-)
-
-/** As ações sem efeito, para os previews. */
-internal fun previewStudentMenuActions() = StudentMenuActions(
-    onOpenAccount = {},
-    onOpenTraining = {},
-    onSignOut = {},
 )
