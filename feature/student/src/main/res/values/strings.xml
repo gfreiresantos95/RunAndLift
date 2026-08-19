@@ -25,6 +25,52 @@
     <string name="student_home_reminder_body">Quanto mais o seu treinador souber sobre você, mais o
         treino é seu. Toque para completar.</string>
 
+
+    <!--
+        Painel da home. Os números são de exemplo até existir treino registrado, e a tela diz isso
+        na linha de apoio de cada seção — uma ressalva num rodapé é uma ressalva escondida.
+    -->
+    <string name="student_home_sample">Dados de exemplo enquanto os treinos não são registrados.</string>
+
+    <!-- Próximo treino: a pergunta com que se abre o app dentro da academia. -->
+    <string name="student_home_next_workout_title">Seu próximo treino</string>
+    <string name="student_home_next_workout_when">Hoje</string>
+    <plurals name="student_home_next_workout_size">
+        <item quantity="one">%1$d exercício · cerca de %2$d min</item>
+        <item quantity="other">%1$d exercícios · cerca de %2$d min</item>
+    </plurals>
+
+    <!-- A semana: constância se enxerga em faixa, e não em número. -->
+    <string name="student_home_week_title">Sua semana</string>
+    <!-- Ditas pelo leitor de tela no lugar da marca do dia, com o nome do dia por extenso. -->
+    <string name="student_home_week_day_done">%1$s, treino feito</string>
+    <string name="student_home_week_day_planned">%1$s, treino previsto</string>
+    <string name="student_home_week_day_rest">%1$s, descanso</string>
+
+    <string name="student_home_sessions_value">%1$d de %2$d</string>
+    <string name="student_home_sessions_label">Treinos da semana</string>
+    <plurals name="student_home_sessions_remaining">
+        <item quantity="one">Falta %1$d para fechar</item>
+        <item quantity="other">Faltam %1$d para fechar</item>
+    </plurals>
+    <!-- O recibo de quem cumpriu. Sem ele a peça diria "faltam 0 treinos". -->
+    <string name="student_home_sessions_complete">Semana completa</string>
+
+    <plurals name="student_home_streak_label">
+        <item quantity="one">Semana seguida</item>
+        <item quantity="other">Semanas seguidas</item>
+    </plurals>
+    <string name="student_home_streak_support">Sem furar desde 14/07</string>
+
+    <string name="student_home_volume_value">%1$s kg</string>
+    <string name="student_home_volume_label">Volume</string>
+    <string name="student_home_volume_support">Carga total levantada</string>
+
+    <string name="student_home_time_label">Tempo em treino</string>
+    <string name="student_home_time_support">Somando as sessões da semana</string>
+
+    <!-- Recorde: a peça que é boa de ver e não pede nada, e por isso fica por último. -->
+    <string name="student_home_record_title">Seu recorde mais recente</string>
     <!-- Treinos. -->
     <string name="student_workouts_title">Treinos</string>
     <!-- Título do vazio no presente, e não "nenhum treino": ele descreve o que a tela É, e a linha

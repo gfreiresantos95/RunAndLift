@@ -24,7 +24,8 @@ import com.gabrielfreire.runandlift.feature.trainer.profile.MissingTrainerData
  * usa os dois papéis reconhece onde está pela linha do card e pelo conteúdo que vem abaixo, e não
  * por um layout diferente que obrigaria a reaprender a tela.
  *
- * O que entra abaixo do aviso é a carteira de alunos, com quem treinou e quem sumiu.
+ * Abaixo do aviso vem o painel: a carteira contada, a semana de trabalho e quem precisa dele. A
+ * tela não conhece nenhum desses números — recebe o estado e o entrega a [TrainerDashboardSection].
  */
 @Composable
 internal fun TrainerHomeScreen(
@@ -54,15 +55,17 @@ internal fun TrainerHomeScreen(
             if (state.missing.any) {
                 ProfileReminderCard(missingCount = state.missing.count, onClick = onOpenProfile)
             }
+
+            TrainerDashboardSection(roster = state.roster, dashboard = state.dashboard)
         }
     }
 }
 
-@Preview(name = "Início do treinador · claro", showBackground = true, heightDp = 640)
+@Preview(name = "Início do treinador · claro", showBackground = true, heightDp = 1280)
 @Preview(
     name = "Início do treinador · escuro",
     showBackground = true,
-    heightDp = 640,
+    heightDp = 1280,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
@@ -75,6 +78,7 @@ private fun TrainerHomeScreenPreview() {
                 // Com pendência, que é o estado real de quem pulou passos no passo a passo — e o
                 // único em que o aviso aparece.
                 missing = MissingTrainerData(specialties = true, showcase = true),
+                roster = previewRoster(),
             ),
             tabs = previewTabs(TrainerTab.HOME),
             onOpenProfile = {},

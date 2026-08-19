@@ -10,6 +10,10 @@ import com.gabrielfreire.runandlift.feature.student.profile.MissingStudentData
  *   giro de carregamento para preencher uma palavra pisca mais do que informa.
  * @param displayName nome gravado no cadastro, ou `null` para quem entrou pelo Google e ainda não
  *   completou o perfil.
+ * @param dashboard o painel — o próximo treino, a semana e o recorde. Nasce com valores de
+ *   exemplo e continua neles enquanto não houver treino registrado no produto; a tela diz isso em
+ *   cada bloco. É campo do estado, e não constante lida pelos composables, justamente para que a
+ *   troca por dado real seja uma linha no ViewModel.
  * @param missing o que falta no perfil de treino. Enquanto a leitura não termina, é o vazio — e o
  *   aviso não aparece: um aviso que some sozinho um instante depois é pior que um aviso atrasado.
  */
@@ -17,6 +21,7 @@ internal data class StudentHomeUiState(
     val loading: Boolean = true,
     val displayName: String? = null,
     val missing: MissingStudentData = MissingStudentData(),
+    val dashboard: StudentDashboard = StudentDashboard.SAMPLE,
 ) {
 
     /**

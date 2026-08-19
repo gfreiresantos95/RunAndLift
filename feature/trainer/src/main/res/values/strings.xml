@@ -22,6 +22,57 @@
     <string name="trainer_home_reminder_body">Um perfil completo é o que faz um aluno escolher você
         em vez de rolar a lista. Toque para completar.</string>
 
+
+    <!--
+        Painel da home. A carteira vem do banco; a semana e o bloco de atenção são exemplo até
+        existirem treino prescrito e sessão registrada, e a tela diz isso onde eles aparecem.
+    -->
+    <string name="trainer_home_sample">Dados de exemplo enquanto não há treino prescrito nem sessão
+        registrada.</string>
+
+    <!-- Carteira: os únicos números do painel que vêm do banco, e por isso sem ressalva. -->
+    <string name="trainer_home_roster_title">Sua carteira</string>
+    <plurals name="trainer_home_active_label">
+        <item quantity="one">Aluno ativo</item>
+        <item quantity="other">Alunos ativos</item>
+    </plurals>
+    <string name="trainer_home_active_support">%1$d na carteira com os pausados</string>
+    <plurals name="trainer_home_pending_label">
+        <item quantity="one">Pedido esperando</item>
+        <item quantity="other">Pedidos esperando</item>
+    </plurals>
+    <string name="trainer_home_pending_support">Responda na aba Alunos</string>
+    <string name="trainer_home_paused_label">Pausados</string>
+    <string name="trainer_home_paused_support">Voltam quando quiserem</string>
+    <string name="trainer_home_ended_label">Encerrados</string>
+    <string name="trainer_home_ended_support">Histórico preservado</string>
+    <!-- Falha de leitura em âmbar, e não em vermelho: não impede nada do que se faz nesta tela. -->
+    <string name="trainer_home_roster_failed">Não deu para contar seus alunos agora. Confira sua
+        conexão e abra a tela de novo.</string>
+
+    <!-- A semana de trabalho: o que foi prescrito e o que virou treino. -->
+    <string name="trainer_home_week_title">Sua semana</string>
+    <string name="trainer_home_adherence_value">%1$d%%</string>
+    <string name="trainer_home_adherence_label">Aderência média</string>
+    <string name="trainer_home_workouts_label">Treinos entregues</string>
+    <string name="trainer_home_workouts_support">Prescritos nesta semana</string>
+    <string name="trainer_home_sessions_label">Sessões registradas</string>
+    <string name="trainer_home_sessions_support">Pelos seus alunos</string>
+    <string name="trainer_home_checkins_value">%1$d de %2$d</string>
+    <string name="trainer_home_checkins_label">Check-ins</string>
+    <string name="trainer_home_checkins_support">Respondidos na semana</string>
+
+    <!-- Semáforo de aderência. A palavra é o canal que funciona para todo mundo. -->
+    <string name="trainer_home_level_ok">Em dia</string>
+    <string name="trainer_home_level_slipping">Escorregando</string>
+    <string name="trainer_home_level_stopped">Parou</string>
+
+    <!-- Quem precisa de atenção: o único bloco do painel que muda o que se faz hoje. -->
+    <string name="trainer_home_attention_title">Precisam de você</string>
+    <plurals name="trainer_home_attention_support">
+        <item quantity="one">%1$d aluno saiu do ritmo esta semana</item>
+        <item quantity="other">%1$d alunos saíram do ritmo esta semana</item>
+    </plurals>
     <!-- Treinos. -->
     <string name="trainer_workouts_title">Treinos</string>
     <!-- Título do vazio no presente, e não "nenhum treino": ele descreve o que a tela É, e a linha

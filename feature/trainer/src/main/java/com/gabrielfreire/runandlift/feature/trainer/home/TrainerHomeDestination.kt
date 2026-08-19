@@ -22,7 +22,8 @@ import com.gabrielfreire.runandlift.feature.trainer.navigation.trainerTabBar
  * Liga o início do treinador ao seu ViewModel e às abas.
  *
  * Relê o estado a cada volta para a tela (`LifecycleResumeEffect`), e não só na criação: quem
- * completa o perfil e volta precisa ver o aviso sumir. O ViewModel sobrevive à ida à edição — é o
+ * completa o perfil e volta precisa ver o aviso sumir — e quem aceitou um pedido na aba de alunos
+ * precisa ver a contagem da carteira acompanhar. O ViewModel sobrevive à ida à edição — é o
  * mesmo destino na pilha —, então sem esta releitura o aviso continuaria lá, dizendo que falta o
  * que acabou de ser preenchido.
  */
@@ -38,6 +39,7 @@ internal fun TrainerHomeDestination(
                     authRepository = dependencies.authRepository,
                     userRepository = dependencies.userRepository,
                     trainerRepository = dependencies.trainerRepository,
+                    linkRepository = dependencies.linkRepository,
                 )
             }
         },
