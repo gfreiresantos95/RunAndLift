@@ -140,6 +140,33 @@ internal object PreviewSamples {
         const val GREETING = "Olá, Ana"
         const val ROLE_STUDENT = "Aluno"
         const val ROLE_TRAINER = "Treinador"
+
+        /** A linha de quem acompanha o aluno, que é o que o papel dele sozinho não dizia. */
+        const val COACH = "Treinador: Marcos Vieira · CREF 012345-G/SP"
+        const val COACH_SINCE = "Aluno desde 09/03/2026"
+    }
+
+    /**
+     * Painel das duas homes: número medido, rótulo e estado.
+     *
+     * Os exemplos são números de duas casas de propósito. Com "3" e "9" a fileira de peças fica
+     * bonita e mente: o que se confere olhando para ela é se o rótulo continua no lugar quando o
+     * número cresce, e é isso que os dígitos tabulares existem para garantir.
+     */
+    object Dashboard {
+        const val SECTION_TITLE = "Sua semana"
+        const val SECTION_SUPPORT = "Dados de exemplo enquanto os treinos não são registrados."
+        const val ROSTER_TITLE = "Sua carteira"
+        const val METRIC_VALUE = "12"
+        const val METRIC_LABEL = "Alunos ativos"
+        const val METRIC_SUPPORT = "2 entraram este mês"
+        const val ALERT_VALUE = "3"
+        const val ALERT_LABEL = "Pedidos esperando você"
+        const val STREAK_VALUE = "5"
+        const val STREAK_LABEL = "Semanas seguidas"
+        const val STATUS_OK = "Em dia"
+        const val STATUS_ATTENTION = "Escorregando"
+        const val STATUS_CRITICAL = "Parou"
     }
 
     /** Texto de aviso, para o card que só existe para explicar alguma coisa. */

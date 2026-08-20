@@ -24,8 +24,17 @@ import com.gabrielfreire.runandlift.feature.student.profile.MissingStudentData
  * repetir ali o rótulo da aba que já está destacada logo abaixo gastaria a única linha em que a
  * marca aparece.
  *
- * O card é a única coisa por enquanto. O que vem depois — treino do dia e aviso de cadastro
- * incompleto — entra abaixo dele, nesta mesma coluna.
+ * **A identidade abre a tela sem moldura, e diz quem treina a pessoa.** Sem moldura porque um card
+ * cinza colado no card do próximo treino empilha duas superfícies com nada entre elas, e a que
+ * importa é a de baixo. E com o treinador no lugar da palavra "Aluno" porque o papel de quem abriu
+ * o app é a única coisa que ele já sabe — foi por esse caminho que entrou.
+ *
+ * Abaixo vêm, nesta ordem, o aviso de cadastro incompleto e o painel: a pendência é da pessoa e
+ * vale para tudo o que ela vir depois, então vem antes do que ela veio ver.
+ *
+ * **A tela não conhece nenhum número do painel** — ela recebe o estado e o entrega a
+ * [StudentDashboardSection]. É o que fará a troca dos exemplos por treino registrado não tocar
+ * neste arquivo.
  */
 @Composable
 internal fun StudentHomeScreen(
@@ -46,8 +55,13 @@ internal fun StudentHomeScreen(
                 greeting = state.displayName
                     ?.let { stringResource(R.string.student_home_greeting, it) }
                     ?: stringResource(R.string.student_home_greeting_anonymous),
-                subtitle = stringResource(R.string.student_home_role),
+                subtitle = state.trainer
+                    ?.let { stringResource(R.string.student_home_trainer, it.name, it.cref) }
+                    ?: stringResource(R.string.student_home_role),
                 monogram = state.monogram,
+                support = state.trainer
+                    ?.let { stringResource(R.string.student_home_trainer_since, it.sinceLabel) },
+                framed = false,
             )
 
             // Logo abaixo da identidade, e antes de tudo o que vier depois: é uma pendência da
@@ -55,6 +69,8 @@ internal fun StudentHomeScreen(
             if (state.missing.any) {
                 ProfileReminderCard(missingCount = state.missing.count, onClick = onOpenProfile)
             }
+
+            StudentDashboardSection(dashboard = state.dashboard)
         }
     }
 }
@@ -63,11 +79,11 @@ internal fun StudentHomeScreen(
  * Com nome, que é o caso de quem criou a conta pelo formulário. O estado sem nome está no preview
  * do próprio [AppIdentityCard], onde o que se confere é o card e não a tela.
  */
-@Preview(name = "Início do aluno · claro", showBackground = true, heightDp = 640)
+@Preview(name = "Início do aluno · claro", showBackground = true, heightDp = 1280)
 @Preview(
     name = "Início do aluno · escuro",
     showBackground = true,
-    heightDp = 640,
+    heightDp = 1280,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable

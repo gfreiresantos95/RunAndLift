@@ -1,6 +1,8 @@
 package com.gabrielfreire.runandlift.feature.trainer.home
 
+import com.gabrielfreire.runandlift.data.model.LinkStatus
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeAuthRepository
+import com.gabrielfreire.runandlift.feature.trainer.fake.FakeLinkRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeTrainerRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeUserRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.MainDispatcherRule
@@ -113,6 +115,7 @@ class TrainerHomeViewModelTest {
         assertNull(viewModel.uiState.value.displayName)
         assertFalse(viewModel.uiState.value.missing.any)
         assertFalse(viewModel.uiState.value.loading)
+        assertNull("sem sessão não há carteira para contar", viewModel.uiState.value.roster)
     }
 
     @Test
@@ -136,9 +139,74 @@ class TrainerHomeViewModelTest {
         assertEquals("Carlos Pereira", viewModel.uiState.value.displayName)
     }
 
+    @Test
+    fun `carteira lida vira contagem no painel`() = runTest {
+        val viewModel = viewModel(
+            links = FakeLinkRepository(
+                links = listOf(
+                    FakeLinkRepository.link(LinkStatus.ACTIVE, name = "Ana"),
+                    FakeLinkRepository.link(LinkStatus.ACTIVE, name = "Bruno"),
+                    FakeLinkRepository.link(LinkStatus.REQUESTED, name = "Carla"),
+                    FakeLinkRepository.link(LinkStatus.ENDED, name = "Diego"),
+                ),
+            ),
+        )
+
+        advanceUntilIdle()
+
+        val roster = viewModel.uiState.value.roster
+        assertEquals(2, roster?.active)
+        assertEquals(1, roster?.pending)
+        assertEquals(1, roster?.ended)
+    }
+
+    @Test
+    fun `carteira que falha vira nulo, e nao zero aluno`() = runTest {
+        val viewModel = viewModel(links = FakeLinkRepository(failReading = true))
+
+        advanceUntilIdle()
+
+        assertNull(
+            "dizer 0 alunos a quem tem trinta é informação errada, não palpite",
+            viewModel.uiState.value.roster,
+        )
+        assertFalse(viewModel.uiState.value.loading)
+    }
+
+    @Test
+    fun `carteira vazia de verdade conta zero, e nao vira falha`() = runTest {
+        val viewModel = viewModel()
+
+        advanceUntilIdle()
+
+        val roster = viewModel.uiState.value.roster
+        assertEquals(0, roster?.active)
+        assertTrue("quem nunca teve aluno lê uma tela, quem não conseguiu ler lê outra", roster!!.isEmpty)
+    }
+
+    @Test
+    fun `recarregar reconta a carteira depois de aceitar um pedido na outra aba`() = runTest {
+        val links = FakeLinkRepository(links = listOf(FakeLinkRepository.link(LinkStatus.REQUESTED)))
+        val viewModel = viewModel(links = links)
+        advanceUntilIdle()
+        assertEquals(0, viewModel.uiState.value.roster?.active)
+
+        links.updateStatus(FakeLinkRepository.link(LinkStatus.REQUESTED), LinkStatus.ACTIVE)
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.value.roster?.active)
+    }
+
     private fun viewModel(
         auth: FakeAuthRepository = FakeAuthRepository(),
         users: FakeUserRepository = FakeUserRepository(),
         trainers: FakeTrainerRepository = FakeTrainerRepository(),
-    ) = TrainerHomeViewModel(authRepository = auth, userRepository = users, trainerRepository = trainers)
+        links: FakeLinkRepository = FakeLinkRepository(),
+    ) = TrainerHomeViewModel(
+        authRepository = auth,
+        userRepository = users,
+        trainerRepository = trainers,
+        linkRepository = links,
+    )
 }

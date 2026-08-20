@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Traço ("remove") do Material Symbols, como vetor local — mesma razão de `ic_check`.
+
+    Marca o dia sem treino na faixa da semana. É um traço, e não um "X": X é o desenho de erro, e
+    descanso previsto não é falta de ninguém. O que ele diz é "nada marcado para hoje".
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M19,13H5v-2h14v2z" />
+</vector>

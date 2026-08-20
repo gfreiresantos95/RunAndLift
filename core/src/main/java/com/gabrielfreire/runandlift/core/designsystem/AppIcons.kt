@@ -56,4 +56,13 @@ object AppIcons {
     /** Falha ou pendência. Acompanha toda mensagem em que a cor sozinha carregaria o recado. */
     @DrawableRes
     val Alert: Int = R.drawable.ic_error
+
+    /**
+     * Traço. Marca o dia em que não há nada marcado, na faixa da semana.
+     *
+     * Não é o [Clear]: um "X" no dia de descanso desenha uma falta onde havia plano cumprido, e
+     * quem segue o programa à risca terminaria a semana com quatro cruzes.
+     */
+    @DrawableRes
+    val Rest: Int = R.drawable.ic_rest
 }

@@ -76,6 +76,15 @@ object Dimens {
     /** Altura de linha de lista com uma linha de texto e ícone. */
     val ListItemHeight = 56.dp
 
+    /**
+     * 16dp — o ícone que acompanha uma palavra, e não a substitui.
+     *
+     * Existe porque os 24dp de [com.gabrielfreire.runandlift.core.designsystem.AppIcons] são a
+     * medida do ícone que carrega o recado sozinho. Ao lado de um rótulo de 14sp, esse tamanho faz
+     * o desenho virar o elemento principal de uma peça cujo assunto é o texto.
+     */
+    val IconSmall = 16.dp
+
     /** Espessura de divisor e de contorno. */
     val BorderThin = 1.dp
 
