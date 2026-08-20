@@ -16,12 +16,17 @@ import com.gabrielfreire.runandlift.feature.student.profile.MissingStudentData
  *   troca por dado real seja uma linha no ViewModel.
  * @param missing o que falta no perfil de treino. Enquanto a leitura não termina, é o vazio — e o
  *   aviso não aparece: um aviso que some sozinho um instante depois é pior que um aviso atrasado.
+ * @param trainer quem acompanha esta pessoa, ou `null` para quem ainda não se vinculou a ninguém.
+ *   Nasce do exemplo pela mesma razão que o painel, e a diferença entre os dois casos é o que a
+ *   linha sob a saudação diz: o nome do treinador quando há um, e o papel de quem está logado
+ *   quando não há — porque "Treinador: —" é uma lacuna, e não uma informação.
  */
 internal data class StudentHomeUiState(
     val loading: Boolean = true,
     val displayName: String? = null,
     val missing: MissingStudentData = MissingStudentData(),
     val dashboard: StudentDashboard = StudentDashboard.SAMPLE,
+    val trainer: LinkedTrainer? = LinkedTrainer.SAMPLE,
 ) {
 
     /**

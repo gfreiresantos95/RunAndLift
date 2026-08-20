@@ -140,6 +140,10 @@ internal object PreviewSamples {
         const val GREETING = "Olá, Ana"
         const val ROLE_STUDENT = "Aluno"
         const val ROLE_TRAINER = "Treinador"
+
+        /** A linha de quem acompanha o aluno, que é o que o papel dele sozinho não dizia. */
+        const val COACH = "Treinador: Marcos Vieira · CREF 012345-G/SP"
+        const val COACH_SINCE = "Aluno desde 09/03/2026"
     }
 
     /**

@@ -26,22 +26,19 @@ import com.gabrielfreire.runandlift.feature.student.R
  * 2. **A semana**, que é onde a constância se enxerga e onde mora a única frase que cobra algo.
  * 3. **O recorde**, que é bom de ver e não pede nada.
  *
- * **Cada bloco diz que é exemplo, e diz na linha do título.** Enfiar a ressalva num rodapé cinza no
- * fim da tela seria a mesma coisa que escondê-la: quem lê "12.480 kg" e acredita já acreditou antes
- * de chegar ao rodapé.
+ * **Só a semana tem cabeçalho.** O primeiro bloco carrega o próprio título dentro do card, e o
+ * recorde já diz o que é na primeira linha dele — um cabeçalho para cada peça transformaria a
+ * rolagem numa alternância de título e conteúdo em que nada se destaca de nada.
  */
 @Composable
 internal fun StudentDashboardSection(dashboard: StudentDashboard, modifier: Modifier = Modifier) {
-    val sample = stringResource(R.string.student_home_sample)
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(Dimens.SpaceLarge),
     ) {
-        AppSectionHeader(title = stringResource(R.string.student_home_next_workout_title), support = sample)
         NextWorkoutCard(dashboard = dashboard)
 
-        AppSectionHeader(title = stringResource(R.string.student_home_week_title), support = sample)
+        AppSectionHeader(title = stringResource(R.string.student_home_week_title))
         WeekStrip(dashboard = dashboard)
         WeekMetrics(dashboard = dashboard)
 
