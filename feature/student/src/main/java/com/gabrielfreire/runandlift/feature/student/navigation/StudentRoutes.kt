@@ -20,6 +20,24 @@ object StudentRoutes {
     const val WORKOUTS = "student/workouts"
     const val MENU = "student/menu"
 
+    /** Argumento do dia de treino: a posição dele dentro da prescrição, e não um dia da semana. */
+    internal const val DAY_INDEX_ARG = "dayIndex"
+
+    /**
+     * Um dia do treino, empilhado sobre a aba [WORKOUTS].
+     *
+     * O argumento é a **posição**, e não um identificador: um dia não tem id próprio porque ele não
+     * é documento — mora dentro da prescrição, que é lida inteira numa leitura só. A posição basta
+     * porque a lista de onde ela veio continua viva na pilha, no ViewModel da aba.
+     *
+     * Empilha em vez de expandir na lista porque um dia com oito exercícios é uma tela cheia, e
+     * porque é assim que se lê na academia: um dia de cada vez.
+     */
+    internal const val WORKOUT_DAY_PATTERN = "$WORKOUTS/day/{$DAY_INDEX_ARG}"
+
+    /** Rota concreta de um dia do treino. */
+    internal fun workoutDay(dayIndex: Int): String = "$WORKOUTS/day/$dayIndex"
+
     /**
      * Passo a passo do primeiro acesso. É o destino inicial de quem ainda não tem documento em
      * `students/{uid}` — quem decide isso é `:app`, na abertura, antes da primeira composição.

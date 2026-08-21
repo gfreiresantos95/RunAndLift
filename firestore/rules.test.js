@@ -584,6 +584,27 @@ describe('prescrição', () => {
     await assertFails(student.doc('assignments/a5').get());
   });
 
+  it('a busca da própria atribuição é permitida, e a sem filtro não', async () => {
+    // É esta consulta — e não o `get()` acima — que a aba de treinos do aluno faz: ela não conhece
+    // o id do documento, só o próprio uid. Regra de leitura e consulta são avaliadas de formas
+    // diferentes, e passar no `get()` não garante passar aqui.
+    await seed(async (db) => {
+      await db
+        .doc('assignments/a6')
+        .set({ trainerId: TRAINER, studentId: STUDENT, programId: 'p1', days: [] });
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+
+    await assertSucceeds(student.collection('assignments').where('studentId', '==', STUDENT).get());
+    // Sem o filtro, a consulta pediria a prescrição de todo mundo — e o Firestore recusa a consulta
+    // inteira em vez de devolver a metade permitida.
+    await assertFails(student.collection('assignments').get());
+    await assertFails(
+      student.collection('assignments').where('studentId', '==', OTHER_STUDENT).get(),
+    );
+  });
+
   it('a listagem de programas por dono é permitida, e a sem filtro não', async () => {
     const trainer = testEnv.authenticatedContext(TRAINER).firestore();
 
