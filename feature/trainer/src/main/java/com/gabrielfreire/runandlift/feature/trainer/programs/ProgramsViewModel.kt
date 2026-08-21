@@ -66,9 +66,13 @@ internal class ProgramsViewModel(
     fun onDelete(program: Program) {
         if (_uiState.value.deleting != null) return
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(deleting = program.id) }
+        // A trava é levantada **antes** do `launch`, como em `StudentsViewModel`: marcá-la dentro
+        // faria os dois toques de um toque duplo passarem pela verificação antes de qualquer um
+        // deles a acender, e a proteção passaria a depender de o `Main.immediate` rodar o corpo da
+        // corrotina na hora — que é verdade no aparelho e não é garantia.
+        _uiState.update { it.copy(deleting = program.id) }
 
+        viewModelScope.launch {
             runCatching { programRepository.delete(program.id) }
                 .onSuccess {
                     _uiState.update { state ->

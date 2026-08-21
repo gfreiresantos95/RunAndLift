@@ -138,6 +138,20 @@ class ProgramEditsTest {
         )
     }
 
+    @Test
+    fun `prescricao em exercicio que nao existe devolve o programa intacto`() {
+        // A tela de prescrição recebe duas posições por argumento de navegação, e as duas continuam
+        // valendo depois de o usuário remover o exercício — o processo pode até ser recriado no meio.
+        assertEquals(
+            program,
+            program.withPrescription(dayIndex = 0, exerciseIndex = 5, prescription = prescription("fly")),
+        )
+        assertEquals(
+            program,
+            program.withPrescription(dayIndex = 1, exerciseIndex = 0, prescription = prescription("fly")),
+        )
+    }
+
     private fun prescription(id: String) = PrescribedExercise(
         exerciseId = id,
         exerciseName = id.replaceFirstChar(Char::uppercase),

@@ -88,9 +88,13 @@ internal class AssignViewModel(
         val program = _uiState.value.program ?: return
         if (_uiState.value.assigning != null) return
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(assigning = link.studentId, assignFailed = false) }
+        // A trava é levantada **antes** do `launch`, e não dentro dele, como em `StudentsViewModel`:
+        // marcá-la lá faria os dois toques de um toque duplo passarem pela verificação antes de
+        // qualquer um deles a acender, e a proteção passaria a depender de o `Main.immediate` rodar
+        // o corpo da corrotina na hora — que é verdade no aparelho e não é garantia.
+        _uiState.update { it.copy(assigning = link.studentId, assignFailed = false) }
 
+        viewModelScope.launch {
             val assignment = Assignment.from(
                 program = program,
                 studentId = link.studentId,
@@ -112,9 +116,9 @@ internal class AssignViewModel(
         val program = _uiState.value.program ?: return
         if (_uiState.value.assigning != null) return
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(assigning = link.studentId, assignFailed = false) }
+        _uiState.update { it.copy(assigning = link.studentId, assignFailed = false) }
 
+        viewModelScope.launch {
             val assignment = Assignment.from(
                 program = program,
                 studentId = link.studentId,
