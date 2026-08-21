@@ -34,8 +34,19 @@ google-services.json
 *.keystore
 keystore.properties
 secrets.properties
+# Chave de conta de serviço do Admin SDK: acesso administrativo ao projeto inteiro, sem passar por
+# Security Rule nenhuma. É o que o importador de catálogo usa (tools/catalog/README.md).
+*serviceAccount*.json
+*service-account*.json
 
-# Node e Firebase CLI — usados só pelos testes das Security Rules (firestore/)
+# Catálogo de exercícios — dado gerado por tools/catalog/build-catalog.js a partir de uma base de
+# terceiro. São 900 KB que um comando reproduz em dois segundos; o que é decisão está nos scripts,
+# que esses sim são versionados. A base de origem também não entra: ela é baixada, não é nossa.
+tools/catalog/catalog.json
+tools/catalog/exercises-ptbr-*.json
+
+# Node e Firebase CLI — testes das Security Rules (firestore/) e o importador de catálogo
+# (tools/catalog/)
 node_modules/
 # Cache local do CLI, criado no primeiro `firebase deploy`.
 .firebase/

@@ -497,6 +497,103 @@ describe('catálogo de exercícios', () => {
   });
 });
 
+describe('prescrição', () => {
+  const program = { trainerId: TRAINER, name: 'Treino ABC', days: [] };
+
+  it('o treinador cria, lê e apaga o próprio programa', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+
+    await assertSucceeds(trainer.doc('programs/p1').set(program));
+    await assertSucceeds(trainer.doc('programs/p1').get());
+    await assertSucceeds(trainer.doc('programs/p1').update({ name: 'Treino ABCD' }));
+    await assertSucceeds(trainer.doc('programs/p1').delete());
+  });
+
+  it('NÃO deixa criar programa em nome de outro treinador', async () => {
+    const other = testEnv.authenticatedContext(OTHER_TRAINER).firestore();
+    await assertFails(other.doc('programs/p2').set(program));
+  });
+
+  it('NÃO deixa o aluno ler o programa, nem com vínculo ativo', async () => {
+    // É esta regra que obriga `assignments` a carregar uma cópia dos dias: sem ela o aluno não
+    // teria como ler o próprio treino. Ver `Program` e `Assignment`.
+    await seed(async (db) => {
+      await db.doc('programs/p3').set(program);
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set(activeLink(TRAINER, STUDENT));
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertFails(student.doc('programs/p3').get());
+  });
+
+  it('atribuir exige vínculo ativo', async () => {
+    await seed(async (db) => {
+      await db.doc(`links/${linkId(TRAINER, STUDENT)}`).set(activeLink(TRAINER, STUDENT));
+    });
+
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertSucceeds(
+      trainer.doc('assignments/a1').set({ trainerId: TRAINER, studentId: STUDENT, programId: 'p1' }),
+    );
+  });
+
+  it('NÃO deixa atribuir a quem não é aluno', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertFails(
+      trainer
+        .doc('assignments/a2')
+        .set({ trainerId: TRAINER, studentId: OTHER_STUDENT, programId: 'p1' }),
+    );
+  });
+
+  it('NÃO deixa atribuir com vínculo pausado', async () => {
+    await seed(async (db) => {
+      await db
+        .doc(`links/${linkId(TRAINER, STUDENT)}`)
+        .set({ ...activeLink(TRAINER, STUDENT), status: 'paused' });
+    });
+
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+    await assertFails(
+      trainer.doc('assignments/a3').set({ trainerId: TRAINER, studentId: STUDENT, programId: 'p1' }),
+    );
+  });
+
+  it('o aluno lê a própria atribuição e não escreve nela', async () => {
+    await seed(async (db) => {
+      await db
+        .doc('assignments/a4')
+        .set({ trainerId: TRAINER, studentId: STUDENT, programId: 'p1', days: [] });
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertSucceeds(student.doc('assignments/a4').get());
+    // Prescrição é ato do profissional: o aluno lê o que recebeu, não o edita.
+    await assertFails(student.doc('assignments/a4').update({ days: [{ label: 'X' }] }));
+    await assertFails(student.doc('assignments/a4').delete());
+  });
+
+  it('NÃO deixa o aluno ler a atribuição de outro', async () => {
+    await seed(async (db) => {
+      await db
+        .doc('assignments/a5')
+        .set({ trainerId: TRAINER, studentId: OTHER_STUDENT, programId: 'p1' });
+    });
+
+    const student = testEnv.authenticatedContext(STUDENT).firestore();
+    await assertFails(student.doc('assignments/a5').get());
+  });
+
+  it('a listagem de programas por dono é permitida, e a sem filtro não', async () => {
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+
+    await assertSucceeds(trainer.collection('programs').where('trainerId', '==', TRAINER).get());
+    // Sem o filtro, a consulta pede documentos de outros treinadores — e o Firestore recusa a
+    // consulta inteira em vez de devolver metade.
+    await assertFails(trainer.collection('programs').get());
+  });
+});
+
 describe('painel e trilha de auditoria', () => {
   it('o painel do treinador é só do dono', async () => {
     await seed(async (db) => {

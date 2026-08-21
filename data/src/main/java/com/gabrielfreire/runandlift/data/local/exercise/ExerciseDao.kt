@@ -23,18 +23,27 @@ internal interface ExerciseDao {
     fun observeById(id: String): Flow<ExerciseEntity?>
 
     /**
-     * Busca por nome, grupo muscular ou equipamento.
+     * Busca por nome, grupo muscular — primário ou secundário — ou equipamento.
      *
      * `LIKE` com `COLLATE NOCASE` resolve o caso de uso e roda em SQLite puro. FTS seria mais
      * rápido, mas o catálogo tem centenas de linhas, não milhões — e traria uma tabela virtual e
      * uma migração a mais para ganhar nada perceptível (backlog E4-01, catálogo deliberadamente
      * enxuto).
+     *
+     * **Busca vazia devolve o catálogo inteiro**, e é assim que a tela de escolha de exercício
+     * começa: `LIKE '%%'` casa com tudo, então quem abre a tela sem digitar nada recebe a lista
+     * completa sem precisar de uma segunda consulta.
+     *
+     * `COLLATE NOCASE` do SQLite só dobra a caixa de A-Z — "Abdômen" e "abdômen" casam, mas
+     * "abdomen" sem acento não encontra "Abdômen". Resolver isso exigiria uma coluna normalizada a
+     * mais; o gatilho é a primeira reclamação de busca que não acha o que existe.
      */
     @Query(
         """
         SELECT * FROM exercises
         WHERE name LIKE '%' || :query || '%' COLLATE NOCASE
            OR muscle_groups LIKE '%' || :query || '%' COLLATE NOCASE
+           OR secondary_muscle_groups LIKE '%' || :query || '%' COLLATE NOCASE
            OR equipment LIKE '%' || :query || '%' COLLATE NOCASE
         ORDER BY name COLLATE NOCASE ASC
         """,

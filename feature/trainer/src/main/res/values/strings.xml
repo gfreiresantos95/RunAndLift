@@ -319,4 +319,184 @@
         convite é %1$s.</string>
     <string name="trainer_invite_failed">Não foi possível carregar seu código agora.</string>
     <string name="trainer_invite_retry">Tentar de novo</string>
+
+    <!--
+        Montagem de treino: catálogo, programa, dia e prescrição.
+
+        O vocabulário é o da academia brasileira, e não o do software: "programa" e não "template",
+        "série" e não "set", "carga" e não "peso" — peso é o que a pessoa pesa, carga é o que ela
+        levanta, e confundir os dois num app de treino confunde o aluno na hora errada.
+    -->
+    <string name="trainer_programs_loading">Carregando seus programas</string>
+    <string name="trainer_programs_failed">Não deu para carregar seus programas agora. O que aparece
+        aqui pode estar desatualizado.</string>
+    <string name="trainer_programs_retry">Tentar de novo</string>
+
+    <string name="trainer_program_create">Criar programa</string>
+    <!-- Nome vazio acontece: o programa é salvo com o que houver, e a lista precisa de algo para
+         mostrar na linha. -->
+    <string name="trainer_program_unnamed">Programa sem nome</string>
+    <string name="trainer_program_size">%1$s · %2$s</string>
+    <!-- Dito na própria linha, e não só na hora de atribuir: descobrir ali é descobrir tarde. -->
+    <string name="trainer_program_incomplete">Falta completar para poder atribuir</string>
+    <plurals name="trainer_program_days">
+        <item quantity="one">%1$d dia</item>
+        <item quantity="other">%1$d dias</item>
+    </plurals>
+    <plurals name="trainer_program_exercises">
+        <item quantity="one">%1$d exercício</item>
+        <item quantity="other">%1$d exercícios</item>
+    </plurals>
+
+    <string name="trainer_program_title">Programa</string>
+    <string name="trainer_program_name">Nome do programa</string>
+    <string name="trainer_program_name_support">É por ele que você encontra o programa depois.
+        "Treino ABC · Hipertrofia" diz mais que "Programa 1".</string>
+    <string name="trainer_program_goal">Objetivo</string>
+    <string name="trainer_program_notes">Observação geral</string>
+    <string name="trainer_program_notes_support">Opcional. O que vale para o treino inteiro — como
+        progredir carga, quando repetir o ciclo.</string>
+    <string name="trainer_program_days">Dias</string>
+    <string name="trainer_program_days_empty">Nenhum dia ainda. Cada dia é um treino: A, B, C.</string>
+    <string name="trainer_program_add_day">Adicionar dia</string>
+    <!-- Aviso e não bloqueio: montar um programa leva dias, e um app que se recusa a guardar
+         trabalho pela metade ensina a pessoa a não confiar nele. -->
+    <string name="trainer_program_incomplete_notice">Para atribuir a um aluno, o programa precisa de
+        nome e de pelo menos um dia com exercícios. Você pode salvar assim e continuar depois.</string>
+    <string name="trainer_program_save_failed">Não deu para salvar agora. Confira sua conexão — o
+        programa continua aqui na tela.</string>
+    <string name="trainer_program_missing_title">Programa não encontrado</string>
+    <string name="trainer_program_missing">Ele pode ter sido apagado, ou a leitura não respondeu.
+        Volte e abra de novo pela lista.</string>
+
+    <string name="trainer_program_assign">Atribuir a um aluno</string>
+
+    <!--
+        Atribuição. O verbo é "atribuir" e não "enviar": o treino não viaja, ele passa a existir
+        para aquela pessoa — e "enviar" sugeriria uma mensagem que ela poderia não ter recebido.
+    -->
+    <string name="trainer_assign_title">Atribuir treino</string>
+    <string name="trainer_assign_loading">Carregando seus alunos</string>
+    <!-- A consequência dita antes do toque, e não depois: reatribuir substitui, e ninguém deveria
+         descobrir isso pelo resultado. -->
+    <string name="trainer_assign_replaces">Cada aluno tem um treino por vez. Atribuir substitui o
+        treino anterior dele, e o que ele já executou continua no histórico.</string>
+    <string name="trainer_assign_action">Atribuir</string>
+    <string name="trainer_assign_again">Atualizar o treino dele</string>
+    <string name="trainer_assign_end">Encerrar</string>
+    <string name="trainer_assign_current">Está com este treino</string>
+    <string name="trainer_assign_unnamed">Aluno sem nome</string>
+    <!-- Vazio de verdade: só entram vínculos ativos, porque é o que a regra do servidor aceita. -->
+    <string name="trainer_assign_empty_title">Nenhum aluno ativo</string>
+    <string name="trainer_assign_empty">Só dá para atribuir treino a quem tem vínculo ativo. Aceite
+        um pedido na aba Alunos, ou compartilhe o seu código de convite.</string>
+    <string name="trainer_assign_failed">Não deu para carregar seus alunos agora. Confira sua
+        conexão.</string>
+    <string name="trainer_assign_retry">Tentar de novo</string>
+    <string name="trainer_assign_write_failed">Não deu para atribuir agora. Confira sua conexão e
+        tente de novo.</string>
+
+    <string name="trainer_day_title">Treino %1$s</string>
+    <string name="trainer_day_untitled">Treino sem foco definido</string>
+    <string name="trainer_day_label">Letra do dia</string>
+    <string name="trainer_day_label_support">Curta, como na planilha: A, B, C.</string>
+    <string name="trainer_day_focus">Foco do dia</string>
+    <string name="trainer_day_focus_support">O que este treino trabalha. "Peito e tríceps",
+        "Puxar".</string>
+    <string name="trainer_day_exercises">Exercícios</string>
+    <string name="trainer_day_exercises_empty">Nenhum exercício ainda. A ordem aqui é a ordem de
+        execução.</string>
+    <string name="trainer_day_add_exercise">Adicionar exercício</string>
+    <string name="trainer_day_empty">Nenhum exercício</string>
+    <string name="trainer_day_size">%1$s · %2$s</string>
+    <plurals name="trainer_day_sets">
+        <item quantity="one">%1$d série</item>
+        <item quantity="other">%1$d séries</item>
+    </plurals>
+    <string name="trainer_day_move_up">Subir</string>
+    <string name="trainer_day_move_down">Descer</string>
+    <string name="trainer_day_remove_exercise">Remover</string>
+    <string name="trainer_day_remove">Remover este dia</string>
+
+    <string name="trainer_prescription_sets">Séries</string>
+    <string name="trainer_prescription_min_reps">Repetições, mínimo</string>
+    <string name="trainer_prescription_max_reps">Repetições, máximo</string>
+    <string name="trainer_prescription_reps_support">Para número fixo, deixe os dois iguais.</string>
+    <string name="trainer_prescription_rest_label">Descanso entre séries</string>
+    <string name="trainer_prescription_seconds">s</string>
+    <string name="trainer_prescription_load_label">Carga sugerida (kg)</string>
+    <string name="trainer_prescription_load_support">Opcional. Em branco significa a combinar na
+        academia.</string>
+    <string name="trainer_prescription_notes">Observação</string>
+    <string name="trainer_prescription_notes_support">O recado para o seu aluno neste
+        exercício.</string>
+    <string name="trainer_prescription_done">Pronto</string>
+    <!-- Ditos pelo leitor de tela: o contador é um nó só, e "menos" desenhado não se lê. -->
+    <string name="trainer_prescription_decrement">Diminuir</string>
+    <string name="trainer_prescription_increment">Aumentar</string>
+    <!-- A linha de números da lista, no formato da planilha: 4 × 8-12 · 60 kg · 90 s -->
+    <string name="trainer_prescription_sets_reps">%1$d × %2$s</string>
+    <string name="trainer_prescription_rep_range">%1$d-%2$d</string>
+    <string name="trainer_prescription_load">%1$s kg</string>
+    <string name="trainer_prescription_rest">%1$d s</string>
+
+    <string name="trainer_catalog_title">Escolher exercício</string>
+    <string name="trainer_catalog_search">Buscar exercício</string>
+    <string name="trainer_catalog_search_support">Por nome, músculo ou equipamento.</string>
+    <string name="trainer_catalog_loading">Carregando o catálogo</string>
+    <string name="trainer_catalog_filter_category">Tipo</string>
+    <string name="trainer_catalog_filter_muscle">Músculo</string>
+    <string name="trainer_catalog_filter_equipment">Equipamento</string>
+    <string name="trainer_catalog_filter_level">Nível</string>
+    <string name="trainer_catalog_clear_filters">Limpar filtros</string>
+    <string name="trainer_catalog_detail">Ver execução</string>
+    <plurals name="trainer_catalog_count">
+        <item quantity="one">%1$d exercício</item>
+        <item quantity="other">%1$d exercícios</item>
+    </plurals>
+    <!-- Dois vazios diferentes: um se resolve mudando a busca, o outro sincronizando. Confundir os
+         dois manda o treinador apagar a busca para resolver falta de catálogo. -->
+    <string name="trainer_catalog_no_match_title">Nenhum exercício com esses filtros</string>
+    <string name="trainer_catalog_no_match">Tente outro termo ou desmarque algum filtro.</string>
+    <string name="trainer_catalog_missing_title">O catálogo ainda não chegou</string>
+    <string name="trainer_catalog_missing">Ele é baixado uma vez e fica no aparelho. Conecte-se e
+        tente de novo.</string>
+    <string name="trainer_catalog_retry">Baixar catálogo</string>
+
+    <string name="trainer_exercise_title">Exercício</string>
+    <string name="trainer_exercise_missing_title">Exercício não encontrado</string>
+    <string name="trainer_exercise_missing">Ele pode ter saído do catálogo na última
+        atualização.</string>
+    <string name="trainer_exercise_primary_muscles">Músculos principais</string>
+    <string name="trainer_exercise_secondary_muscles">Também trabalha</string>
+    <string name="trainer_exercise_equipment">Equipamento</string>
+    <string name="trainer_exercise_level">Nível</string>
+    <string name="trainer_exercise_mechanic">Mecânica</string>
+    <string name="trainer_exercise_force">Movimento</string>
+    <string name="trainer_exercise_instructions">Execução</string>
+
+    <string name="trainer_exercise_level_beginner">Iniciante</string>
+    <string name="trainer_exercise_level_intermediate">Intermediário</string>
+    <string name="trainer_exercise_level_advanced">Avançado</string>
+    <string name="trainer_exercise_mechanic_compound">Composto</string>
+    <string name="trainer_exercise_mechanic_isolation">Isolado</string>
+    <string name="trainer_exercise_force_push">Empurrar</string>
+    <string name="trainer_exercise_force_pull">Puxar</string>
+    <string name="trainer_exercise_force_static">Isometria</string>
+    <string name="trainer_exercise_category_strength">Musculação</string>
+    <string name="trainer_exercise_category_stretching">Alongamento</string>
+    <string name="trainer_exercise_category_plyometrics">Pliometria</string>
+    <string name="trainer_exercise_category_powerlifting">Powerlifting</string>
+    <string name="trainer_exercise_category_olympic">Olímpico</string>
+    <string name="trainer_exercise_category_strongman">Strongman</string>
+    <string name="trainer_exercise_category_cardio">Cardio</string>
+
+    <!-- Os cinco objetivos, terceira cópia no projeto: os módulos de papel não se enxergam, e o
+         único lar comum seria um módulo compartilhado entre features — a dependência que a
+         arquitetura recusa. -->
+    <string name="trainer_goal_hypertrophy">Hipertrofia</string>
+    <string name="trainer_goal_strength">Força</string>
+    <string name="trainer_goal_weight_loss">Emagrecimento</string>
+    <string name="trainer_goal_conditioning">Condicionamento</string>
+    <string name="trainer_goal_health">Saúde e disposição</string>
 </resources>

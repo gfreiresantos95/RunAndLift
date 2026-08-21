@@ -1,6 +1,8 @@
 package com.gabrielfreire.runandlift.data
 
 import android.content.Context
+import com.gabrielfreire.runandlift.data.assignment.AssignmentRepository
+import com.gabrielfreire.runandlift.data.assignment.FirestoreAssignmentRepository
 import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.auth.FirebaseAuthRepository
 import com.gabrielfreire.runandlift.data.link.FirestoreLinkRepository
@@ -8,6 +10,8 @@ import com.gabrielfreire.runandlift.data.link.LinkRepository
 import com.gabrielfreire.runandlift.data.local.RunAndLiftDatabase
 import com.gabrielfreire.runandlift.data.location.CachedLocationRepository
 import com.gabrielfreire.runandlift.data.location.LocationRepository
+import com.gabrielfreire.runandlift.data.program.FirestoreProgramRepository
+import com.gabrielfreire.runandlift.data.program.ProgramRepository
 import com.gabrielfreire.runandlift.data.remote.catalog.CatalogVersionSource
 import com.gabrielfreire.runandlift.data.remote.exercise.FirestoreExerciseRemoteDataSource
 import com.gabrielfreire.runandlift.data.remote.location.IbgeLocationRemoteDataSource
@@ -77,6 +81,27 @@ class DataContainer(
     /** O vínculo entre os dois papéis. É o único repositório usado pelos dois grafos de tela. */
     val linkRepository: LinkRepository by lazy {
         FirestoreLinkRepository(firestore = firestore, dispatchers = dispatchers)
+    }
+
+    /**
+     * Os moldes de treino do treinador, em `programs`.
+     *
+     * Sem tabela no Room, ao contrário do catálogo: programa se monta sentado, e a persistência
+     * offline que o SDK do Firestore liga sozinha já cobre a rede caindo no meio. Ver
+     * [ProgramRepository].
+     */
+    val programRepository: ProgramRepository by lazy {
+        FirestoreProgramRepository(firestore = firestore, dispatchers = dispatchers)
+    }
+
+    /**
+     * O treino que cada aluno recebeu, em `assignments`.
+     *
+     * É a junção entre o molde e a pessoa, e a única coleção de prescrição que os dois papéis leem —
+     * o treinador para saber quem está com o quê, o aluno para abrir o treino do dia.
+     */
+    val assignmentRepository: AssignmentRepository by lazy {
+        FirestoreAssignmentRepository(firestore = firestore, dispatchers = dispatchers)
     }
 
     /**

@@ -199,6 +199,26 @@ kover {
                     // estranho não derruba a sincronização. ExerciseDocumentTest.
                     "com.gabrielfreire.runandlift.data.remote.exercise.FirestoreExerciseRemoteDataSource",
 
+                    // Regra extraída: ProgramDocument — o mapa de gravação, a leitura que descarta
+                    // programa sem nome e a decodificação dos dias e das prescrições de dentro do
+                    // documento (que é onde eles moram, pela regra 2 do orçamento de leitura).
+                    // ProgramDocumentTest. O que sobrou na classe é consulta, `set`, `delete` e a
+                    // conversão do `Timestamp` do SDK em milissegundos — a fronteira, que é
+                    // justamente o que [ProgramDocument] não pode conhecer para continuar
+                    // afirmável num teste comum de JVM.
+                    "com.gabrielfreire.runandlift.data.program.FirestoreProgramRepository",
+                    "com.gabrielfreire.runandlift.data.program.FirestoreProgramRepository\$*",
+
+                    // Regra extraída: AssignmentDocument — o mapa, a leitura que descarta documento
+                    // incompleto e a situação gravada em minúscula, que é o literal que a regra do
+                    // Firestore compara. AssignmentDocumentTest. A decisão que a coleção carrega —
+                    // atribuir de novo **substitui** a prescrição daquele par, porque o id é
+                    // `{trainerId}_{studentId}` — é afirmada por `AssignmentTest` no modelo e por
+                    // `AssignViewModelTest` na tela; o que sobrou aqui é `whereEqualTo`, `set` e
+                    // `update`.
+                    "com.gabrielfreire.runandlift.data.assignment.FirestoreAssignmentRepository",
+                    "com.gabrielfreire.runandlift.data.assignment.FirestoreAssignmentRepository\$*",
+
                     // Não é Firestore, mas é o mesmo caso: sobrou o HttpURLConnection. A regra
                     // extraída é IbgePayload — a ordenação em pt-BR e a sigla que entra na URL.
                     // IbgePayloadTest.

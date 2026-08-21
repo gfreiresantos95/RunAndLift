@@ -25,7 +25,7 @@ import com.gabrielfreire.runandlift.data.local.exercise.ExerciseEntity
         ExerciseEntity::class,
         CatalogMetadataEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 internal abstract class RunAndLiftDatabase : RoomDatabase() {
@@ -39,13 +39,14 @@ internal abstract class RunAndLiftDatabase : RoomDatabase() {
 
         /**
          * Sem `fallbackToDestructiveMigration`, de propósito: apagar o banco do usuário para
-         * resolver mudança de esquema é exatamente a perda de dados que o D8 descreve. Quando o
-         * esquema mudar, escreva a migração (E0-13).
+         * resolver mudança de esquema é exatamente a perda de dados que o D8 descreve. As migrações
+         * ficam em [ALL_MIGRATIONS] (E0-13); esquecer de registrar uma aqui derruba o app na
+         * abertura, e só no aparelho de quem já tinha a versão anterior instalada.
          */
         fun create(context: Context): RunAndLiftDatabase = Room.databaseBuilder(
             context = context.applicationContext,
             klass = RunAndLiftDatabase::class.java,
             name = DATABASE_NAME,
-        ).build()
+        ).apply { ALL_MIGRATIONS.forEach { migration -> addMigrations(migration) } }.build()
     }
 }
