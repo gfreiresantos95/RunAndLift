@@ -2,17 +2,26 @@ package com.gabrielfreire.runandlift.feature.trainer.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import com.gabrielfreire.runandlift.feature.trainer.account.AccountDestination
+import com.gabrielfreire.runandlift.feature.trainer.assign.AssignDestination
+import com.gabrielfreire.runandlift.feature.trainer.catalog.CatalogDestination
+import com.gabrielfreire.runandlift.feature.trainer.catalog.ExerciseDetailDestination
+import com.gabrielfreire.runandlift.feature.trainer.catalog.popWithPickedExercise
 import com.gabrielfreire.runandlift.feature.trainer.home.TrainerHomeDestination
 import com.gabrielfreire.runandlift.feature.trainer.invite.InviteDestination
 import com.gabrielfreire.runandlift.feature.trainer.location.LocationPickerDestination
 import com.gabrielfreire.runandlift.feature.trainer.menu.TrainerMenuDestination
 import com.gabrielfreire.runandlift.feature.trainer.onboarding.OnboardingDestination
 import com.gabrielfreire.runandlift.feature.trainer.profile.TrainerProfileDestination
+import com.gabrielfreire.runandlift.feature.trainer.programeditor.DayEditorDestination
+import com.gabrielfreire.runandlift.feature.trainer.programeditor.PrescriptionDestination
+import com.gabrielfreire.runandlift.feature.trainer.programeditor.ProgramEditorDestination
+import com.gabrielfreire.runandlift.feature.trainer.programs.ProgramsDestination
 import com.gabrielfreire.runandlift.feature.trainer.students.StudentsDestination
-import com.gabrielfreire.runandlift.feature.trainer.workouts.TrainerWorkoutsDestination
 
 /**
  * Grafo do treinador: as três abas, mais o passo a passo, o perfil profissional e os dados
@@ -44,8 +53,94 @@ fun NavGraphBuilder.trainerGraph(
             onSwitchRole = onSwitchRole,
         )
         trainerFlows(navController = navController, dependencies = dependencies)
+        programBuilding(navController = navController, dependencies = dependencies)
     }
 }
+
+/**
+ * A montagem de treino: programa, dia, prescrição e catálogo.
+ *
+ * Separada dos outros fluxos porque **as três primeiras compartilham um ViewModel** — o do editor de
+ * programa, que fica vivo na pilha enquanto as outras são empilhadas por cima. É o que permite montar
+ * um treino inteiro sem tocar a rede, e é a única parte do grafo em que a ordem de empilhamento é
+ * uma decisão técnica e não só de navegação. Ver `sharedProgramEditorViewModel`.
+ *
+ * O catálogo fica **fora** desse compartilhamento, de propósito: ele não conhece programa nem dia, e
+ * devolve o escolhido pela entrada anterior da pilha — a mesma mecânica das listas de estado e
+ * cidade. É o que o deixa servir também à navegação livre, sem montagem nenhuma em curso.
+ */
+private fun NavGraphBuilder.programBuilding(navController: NavHostController, dependencies: TrainerDependencies) {
+    composable(route = TrainerRoutes.PROGRAM_EDITOR_PATTERN, arguments = programArguments()) { entry ->
+        ProgramEditorDestination(
+            navController = navController,
+            entry = entry,
+            dependencies = dependencies,
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(route = TrainerRoutes.DAY_EDITOR_PATTERN, arguments = dayArguments()) { entry ->
+        DayEditorDestination(
+            navController = navController,
+            entry = entry,
+            dependencies = dependencies,
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(route = TrainerRoutes.PRESCRIPTION_PATTERN, arguments = prescriptionArguments()) { entry ->
+        PrescriptionDestination(
+            navController = navController,
+            entry = entry,
+            dependencies = dependencies,
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(route = TrainerRoutes.ASSIGN_PATTERN, arguments = programArguments()) { entry ->
+        AssignDestination(
+            dependencies = dependencies,
+            programId = entry.arguments?.getString(TrainerRoutes.PROGRAM_ID_ARG).orEmpty(),
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(TrainerRoutes.CATALOG) {
+        CatalogDestination(
+            dependencies = dependencies,
+            onSelect = { exerciseId -> navController.popWithPickedExercise(exerciseId) },
+            onOpenDetail = { exerciseId ->
+                navController.navigate(TrainerRoutes.exerciseDetail(exerciseId))
+            },
+            onBack = { navController.popBackStack() },
+        )
+    }
+    composable(route = TrainerRoutes.EXERCISE_DETAIL_PATTERN, arguments = exerciseArguments()) { entry ->
+        ExerciseDetailDestination(
+            dependencies = dependencies,
+            exerciseId = entry.arguments?.getString(TrainerRoutes.EXERCISE_ID_ARG).orEmpty(),
+            onBack = { navController.popBackStack() },
+        )
+    }
+}
+
+private fun programArguments() = listOf(
+    navArgument(TrainerRoutes.PROGRAM_ID_ARG) { type = NavType.StringType },
+)
+
+/**
+ * Os índices vão como **inteiro**, e não como texto.
+ *
+ * O Navigation converte e recusa o que não for número, então uma rota malformada vira erro de
+ * navegação em vez de um `toInt()` estourando dentro do composable — onde derrubaria a tela.
+ */
+private fun dayArguments() = programArguments() + navArgument(TrainerRoutes.DAY_INDEX_ARG) {
+    type = NavType.IntType
+}
+
+private fun prescriptionArguments() = dayArguments() + navArgument(TrainerRoutes.EXERCISE_INDEX_ARG) {
+    type = NavType.IntType
+}
+
+private fun exerciseArguments() = listOf(
+    navArgument(TrainerRoutes.EXERCISE_ID_ARG) { type = NavType.StringType },
+)
 
 /**
  * As quatro abas, que são irmãs e ficam sempre no mesmo nível da pilha.
@@ -75,7 +170,12 @@ private fun NavGraphBuilder.trainerTabs(
         )
     }
     composable(TrainerRoutes.WORKOUTS) {
-        TrainerWorkoutsDestination(navController = navController)
+        ProgramsDestination(
+            navController = navController,
+            dependencies = dependencies,
+            onCreate = { navController.navigate(TrainerRoutes.programEditor()) },
+            onOpen = { programId -> navController.navigate(TrainerRoutes.programEditor(programId)) },
+        )
     }
     composable(TrainerRoutes.MENU) {
         TrainerMenuDestination(

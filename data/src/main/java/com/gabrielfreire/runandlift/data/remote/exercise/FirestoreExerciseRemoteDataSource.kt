@@ -21,11 +21,18 @@ internal class FirestoreExerciseRemoteDataSource(private val firestore: Firebase
             ExerciseDocument.exercise(
                 id = document.id,
                 name = document.getString(ExerciseDocument.FIELD_NAME),
-                muscleGroups = document.get(ExerciseDocument.FIELD_MUSCLE_GROUPS),
-                equipment = document.getString(ExerciseDocument.FIELD_EQUIPMENT),
-                instructions = document.getString(ExerciseDocument.FIELD_INSTRUCTIONS),
-                mediaUrl = document.getString(ExerciseDocument.FIELD_MEDIA_URL),
-                thumbUrl = document.getString(ExerciseDocument.FIELD_THUMB_URL),
+                fields = ExerciseDocument.Fields(
+                    muscleGroups = document.get(ExerciseDocument.FIELD_MUSCLE_GROUPS),
+                    secondaryMuscleGroups = document.get(ExerciseDocument.FIELD_SECONDARY_MUSCLE_GROUPS),
+                    equipment = document.getString(ExerciseDocument.FIELD_EQUIPMENT),
+                    instructions = document.get(ExerciseDocument.FIELD_INSTRUCTIONS),
+                    level = document.getString(ExerciseDocument.FIELD_LEVEL),
+                    mechanic = document.getString(ExerciseDocument.FIELD_MECHANIC),
+                    force = document.getString(ExerciseDocument.FIELD_FORCE),
+                    category = document.getString(ExerciseDocument.FIELD_CATEGORY),
+                    mediaUrl = document.getString(ExerciseDocument.FIELD_MEDIA_URL),
+                    thumbUrl = document.getString(ExerciseDocument.FIELD_THUMB_URL),
+                ),
             )
         }
 }

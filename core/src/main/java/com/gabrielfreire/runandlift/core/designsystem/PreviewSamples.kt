@@ -169,6 +169,30 @@ internal object PreviewSamples {
         const val STATUS_CRITICAL = "Parou"
     }
 
+    /** Programa de treino: o molde que o treinador monta, e um dia dentro dele. */
+    object Program {
+        const val NAME = "Treino ABC · Hipertrofia"
+        const val SUPPORT = "3 dias · 18 exercícios"
+        const val DAY_LABEL = "A"
+        const val DAY_TITLE = "Peito e tríceps"
+        const val DAY_SUPPORT = "6 exercícios · 20 séries"
+        const val DAY_TRAILING = "6"
+    }
+
+    /**
+     * Prescrição de treino: os números que o treinador ajusta e o que se lê deles.
+     *
+     * Os rótulos dos dois botões existem porque o contador é um nó só para o leitor de tela e
+     * precisa dizer, em palavras, o que cada lado faz — "menos" e "mais" desenhados não se leem.
+     */
+    object Prescription {
+        const val SETS = "Séries"
+        const val REST = "Descanso"
+        const val SECONDS = "s"
+        const val DECREMENT = "Diminuir"
+        const val INCREMENT = "Aumentar"
+    }
+
     /** Texto de aviso, para o card que só existe para explicar alguma coisa. */
     const val NOTICE = "Peso, medidas e histórico de lesões não são pedidos aqui. Esses dados vêm " +
         "depois, na avaliação com o seu treinador, e só com a sua autorização."

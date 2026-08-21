@@ -1,0 +1,13 @@
+{
+  "name": "runandlift-catalog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Constrói e publica o catálogo global de exercícios na coleção `exercises` (backlog E4-01).",
+  "scripts": {
+    "build": "node build-catalog.js",
+    "import": "node import-catalog.js"
+  },
+  "devDependencies": {
+    "firebase-admin": "13.6.0"
+  }
+}

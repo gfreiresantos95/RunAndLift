@@ -78,4 +78,78 @@ object TrainerRoutes {
 
     /** Rota concreta da lista de cidades de um estado. */
     internal fun cityPicker(uf: String): String = "$CITY_PICKER/$uf"
+
+    // ---------- montagem de treino ----------
+
+    private const val PROGRAM = "trainer/program"
+
+    /** Argumento do editor: o programa a abrir, ou [NEW_PROGRAM] para começar um do zero. */
+    internal const val PROGRAM_ID_ARG = "programId"
+
+    /** Argumento do editor de dia e da prescrição: a posição do dia dentro do programa. */
+    internal const val DAY_INDEX_ARG = "dayIndex"
+
+    /** Argumento da prescrição: a posição do exercício dentro do dia. */
+    internal const val EXERCISE_INDEX_ARG = "exerciseIndex"
+
+    /**
+     * O id que significa "ainda não existe".
+     *
+     * Uma palavra reservada no lugar de um id, e não uma rota separada para criar: as duas telas
+     * seriam a mesma, com o mesmo formulário e a mesma gravação, e a única diferença — ler antes de
+     * mostrar — cabe num `if`. É a mesma razão de o cadastro e a conclusão de perfil compartilharem
+     * `ProfileFormState`.
+     *
+     * O valor não colide com id de documento do Firestore porque eles têm 20 caracteres.
+     */
+    internal const val NEW_PROGRAM = "novo"
+
+    /**
+     * Editor do programa. É a **raiz da montagem**, e isso tem consequência técnica.
+     *
+     * O editor de dia e a prescrição são empilhados por cima desta entrada e compartilham o
+     * ViewModel dela — o programa inteiro fica em memória enquanto se monta, e só vai ao Firestore
+     * quando alguém salva. Ver `sharedProgramEditorViewModel`.
+     */
+    internal const val PROGRAM_EDITOR_PATTERN = "$PROGRAM/{$PROGRAM_ID_ARG}"
+
+    internal fun programEditor(programId: String = NEW_PROGRAM): String = "$PROGRAM/$programId"
+
+    internal const val DAY_EDITOR_PATTERN = "$PROGRAM_EDITOR_PATTERN/day/{$DAY_INDEX_ARG}"
+
+    internal fun dayEditor(programId: String, dayIndex: Int): String = "${programEditor(programId)}/day/$dayIndex"
+
+    internal const val PRESCRIPTION_PATTERN =
+        "$DAY_EDITOR_PATTERN/exercise/{$EXERCISE_INDEX_ARG}"
+
+    internal fun prescription(programId: String, dayIndex: Int, exerciseIndex: Int): String =
+        "${dayEditor(programId, dayIndex)}/exercise/$exerciseIndex"
+
+    /**
+     * Atribuir o programa a um aluno, aberta pelo editor.
+     *
+     * Empilhada sobre o editor como as outras, mas **não compartilha o ViewModel dele**: o que ela
+     * precisa do programa é a versão gravada, não o rascunho — atribuir uma edição que ainda não
+     * foi salva daria ao aluno um treino que não existe em `programs`.
+     */
+    internal const val ASSIGN_PATTERN = "$PROGRAM_EDITOR_PATTERN/assign"
+
+    internal fun assign(programId: String): String = "${programEditor(programId)}/assign"
+
+    /**
+     * O catálogo de exercícios, aberto pelo editor de dia.
+     *
+     * Rota sem argumento: o que a tela escolhe volta pela entrada anterior da pilha, como nas listas
+     * de estado e cidade. Quem sabe em que dia o exercício entra é quem a abriu.
+     */
+    internal const val CATALOG = "trainer/catalog"
+
+    internal const val EXERCISE_ID_ARG = "exerciseId"
+
+    private const val EXERCISE = "trainer/exercise"
+
+    /** Detalhe de um exercício do catálogo, aberto pela lista. */
+    internal const val EXERCISE_DETAIL_PATTERN = "$EXERCISE/{$EXERCISE_ID_ARG}"
+
+    internal fun exerciseDetail(exerciseId: String): String = "$EXERCISE/$exerciseId"
 }

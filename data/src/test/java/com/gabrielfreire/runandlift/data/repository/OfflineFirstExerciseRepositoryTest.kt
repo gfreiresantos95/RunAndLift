@@ -34,9 +34,7 @@ class OfflineFirstExerciseRepositoryTest {
         name = name,
         muscleGroups = listOf("peito", "tríceps"),
         equipment = "barra",
-        instructions = null,
-        mediaUrl = null,
-        thumbUrl = null,
+        instructions = emptyList(),
         ownerId = ownerId,
     )
 

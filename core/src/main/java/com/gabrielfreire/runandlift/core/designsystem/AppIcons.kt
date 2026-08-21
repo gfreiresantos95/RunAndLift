@@ -65,4 +65,17 @@ object AppIcons {
      */
     @DrawableRes
     val Rest: Int = R.drawable.ic_rest
+
+    /**
+     * "+". Acrescenta — um dia ao programa, um exercício ao dia, uma unidade ao contador.
+     *
+     * É o par de [Rest], que é o traço: os dois botões de um contador precisam ser espelhos, e um
+     * "+" de uma fonte e um "−" de outra nunca ficam do mesmo peso.
+     */
+    @DrawableRes
+    val Add: Int = R.drawable.ic_add
+
+    /** Seta de "isto abre outra tela". O que a leva marca uma linha de lista navegável. */
+    @DrawableRes
+    val ChevronRight: Int = R.drawable.ic_chevron_right
 }
