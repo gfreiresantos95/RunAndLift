@@ -44,9 +44,34 @@ class StudentRoutesTest {
             StudentRoutes.ACCOUNT,
             StudentRoutes.STATE_PICKER,
             StudentRoutes.CITY_PICKER_PATTERN,
+            StudentRoutes.WORKOUT_DAY_PATTERN,
+            StudentRoutes.workoutDay(0),
         )
 
         routes.forEach { assertTrue("$it está fora de ${StudentRoutes.GRAPH}", it.startsWith(StudentRoutes.GRAPH)) }
+    }
+
+    @Test
+    fun `o dia de treino casa com o padrao registrado`() {
+        assertEquals(
+            StudentRoutes.WORKOUT_DAY_PATTERN.replace("{${StudentRoutes.DAY_INDEX_ARG}}", "2"),
+            StudentRoutes.workoutDay(2),
+        )
+    }
+
+    @Test
+    fun `o dia fica sob a aba de treinos, e nao ao lado dela`() {
+        // Não é estética: `sharedStudentWorkoutsViewModel` sobe até a entrada de WORKOUTS para pegar
+        // a prescrição já lida. Uma rota irmã empilharia sem manter a aba viva, e cada dia aberto
+        // voltaria a custar uma leitura de `assignments`.
+        assertTrue(StudentRoutes.workoutDay(0).startsWith("${StudentRoutes.WORKOUTS}/"))
+        assertTrue(StudentRoutes.WORKOUT_DAY_PATTERN.startsWith("${StudentRoutes.WORKOUTS}/"))
+    }
+
+    @Test
+    fun `a posicao vai no caminho, e cada dia tem a sua rota`() {
+        assertEquals(3, listOf(0, 1, 2).map { StudentRoutes.workoutDay(it) }.distinct().size)
+        assertTrue(StudentRoutes.workoutDay(7).endsWith("/7"))
     }
 
     @Test

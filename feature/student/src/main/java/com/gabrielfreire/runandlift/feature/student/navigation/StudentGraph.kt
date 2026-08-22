@@ -12,6 +12,7 @@ import com.gabrielfreire.runandlift.feature.student.onboarding.OnboardingDestina
 import com.gabrielfreire.runandlift.feature.student.profile.StudentProfileDestination
 import com.gabrielfreire.runandlift.feature.student.trainer.MyTrainerDestination
 import com.gabrielfreire.runandlift.feature.student.workouts.StudentWorkoutsDestination
+import com.gabrielfreire.runandlift.feature.student.workouts.WorkoutDayDestination
 
 /**
  * Grafo do aluno: as três abas, mais o onboarding e a edição de perfil.
@@ -69,8 +70,12 @@ private fun NavGraphBuilder.studentTabs(
             onOpenProfile = { navController.navigate(StudentRoutes.PROFILE) },
         )
     }
-    composable(StudentRoutes.WORKOUTS) {
-        StudentWorkoutsDestination(navController = navController)
+    composable(StudentRoutes.WORKOUTS) { entry ->
+        StudentWorkoutsDestination(
+            navController = navController,
+            entry = entry,
+            dependencies = dependencies,
+        )
     }
     composable(StudentRoutes.MENU) {
         StudentMenuDestination(
@@ -83,8 +88,23 @@ private fun NavGraphBuilder.studentTabs(
     }
 }
 
-/** As telas com começo e fim: dados cadastrais, localidade, passo a passo, perfil e treinador. */
+/**
+ * As telas com começo e fim: dados cadastrais, localidade, passo a passo, perfil e treinador.
+ *
+ * O dia de treino entra aqui e não em [studentTabs] porque ele **não é aba**: abre-se sobre a de
+ * treinos, lê-se e fecha-se pela seta. É empilhado de propósito — a entrada da aba continua viva, e
+ * é dela que o dia tira a prescrição sem custar uma segunda leitura.
+ */
 private fun NavGraphBuilder.studentFlows(navController: NavHostController, dependencies: StudentDependencies) {
+    composable(route = StudentRoutes.WORKOUT_DAY_PATTERN, arguments = workoutDayArgument()) { entry ->
+        WorkoutDayDestination(
+            navController = navController,
+            entry = entry,
+            dependencies = dependencies,
+            onBack = { navController.popBackStack() },
+        )
+    }
+
     composable(StudentRoutes.ACCOUNT) { entry ->
         AccountDestination(
             navController = navController,

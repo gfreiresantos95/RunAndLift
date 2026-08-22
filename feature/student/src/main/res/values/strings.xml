@@ -86,6 +86,48 @@
     <string name="student_workouts_empty_title">Seus treinos aparecem aqui</string>
     <string name="student_workouts_empty">Assim que seu treinador montar o primeiro, ele chega nesta
         aba — e fica disponível mesmo sem internet na academia.</string>
+    <!-- Anunciado pelo leitor de tela enquanto a prescrição é lida. -->
+    <string name="student_workouts_loading">Carregando seu treino</string>
+    <!-- A frase de falha diz o que ainda dá para fazer, porque o treino que já foi lido continua na
+         tela. Nunca é substituída pelo vazio: "seu treinador ainda não montou" dito a quem tem
+         treino e está sem sinal manda cobrar alguém por algo que já foi feito. -->
+    <string name="student_workouts_failed">Não foi possível atualizar seu treino agora. O que está
+        aqui é o que baixamos por último.</string>
+    <string name="student_workouts_retry">Tentar de novo</string>
+
+    <!-- O treino aberto. "Dias" e não "semana": o dia é solto e não está preso a segunda-feira, que
+         é o que não quebra quando alguém perde um dia e treina no seguinte. -->
+    <string name="student_workout_days">Dias de treino</string>
+    <!-- "Treino A", como a planilha de academia chama. O rótulo vem do treinador. -->
+    <string name="student_workout_day_title">Treino %1$s</string>
+    <!-- Título da barra quando a posição não corresponde a dia nenhum: não dá para dizer "Treino ?",
+         então a barra diz o assunto e o miolo explica o que houve. -->
+    <string name="student_workout_day_fallback_title">Dia de treino</string>
+    <!-- Acontece de verdade: o treinador reatribuiu um programa mais curto com esta tela aberta. -->
+    <string name="student_workout_day_gone">Este dia não está mais no seu treino. Volte e abra a
+        lista de novo para ver como ele ficou.</string>
+    <string name="student_workout_day_empty">Este dia está sem exercícios. Fale com seu treinador.</string>
+    <plurals name="student_workout_day_exercises">
+        <item quantity="one">%1$d exercício</item>
+        <item quantity="other">%1$d exercícios</item>
+    </plurals>
+    <!-- Volume do dia, no topo da lista: é a medida que responde "quanto tempo isso vai levar". -->
+    <plurals name="student_workout_day_sets">
+        <item quantity="one">%1$d série no total</item>
+        <item quantity="other">%1$d séries no total</item>
+    </plurals>
+
+    <!-- Um exercício prescrito. O número vem antes do nome porque na academia se procura "o
+         terceiro" e não "a rosca direta": a pessoa já sabe o que vai fazer, está achando onde parou. -->
+    <string name="student_workout_exercise_name">%1$d. %2$s</string>
+    <!-- A linha de números, no formato da planilha de academia: "4 × 8-12 · 60 kg · 90 s". O sinal é
+         o de multiplicação (U+00D7) e não a letra x, que em dígitos tabulares fica torta. -->
+    <string name="student_workout_sets_reps">%1$d × %2$s</string>
+    <!-- Faixa fechada vira número só, e por isso a faixa é um recurso à parte: quem pôs 10 nos dois
+         campos quis "10", e "10 a 10" devolveria a ele a própria escolha travestida de intervalo. -->
+    <string name="student_workout_rep_range">%1$d-%2$d</string>
+    <string name="student_workout_load">%1$s kg</string>
+    <string name="student_workout_rest">%1$d s</string>
 
     <!-- Menu. Duas linhas de perfil porque são dois documentos com dois públicos: "Meus dados" só o
          titular lê, "Perfil de treino" o treinador vinculado também. -->
