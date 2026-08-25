@@ -37,8 +37,20 @@ internal fun DayEditorDestination(
     val dayIndex = entry.arguments?.getInt(TrainerRoutes.DAY_INDEX_ARG) ?: 0
     val day = state.program.days.getOrNull(dayIndex)
 
+    // Escolher no catálogo leva direto à prescrição do exercício recém-acrescentado. Antes ele
+    // entrava no dia com os números padrão e ficava por isso mesmo: o treinador via "3 × 8-12" que
+    // ele não prescreveu e precisava tocar em cada linha de volta para dizer séries, repetições,
+    // carga e descanso. Escolher e prescrever é um ato só, e agora é um caminho só.
     PickedExerciseEffect(entry = entry) { exerciseId ->
-        viewModel.addExerciseFromCatalog(dayIndex = dayIndex, exerciseId = exerciseId)
+        viewModel.addExerciseFromCatalog(dayIndex = dayIndex, exerciseId = exerciseId) { exerciseIndex ->
+            navController.navigate(
+                TrainerRoutes.prescription(
+                    programId = programId,
+                    dayIndex = dayIndex,
+                    exerciseIndex = exerciseIndex,
+                ),
+            )
+        }
     }
 
     // O dia pode não existir mais: o processo pode ter sido recriado com a rota antiga e um programa

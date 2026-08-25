@@ -35,10 +35,10 @@ import kotlinx.coroutines.delay
  * pessoa via a barra superior sobre uma área em branco. Branco não é "carregando", é "quebrado" —
  * e é a leitura que ela faz nos dois segundos antes de o conteúdo chegar.
  *
- * **O indicador só aparece depois de [DelayMillis].** Essa é a parte que quase sempre falta. Os
- * documentos deste app vêm do cache do Firestore na maioria das aberturas, e a carga termina em
- * dezenas de milissegundos: um indicador imediato apareceria e sumiria num piscar, que dá a
- * impressão de instabilidade — pior do que não ter mostrado nada. Com a espera, a carga rápida não
+ * **Por padrão o indicador só aparece depois de [DELAY_MILLIS].** Essa é a parte que quase sempre
+ * falta. Os documentos deste app vêm do cache do Firestore na maioria das aberturas, e a carga
+ * termina em dezenas de milissegundos: um indicador imediato apareceria e sumiria num piscar, que dá
+ * a impressão de instabilidade — pior do que não ter mostrado nada. Com a espera, a carga rápida não
  * mostra indicador nenhum, e só a lenta — que é a que precisa de explicação — o mostra.
  *
  * A entrada é esmaecida em vez de seca, pela mesma razão: o que aparece do nada chama mais atenção
@@ -46,13 +46,18 @@ import kotlinx.coroutines.delay
  *
  * @param contentDescription o que o leitor de tela anuncia. É `liveRegion`, então é falado quando o
  *   indicador entra — sem isso, quem usa TalkBack fica sem nenhum sinal de que algo está em curso.
+ * @param delayMillis quanto se espera antes de mostrar o indicador. [NO_LOADING_DELAY] é para a
+ *   tela que **garante uma janela mínima** de espera do outro lado — o catálogo segura o estado por
+ *   alguns centésimos de propósito, para trocar um filtro dizer que o app está trabalhando. Sem essa
+ *   garantia do lado de quem chama, zero aqui é o piscar que o valor padrão existe para evitar; não
+ *   é um jeito de "deixar o indicador mais responsivo".
  */
 @Composable
-fun AppLoadingState(contentDescription: String, modifier: Modifier = Modifier) {
-    var visible by remember { mutableStateOf(false) }
+fun AppLoadingState(contentDescription: String, modifier: Modifier = Modifier, delayMillis: Long = DELAY_MILLIS) {
+    var visible by remember { mutableStateOf(delayMillis <= NO_LOADING_DELAY) }
 
-    LaunchedEffect(Unit) {
-        delay(timeMillis = DELAY_MILLIS)
+    LaunchedEffect(delayMillis) {
+        delay(timeMillis = delayMillis)
         visible = true
     }
 
@@ -83,15 +88,30 @@ fun AppLoadingState(contentDescription: String, modifier: Modifier = Modifier) {
 private const val DELAY_MILLIS = 500L
 
 /**
- * O indicador já visível — o preview não espera meio segundo, então o que se confere aqui é o
- * enquadramento: centralizado na área, e não colado no topo.
+ * Sem espera: o indicador aparece no mesmo quadro.
+ *
+ * Só para quem garante a janela mínima do outro lado — ver o parâmetro `delayMillis` de
+ * [AppLoadingState]. É público porque a garantia mora na tela, e a tela precisa nomear o que está
+ * pedindo: um `0L` solto na chamada leria como descuido, e é o oposto disso.
+ */
+const val NO_LOADING_DELAY = 0L
+
+/**
+ * O indicador já visível.
+ *
+ * Sem espera **para que haja o que ver**: o preview estático não roda `LaunchedEffect`, então com o
+ * valor padrão esta janela renderizaria vazia e não se conferiria nada. O que se confere aqui é o
+ * enquadramento — centralizado na área, e não colado no topo.
  */
 @LightDarkPreviews
 @Composable
 private fun AppLoadingStatePreview() {
     RunAndLiftTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AppLoadingState(contentDescription = PreviewSamples.State.LOADING)
+            AppLoadingState(
+                contentDescription = PreviewSamples.State.LOADING,
+                delayMillis = NO_LOADING_DELAY,
+            )
         }
     }
 }

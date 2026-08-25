@@ -17,6 +17,14 @@ import com.gabrielfreire.runandlift.data.model.LinkStatus
  */
 internal data class StudentsActions(
     val onOpenInvite: () -> Unit,
+    /**
+     * Abre o treino que este aluno recebeu.
+     *
+     * É o caminho de volta que faltava depois de atribuir: prescrever era uma escrita que ninguém
+     * conseguia reler, e a carteira é o único lugar do app organizado **por pessoa** — que é como a
+     * pergunta se faz ("o que a Ana está treinando?").
+     */
+    val onOpenWorkout: (Link) -> Unit,
     val onStatusChange: (Link, LinkStatus) -> Unit,
     val onRetry: () -> Unit,
 )

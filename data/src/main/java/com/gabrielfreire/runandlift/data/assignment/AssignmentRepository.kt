@@ -36,6 +36,25 @@ interface AssignmentRepository {
     suspend fun activeAssignment(studentId: String): Assignment?
 
     /**
+     * O que **este treinador** prescreveu para **este aluno**, ativo ou encerrado, ou `null` se
+     * nunca prescreveu nada.
+     *
+     * É a pergunta do outro lado de [activeAssignment]: o treinador atribuiu um programa e precisa
+     * poder abrir depois o que o aluno recebeu — o nome do treino, os dias e os exercícios dentro
+     * deles. Sem isto a atribuição era uma escrita que ninguém conseguia reler.
+     *
+     * **É uma consulta com os dois filtros, e não um `get()` pelo caminho `{trainerId}_{studentId}`
+     * que o id permitiria.** A regra de `assignments` desreferencia `resource.data`, e uma regra que
+     * erra ao avaliar **nega**: pedir o documento de um aluno que ainda não recebeu nada voltaria
+     * como permissão negada em vez de "não existe" — e o caso mais comum, o do aluno recém-aceito,
+     * viraria uma falha de leitura na tela. É a mesma armadilha que fez `requestLink` receber o
+     * vínculo conhecido em vez de consultá-lo.
+     *
+     * Custo declarado: 1 leitura (nenhuma, quando não há atribuição).
+     */
+    suspend fun assignmentOf(trainerId: String, studentId: String): Assignment?
+
+    /**
      * Atribui o programa ao aluno, congelando a cópia dos dias.
      *
      * **Substitui a prescrição anterior daquele par**, porque o id do documento é

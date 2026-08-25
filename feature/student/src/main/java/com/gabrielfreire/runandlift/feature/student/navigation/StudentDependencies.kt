@@ -5,6 +5,7 @@ import com.gabrielfreire.runandlift.data.auth.AuthRepository
 import com.gabrielfreire.runandlift.data.link.LinkRepository
 import com.gabrielfreire.runandlift.data.location.LocationRepository
 import com.gabrielfreire.runandlift.data.student.StudentRepository
+import com.gabrielfreire.runandlift.data.trainer.TrainerRepository
 import com.gabrielfreire.runandlift.data.user.UserRepository
 
 /**
@@ -23,6 +24,15 @@ data class StudentDependencies(
     val locationRepository: LocationRepository,
     /** O vínculo com o treinador. É o primeiro repositório que os dois grafos de papel compartilham. */
     val linkRepository: LinkRepository,
+    /**
+     * O perfil profissional de quem treina esta pessoa, em `trainerProfiles/{uid}`.
+     *
+     * O aluno **lê e nunca escreve**: a regra do Firestore lhe abre este documento por ter vínculo
+     * com o titular, e é de lá que sai o registro no CREF — o número que se confere no CONFEF, e o
+     * único jeito de a home dizer quem prescreveu aquele treino sem inventar nada. `users/{uid}` do
+     * treinador é legível só por ele, então não há outro caminho.
+     */
+    val trainerRepository: TrainerRepository,
     /**
      * O treino que este aluno recebeu, em `assignments`.
      *

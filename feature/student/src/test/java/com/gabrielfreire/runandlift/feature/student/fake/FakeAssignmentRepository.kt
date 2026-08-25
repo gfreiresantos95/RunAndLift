@@ -35,6 +35,10 @@ internal class FakeAssignmentRepository(private val assignment: Assignment? = nu
 
     override suspend fun assignmentsOfProgram(trainerId: String, programId: String): List<Assignment> = unsupported()
 
+    /** É a pergunta do treinador — "o que eu prescrevi para esta pessoa?" —, e nenhuma tela daqui a faz. */
+    override suspend fun assignmentOf(trainerId: String, studentId: String): Assignment? =
+        error("é leitura do lado do treinador")
+
     override suspend fun assign(assignment: Assignment): Assignment = unsupported()
 
     override suspend fun end(assignment: Assignment) = unsupported()

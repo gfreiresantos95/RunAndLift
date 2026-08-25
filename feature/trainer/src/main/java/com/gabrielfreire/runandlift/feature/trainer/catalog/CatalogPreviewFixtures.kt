@@ -76,7 +76,17 @@ internal fun previewExercises(): List<Exercise> = listOf(
     ),
 )
 
-internal fun previewCatalogState(): CatalogUiState = CatalogUiState(loading = false, results = previewExercises())
+/**
+ * O catálogo carregado: os mesmos exercícios em [CatalogUiState.catalog] e em
+ * [CatalogUiState.results], que é como a tela abre — sem busca, o resultado é o catálogo inteiro. É
+ * de `catalog` que saem os chips de músculo e equipamento, então um preview que só preenchesse
+ * `results` mostraria as fileiras de filtro vazias.
+ */
+internal fun previewCatalogState(): CatalogUiState = CatalogUiState(
+    loading = false,
+    catalog = previewExercises(),
+    results = previewExercises(),
+)
 
 internal fun previewCatalogActions(): CatalogActions = CatalogActions(
     onQueryChange = {},
@@ -84,6 +94,7 @@ internal fun previewCatalogActions(): CatalogActions = CatalogActions(
     onToggleMuscle = {},
     onToggleEquipment = {},
     onToggleLevel = {},
+    onToggleFilters = {},
     onClearFilters = {},
     onSelect = {},
     onOpenDetail = {},

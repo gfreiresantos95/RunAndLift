@@ -91,6 +91,14 @@ class TrainerRoutesTest {
     }
 
     @Test
+    fun `o treino do aluno casa com o padrao registrado`() {
+        assertEquals(
+            TrainerRoutes.STUDENT_WORKOUT_PATTERN.replace("{${TrainerRoutes.STUDENT_ID_ARG}}", "a1"),
+            TrainerRoutes.studentWorkout("a1"),
+        )
+    }
+
+    @Test
     fun `todas as rotas ficam sob o grafo do treinador`() {
         // É o que permite `:app` trocar de papel desempilhando o grafo inteiro por uma rota só — e
         // o que garante que nenhuma tela daqui seja alcançável pela pilha do aluno.
@@ -112,6 +120,8 @@ class TrainerRoutesTest {
             TrainerRoutes.dayEditor("p1", 0),
             TrainerRoutes.prescription("p1", 0, 0),
             TrainerRoutes.assign("p1"),
+            TrainerRoutes.STUDENT_WORKOUT_PATTERN,
+            TrainerRoutes.studentWorkout("a1"),
         )
 
         routes.forEach {

@@ -22,6 +22,7 @@ internal fun previewLink(status: LinkStatus, name: String = "Ana Souza") = Link(
 /** As ações da carteira, sem efeito, para os previews. */
 internal fun previewStudentsActions() = StudentsActions(
     onOpenInvite = {},
+    onOpenWorkout = {},
     onStatusChange = { _, _ -> },
     onRetry = {},
 )
