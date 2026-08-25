@@ -9,7 +9,4 @@
 -->
 <resources>
     <color name="window_background">#FBF8FF</color>
-    <!-- Círculo atrás do ícone da splash: Cobalto40. Necessário porque o ícone atual é branco e
-         desapareceria sobre a superfície clara. -->
-    <color name="splash_icon_background">#2A56B4</color>
 </resources>

@@ -21,16 +21,16 @@
         - O fundo da splash é o MESMO @color/window_background da janela e da `surface` do Compose.
           Isso elimina o flash de cor entre splash e primeira tela — que é justamente o tipo de
           detalhe que faz um app parecer instável.
-        - O ícone é a marca em Cobalto40 sobre o fundo claro, sem círculo atrás
-          (windowSplashScreenIconBackgroundColor): com arte própria ele deixou de ser necessário.
-          A variante para o tema escuro vive em values-night/.
+        - O ícone é a marca em #FBF8FF, a variante clara da arte, porque aqui o fundo é o Neutro8.
+          Sem círculo atrás (windowSplashScreenIconBackgroundColor): com arte própria ele deixou de
+          ser necessário.
 
         Não usar android:windowBackground aqui — no Android 12+ ele é ignorado durante a splash, e o
         resultado seria uma splash correta no aparelho antigo e errada no novo.
     -->
     <style name="Theme.RunAndLift.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/window_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_run_and_lift</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_run_and_lift_night</item>
         <!-- Tema aplicado assim que a splash sai. Obrigatório. -->
         <item name="postSplashScreenTheme">@style/Theme.RunAndLift</item>
     </style>
