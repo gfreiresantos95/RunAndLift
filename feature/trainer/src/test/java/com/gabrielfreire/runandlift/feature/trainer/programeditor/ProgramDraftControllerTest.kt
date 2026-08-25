@@ -113,6 +113,17 @@ class ProgramDraftControllerTest {
     }
 
     @Test
+    fun `acrescentar devolve onde o exercicio ficou, e nada quando o dia nao existe`() {
+        // A posição é o que abre a prescrição em seguida. No dia que não existe, nada é
+        // acrescentado — e devolver a posição "óbvia" ali abriria a prescrição de outro exercício.
+        controller.onAddDay()
+
+        assertEquals(0, controller.onAddExercise(dayIndex = 0, exercise = exercise("supino")))
+        assertEquals(1, controller.onAddExercise(dayIndex = 0, exercise = exercise("agachamento")))
+        assertNull(controller.onAddExercise(dayIndex = 7, exercise = exercise("remada")))
+    }
+
+    @Test
     fun `exercicio recem-escolhido chega com a prescricao padrao`() {
         controller.onAddDay()
         controller.onAddExercise(dayIndex = 0, exercise = exercise("supino"))

@@ -40,6 +40,12 @@ internal class FakeAssignmentRepository(
         return stored.values.firstOrNull { it.studentId == studentId && it.isActive }
     }
 
+    override suspend fun assignmentOf(trainerId: String, studentId: String): Assignment? {
+        if (failReading) error("sem rede e sem cache")
+
+        return stored[Assignment.id(trainerId, studentId)]
+    }
+
     override suspend fun assign(assignment: Assignment): Assignment {
         if (failWriting) error("gravação não completou")
 

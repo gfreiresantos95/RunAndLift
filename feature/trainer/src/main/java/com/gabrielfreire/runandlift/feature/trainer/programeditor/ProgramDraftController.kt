@@ -69,8 +69,20 @@ internal class ProgramDraftController {
         _draft.update { it.withDayInfo(dayIndex, label, focus) }
     }
 
-    fun onAddExercise(dayIndex: Int, exercise: Exercise) {
+    /**
+     * Acrescenta o exercício ao fim do dia e devolve **onde ele ficou**.
+     *
+     * A posição sai daqui em vez de ser recalculada por quem chama porque quem chama teria de somar
+     * um ao tamanho de antes — e essa conta erra em silêncio no único caso que importa, o do dia que
+     * não existe mais: nada é acrescentado e a posição "óbvia" apontaria para o vazio.
+     *
+     * `null` é exatamente esse caso, e é o que faz a tela não abrir a prescrição de um exercício que
+     * não entrou em lugar nenhum.
+     */
+    fun onAddExercise(dayIndex: Int, exercise: Exercise): Int? {
         _draft.update { it.withExerciseAdded(dayIndex, exercise) }
+
+        return _draft.value.days.getOrNull(dayIndex)?.exercises?.lastIndex?.takeIf { it >= 0 }
     }
 
     fun onRemoveExercise(dayIndex: Int, exerciseIndex: Int) {

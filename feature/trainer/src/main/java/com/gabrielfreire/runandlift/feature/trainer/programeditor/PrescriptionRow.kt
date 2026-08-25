@@ -21,6 +21,7 @@ import com.gabrielfreire.runandlift.core.designsystem.RunAndLiftTheme
 import com.gabrielfreire.runandlift.core.designsystem.component.AppTextButton
 import com.gabrielfreire.runandlift.data.model.PrescribedExercise
 import com.gabrielfreire.runandlift.feature.trainer.R
+import com.gabrielfreire.runandlift.feature.trainer.text.summary
 
 /**
  * Um exercício prescrito, dentro do dia: o nome, os números e o que dá para fazer com ele.
@@ -88,41 +89,6 @@ internal fun PrescriptionRow(
         }
     }
 }
-
-/**
- * A linha de números.
- *
- * Faixa fechada vira número só — "10" e não "10 a 10" —, porque quem pôs o mesmo valor nos dois
- * campos quis um número fixo, e mostrar a faixa devolveria a ele a própria escolha travestida de
- * intervalo. Carga e descanso somem quando não foram prescritos: "sem carga" ocuparia espaço para
- * dizer que não há o que dizer.
- */
-@Composable
-private fun PrescribedExercise.summary(): String {
-    val reps = if (hasFixedReps) {
-        minReps.toString()
-    } else {
-        stringResource(R.string.trainer_prescription_rep_range, minReps, maxReps)
-    }
-
-    return listOfNotNull(
-        stringResource(R.string.trainer_prescription_sets_reps, sets, reps),
-        loadKg?.let { stringResource(R.string.trainer_prescription_load, formatLoad(it)) },
-        restSeconds?.let { stringResource(R.string.trainer_prescription_rest, it) },
-    ).joinToString(SEPARATOR)
-}
-
-/**
- * Carga sem casa decimal quando ela é inteira.
- *
- * "60 kg" e não "60,0 kg": a segunda forma sugere uma precisão que a anilha da academia não tem, e
- * ocupa espaço numa linha que já é densa. A meia casa sobrevive porque existe de verdade — 62,5 kg é
- * a soma de duas anilhas de 1,25.
- */
-private fun formatLoad(value: Double): String =
-    if (value % 1.0 == 0.0) value.toInt().toString() else value.toString().replace('.', ',')
-
-private const val SEPARATOR = " · "
 
 @LightDarkPreviews
 @Composable

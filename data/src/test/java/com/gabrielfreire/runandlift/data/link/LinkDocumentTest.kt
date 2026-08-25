@@ -134,6 +134,18 @@ class LinkDocumentTest {
     }
 
     @Test
+    fun `a data de criacao volta do documento, e ausente vira zero`() {
+        // É o que responde "aluno desde" na home. Ausente acontece no snapshot vindo do cache entre
+        // a escrita local e a confirmação do servidor — e perder o treinador da tela por causa
+        // disso seria muito pior do que perder uma linha de texto.
+        assertEquals(
+            1_772_000_000_000L,
+            LinkDocument.link("t", "a", "active", createdAt = 1_772_000_000_000L)?.createdAt,
+        )
+        assertEquals(0L, LinkDocument.link("t", "a", "active")?.createdAt)
+    }
+
+    @Test
     fun `nome ausente vira vazio, e nao impede o vinculo de existir`() {
         val link = LinkDocument.link("treinador-1", "aluno-1", "requested")
 

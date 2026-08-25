@@ -208,12 +208,18 @@ class ProgramEditorViewModelTest {
         observe(viewModel)
         advanceUntilIdle()
 
-        viewModel.addExerciseFromCatalog(dayIndex = 0, exerciseId = "agachamento")
+        var posicao: Int? = null
+        viewModel.addExerciseFromCatalog(dayIndex = 0, exerciseId = "agachamento") { posicao = it }
         advanceUntilIdle()
 
         val exercicios = viewModel.uiState.value.program.days.first().exercises
 
         assertEquals(listOf("supino", "agachamento"), exercicios.map { it.exerciseId })
+        assertEquals(
+            "a posição é o que abre a prescrição em seguida; errá-la abriria a do exercício anterior",
+            1,
+            posicao,
+        )
     }
 
     @Test
@@ -223,10 +229,15 @@ class ProgramEditorViewModelTest {
         observe(viewModel)
         advanceUntilIdle()
 
-        viewModel.addExerciseFromCatalog(dayIndex = 0, exerciseId = "inexistente")
+        var abriuPrescricao = false
+        viewModel.addExerciseFromCatalog(dayIndex = 0, exerciseId = "inexistente") { abriuPrescricao = true }
         advanceUntilIdle()
 
         assertEquals(1, viewModel.uiState.value.program.days.first().exercises.size)
+        assertFalse(
+            "abrir a prescrição de um exercício que não entrou seria editar o exercício de trás",
+            abriuPrescricao,
+        )
     }
 
     /**

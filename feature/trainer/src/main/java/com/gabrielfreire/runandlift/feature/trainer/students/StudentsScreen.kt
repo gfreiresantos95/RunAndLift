@@ -111,6 +111,7 @@ private fun StudentsSection(title: Int, links: List<Link>, state: StudentsUiStat
         StudentRow(
             link = link,
             updating = state.isUpdating(link),
+            onOpenWorkout = { actions.onOpenWorkout(link) },
             onStatusChange = { status -> actions.onStatusChange(link, status) },
         )
     }

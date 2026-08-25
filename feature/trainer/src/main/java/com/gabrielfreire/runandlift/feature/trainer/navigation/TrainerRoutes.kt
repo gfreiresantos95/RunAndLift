@@ -22,6 +22,20 @@ object TrainerRoutes {
     /** Carteira de alunos: quem pediu, quem treina e quem saiu. */
     const val STUDENTS = "trainer/students"
 
+    /** Argumento da tela de treino do aluno: de quem é o treino a mostrar. */
+    internal const val STUDENT_ID_ARG = "studentId"
+
+    /**
+     * O treino que **este aluno** recebeu, aberto pela carteira.
+     *
+     * Empilhada sobre a aba, e não uma quinta aba: é uma pergunta sobre uma pessoa, e uma aba
+     * precisaria escolher qual delas mostrar. Leva só o identificador — nome, programa e dias saem
+     * da própria atribuição, que é o documento onde eles já viajam copiados.
+     */
+    internal const val STUDENT_WORKOUT_PATTERN = "$STUDENTS/{$STUDENT_ID_ARG}/workout"
+
+    internal fun studentWorkout(studentId: String): String = "$STUDENTS/$studentId/workout"
+
     const val WORKOUTS = "trainer/workouts"
     const val MENU = "trainer/menu"
 

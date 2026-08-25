@@ -50,9 +50,10 @@ internal object LinkDocument {
      * dois para responder quem pode ler e quem pode confirmar, e `resource.id` não se parte em rule
      * sem `split()`, que não existe lá.
      *
-     * `createdAt` e `updatedAt` são carimbados pelo servidor e ninguém os lê hoje. Vão assim mesmo,
-     * porque são o tipo de dado que não se recupera depois: no dia em que a carteira mostrar "aluno
-     * desde março", a resposta já vai estar gravada em vez de começar a ser coletada.
+     * `createdAt` e `updatedAt` são carimbados pelo servidor. Foram gravados desde o começo sem
+     * ninguém os ler, porque são o tipo de dado que não se recupera depois — e o dia em que a home
+     * do aluno passou a dizer "aluno desde março" foi o dia em que essa aposta rendeu: a resposta já
+     * estava gravada em vez de começar a ser coletada.
      */
     fun fields(link: Link): Map<String, Any> = mapOf(
         FIELD_TRAINER_ID to link.trainerId,
@@ -104,6 +105,7 @@ internal object LinkDocument {
         origin: String? = null,
         trainerName: String? = null,
         studentName: String? = null,
+        createdAt: Long? = null,
     ): Link? {
         val parsedStatus = LinkStatus.fromStored(status)
 
@@ -116,6 +118,10 @@ internal object LinkDocument {
             origin = LinkOrigin.fromStored(origin) ?: LinkOrigin.INVITE_CODE,
             trainerName = trainerName.orEmpty(),
             studentName = studentName.orEmpty(),
+            // Ausente vira zero, e não vira vínculo descartado: a data de criação chega vazia no
+            // snapshot vindo do cache entre a escrita local e a confirmação do servidor, e perder o
+            // treinador da tela por causa disso seria muito pior do que perder uma linha de texto.
+            createdAt = createdAt ?: 0L,
         )
     }
 

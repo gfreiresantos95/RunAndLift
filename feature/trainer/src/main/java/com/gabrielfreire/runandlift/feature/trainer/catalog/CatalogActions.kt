@@ -11,6 +11,7 @@ internal data class CatalogActions(
     val onToggleMuscle: (String) -> Unit,
     val onToggleEquipment: (String) -> Unit,
     val onToggleLevel: (TrainingLevel) -> Unit,
+    val onToggleFilters: () -> Unit,
     val onClearFilters: () -> Unit,
     val onSelect: (Exercise) -> Unit,
     val onOpenDetail: (Exercise) -> Unit,

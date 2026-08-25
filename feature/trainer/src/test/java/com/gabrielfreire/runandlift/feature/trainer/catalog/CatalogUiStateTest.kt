@@ -8,7 +8,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Os dois vazios do catálogo, que são duas telas diferentes.
+ * Os dois vazios do catálogo, que são duas telas diferentes — e o vocabulário dos chips, que não
+ * pode encolher enquanto se digita.
  *
  * "Não achei nada com esses filtros" se resolve mudando a busca; "o catálogo ainda não chegou" se
  * resolve sincronizando. Desenhar os dois iguais manda o treinador apagar a busca para tentar de
@@ -29,7 +30,7 @@ class CatalogUiStateTest {
 
     @Test
     fun `busca que nao achou nada nao e catalogo ausente`() {
-        val state = CatalogUiState(loading = false, query = "zzz")
+        val state = CatalogUiState(loading = false, catalog = exercises, query = "zzz")
 
         assertFalse(
             "mandar sincronizar quem só digitou errado é o pior conselho possível",
@@ -42,6 +43,7 @@ class CatalogUiStateTest {
     fun `filtro que fechou demais tambem e busca sem resultado`() {
         val state = CatalogUiState(
             loading = false,
+            catalog = exercises,
             results = exercises,
             filter = CatalogFilter(levels = setOf(TrainingLevel.ADVANCED)),
         )
@@ -53,7 +55,7 @@ class CatalogUiStateTest {
 
     @Test
     fun `com catalogo e sem filtro, nenhum dos dois vazios aparece`() {
-        val state = CatalogUiState(loading = false, results = exercises)
+        val state = CatalogUiState(loading = false, catalog = exercises, results = exercises)
 
         assertFalse(state.isCatalogMissing)
         assertFalse(state.isEmptySearch)
@@ -62,7 +64,7 @@ class CatalogUiStateTest {
 
     @Test
     fun `as opcoes de filtro saem do proprio catalogo, sem repetir`() {
-        val state = CatalogUiState(loading = false, results = exercises)
+        val state = CatalogUiState(loading = false, catalog = exercises, results = exercises)
 
         assertEquals(
             "uma segunda lista fixa no código divergiria do importador",
@@ -70,6 +72,37 @@ class CatalogUiStateTest {
             state.muscleOptions,
         )
         assertEquals(listOf("Barra"), state.equipmentOptions)
+    }
+
+    @Test
+    fun `as opcoes de filtro nao encolhem enquanto se digita`() {
+        // Enquanto elas saíam do resultado da busca, procurar "supino" apagava o chip de
+        // "Quadríceps" — a pessoa via as opções de filtro sumirem justamente enquanto procurava.
+        val state = CatalogUiState(
+            loading = false,
+            catalog = exercises,
+            query = "supino",
+            results = listOf(exercises.first()),
+        )
+
+        assertEquals(listOf("Peitoral", "Quadríceps"), state.muscleOptions)
+    }
+
+    @Test
+    fun `a contagem de filtros soma os quatro assuntos`() {
+        // É o número que a linha fechada mostra: sem ele, esconder as fileiras esconderia também o
+        // que está encolhendo a lista.
+        val state = CatalogUiState(
+            loading = false,
+            catalog = exercises,
+            results = exercises,
+            filter = CatalogFilter(
+                muscleGroups = setOf("Peitoral", "Quadríceps"),
+                levels = setOf(TrainingLevel.ADVANCED),
+            ),
+        )
+
+        assertEquals(3, state.activeFilterCount)
     }
 
     private fun exercise(id: String) = Exercise(
