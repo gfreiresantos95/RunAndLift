@@ -223,5 +223,5 @@ Uses the Splash Screen API via `androidx.core:core-splashscreen`, so behaviour i
 
 - `Theme.RunAndLift.Splash` (`res/values/themes.xml`) is the launcher activity's theme; `postSplashScreenTheme` hands off to `Theme.RunAndLift`.
 - The splash background, the window background, and the Compose `surface` colour are deliberately the same value (`@color/window_background`, config-overridden in `values-night/`) so there is no colour flash on handoff. Changing one means changing all three.
-- The icon is still the template launcher foreground and is temporary; it sits on a coloured circle because that artwork is white.
+- The icon is the brand wordmark, in two drawables the splash theme picks between: `ic_run_and_lift` (Cobalto40, `values/`) and `ic_run_and_lift_night` (`#FBF8FF`, `values-night/`). There is no circle behind it any more — that existed only because the old artwork was white.
 - `isAppReady` gates `setKeepOnScreenCondition`. Session restore, active-role lookup, and Room warm-up belong in the `lifecycleScope` block that flips it — no artificial delay and no blocking network I/O, since the product promises the workout screen opens in ≤2 s offline.
