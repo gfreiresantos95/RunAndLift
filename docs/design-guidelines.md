@@ -23,6 +23,18 @@ Nenhum deles é opcional, e desenhar só o terceiro é o erro mais comum.
 | Falhou | `AppMessageCard` |
 
 - **Nunca** `if (loading) return`. Isso desenha uma tela em branco, que se lê como defeito.
+- **`AppLoadingState` espera meio segundo antes de aparecer**, porque a leitura com cache quente
+  termina antes disso e um indicador que pisca se lê como instabilidade. `NO_LOADING_DELAY` inverte
+  isso e só é para quem **garante a janela mínima do outro lado** — o catálogo segura o estado por
+  300 ms a cada busca e a cada chip. Sem essa garantia, zero é o piscar que o padrão existe para
+  evitar; não é um jeito de "deixar mais responsivo".
+- **Trabalho instantâneo também precisa de resposta.** Filtro que roda em memória termina antes do
+  quadro seguinte, e a lista apenas encolhe — encolher sem aviso se lê como defeito, não como
+  resposta ao toque. Segure o estado por uma janela mínima no ViewModel (não com um `delay` dentro
+  do composable, que nenhum teste alcança) e cancele a janela anterior a cada toque novo, senão a
+  primeira a terminar apaga o indicador com as outras ainda valendo.
+- Enquanto a lista é refeita, **o que a filtra fica na tela**. Substituir a busca e os chips junto
+  com a lista tira da pessoa justamente o que ela precisa para desfazer o filtro que fechou demais.
 - Vazio diz **o que vai aparecer** e **o que falta acontecer**, não "nada por aqui". Título no
   presente ("Seus treinos aparecem aqui"), descrição com o próximo passo.
 - Vazio só ganha botão quando há ação possível **a partir daquela tela**. Botão inerte é pior que
@@ -36,9 +48,22 @@ Nenhum deles é opcional, e desenhar só o terceiro é o erro mais comum.
 
 - Tela de aba → `AppTabScaffold`.
 - Tela com título e seta de voltar → `AppScreenScaffold`.
+- Tela com título, seta e **uma lista longa** no miolo → `AppListScreenScaffold`.
 - Conteúdo rolável → `AppScreenColumn`, sempre. É ele que aplica a largura máxima de 600 dp.
+  Conteúdo rolável **preguiçoso** → `AppScreenLazyColumn`, que aplica a mesma largura na lista
+  inteira.
+- **Quando escolher a lista preguiçosa:** o miolo é uma lista longa e homogênea cujo tamanho quem
+  escreve a tela não decide — o catálogo de exercícios são centenas de itens. Formulário, ficha e
+  painel ficam na coluna comum: eles têm dezenas de filhos de tipos diferentes, e uma chave por item
+  ali não compraria nada. O sintoma que justificou o par novo foi visível: numa `Column` rolável,
+  trocar um chip de filtro recompunha as centenas de linhas para mostrar as vinte que cabem, e a
+  tela piscava a cada toque.
+- Na lista preguiçosa, **declarar `key` nos itens de dados**. Sem ela o Compose reaproveita as linhas
+  por posição, e trocar o filtro troca o conteúdo de cada card mantendo o estado do anterior.
 - Nunca escrever `Scaffold` + `Column` + `verticalScroll` à mão numa tela. A ordem dos modificadores
   tem uma armadilha (recuo dentro da área rolável) que o componente já resolveu.
+- Não aninhar `AppScreenLazyColumn` dentro de `AppScreenScaffold`: são duas rolagens verticais, e a
+  de dentro é medida com altura infinita — o Compose lança na medição e a tela não abre.
 - Aplicar sempre o `PaddingValues` que o `Scaffold` entrega. Sem ele o conteúdo nasce atrás da barra
   inferior.
 

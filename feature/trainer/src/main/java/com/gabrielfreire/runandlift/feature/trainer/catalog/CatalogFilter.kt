@@ -29,10 +29,20 @@ internal data class CatalogFilter(
     val levels: Set<TrainingLevel> = emptySet(),
 ) {
 
+    /**
+     * Quantos chips estão marcados, somando os quatro assuntos.
+     *
+     * É o número que a linha fechada de filtro mostra — e, por consequência, o que decide se a tela
+     * oferece "limpar". Uma contagem e não um booleano porque, com as fileiras fechadas, dizer
+     * apenas *que* há filtro esconde **quanto** dele há: "Filtros (3)" é o que faz alguém abrir e
+     * desmarcar antes de concluir que o catálogo é pobre.
+     */
+    val count: Int
+        get() = categories.size + muscleGroups.size + equipment.size + levels.size
+
     /** Se algum filtro está marcado — o que decide se a tela oferece "limpar filtros". */
     val isActive: Boolean
-        get() = categories.isNotEmpty() || muscleGroups.isNotEmpty() ||
-            equipment.isNotEmpty() || levels.isNotEmpty()
+        get() = count > 0
 
     /** Aplica os quatro filtros. Conjunto vazio não filtra nada. */
     fun apply(exercises: List<Exercise>): List<Exercise> = exercises.filter { exercise ->

@@ -22,6 +22,7 @@ import com.gabrielfreire.runandlift.feature.trainer.programeditor.PrescriptionDe
 import com.gabrielfreire.runandlift.feature.trainer.programeditor.ProgramEditorDestination
 import com.gabrielfreire.runandlift.feature.trainer.programs.ProgramsDestination
 import com.gabrielfreire.runandlift.feature.trainer.students.StudentsDestination
+import com.gabrielfreire.runandlift.feature.trainer.studentworkout.StudentWorkoutDestination
 
 /**
  * Grafo do treinador: as três abas, mais o passo a passo, o perfil profissional e os dados
@@ -143,6 +144,17 @@ private fun exerciseArguments() = listOf(
 )
 
 /**
+ * O aluno cujo treino se quer ver.
+ *
+ * Só o identificador viaja na rota. O nome dele vem de dentro da atribuição, onde já está copiado —
+ * levá-lo aqui exigiria codificar acento e espaço num caminho de URL para reescrever, uma tela
+ * adiante, o que o documento já responde.
+ */
+private fun studentArguments() = listOf(
+    navArgument(TrainerRoutes.STUDENT_ID_ARG) { type = NavType.StringType },
+)
+
+/**
  * As quatro abas, que são irmãs e ficam sempre no mesmo nível da pilha.
  *
  * Separadas dos fluxos por tamanho, e o corte não é arbitrário: **aba não é fluxo**. O que está aqui
@@ -167,6 +179,7 @@ private fun NavGraphBuilder.trainerTabs(
             navController = navController,
             dependencies = dependencies,
             onOpenInvite = { navController.navigate(TrainerRoutes.INVITE) },
+            onOpenWorkout = { studentId -> navController.navigate(TrainerRoutes.studentWorkout(studentId)) },
         )
     }
     composable(TrainerRoutes.WORKOUTS) {
@@ -192,6 +205,25 @@ private fun NavGraphBuilder.trainerTabs(
 private fun NavGraphBuilder.trainerFlows(navController: NavHostController, dependencies: TrainerDependencies) {
     composable(TrainerRoutes.INVITE) {
         InviteDestination(dependencies = dependencies, onBack = { navController.popBackStack() })
+    }
+
+    // Empilhada sobre a carteira, e não uma quinta aba: é uma pergunta sobre uma pessoa, e uma aba
+    // precisaria escolher qual delas mostrar.
+    composable(route = TrainerRoutes.STUDENT_WORKOUT_PATTERN, arguments = studentArguments()) { entry ->
+        StudentWorkoutDestination(
+            dependencies = dependencies,
+            studentId = entry.arguments?.getString(TrainerRoutes.STUDENT_ID_ARG).orEmpty(),
+            // Trocar o treino começa na aba de treinos, e a troca de aba desempilha até a âncora
+            // como a barra inferior faz — voltar do editor não deve reencontrar esta tela no meio.
+            onOpenPrograms = {
+                navController.navigate(TrainerRoutes.WORKOUTS) {
+                    popUpTo(TrainerRoutes.HOME) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            onBack = { navController.popBackStack() },
+        )
     }
     composable(TrainerRoutes.ACCOUNT) { entry ->
         AccountDestination(

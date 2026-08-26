@@ -25,6 +25,16 @@ package com.gabrielfreire.runandlift.data.model
  * @param trainerName nome do treinador **como ele estava quando o vínculo nasceu**. Pode ser vazio
  *   se o cadastro dele ainda não tinha nome; a tela mostra o que houver e não inventa.
  * @param studentName idem, do lado do aluno. É o que a carteira lista.
+ * @param createdAt quando estas duas pessoas se encontraram pela primeira vez, em milissegundos, ou
+ *   `0` quando não se sabe. **Já era gravado desde o começo e ninguém o lia** — `LinkDocument`
+ *   escrevia `createdAt` justamente porque é o tipo de dado que não se recupera depois. É ele que
+ *   responde "aluno desde" na home, e por isso a data é a do **vínculo** e não a da conta: quem
+ *   troca de profissional recomeça a contagem, porque o tempo de acompanhamento é dele com aquela
+ *   pessoa e não com o aplicativo.
+ *
+ *   Zero é resposta legítima e não erro: os vínculos criados antes de alguém ler este campo têm o
+ *   carimbo gravado, mas um documento vindo do cache entre a escrita local e a confirmação do
+ *   servidor chega sem ele. Quem mostra a data some com a linha em vez de inventar uma.
  *
  * [docs]: https://github.com/gfreiresantos95/RunAndLift/blob/main/docs/adr/0007-security-rules-e-id-de-vinculo-deterministico.md
  */
@@ -35,6 +45,7 @@ data class Link(
     val origin: LinkOrigin,
     val trainerName: String = "",
     val studentName: String = "",
+    val createdAt: Long = 0L,
 ) {
 
     /** Atalho de [LinkStatus.isPending], para a tela não precisar alcançar dois níveis. */

@@ -40,6 +40,7 @@ import com.gabrielfreire.runandlift.feature.trainer.text.label
 internal fun StudentRow(
     link: Link,
     updating: Boolean,
+    onOpenWorkout: () -> Unit,
     onStatusChange: (LinkStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,6 +65,14 @@ internal fun StudentRow(
             )
 
             Text(text = link.status.label(), style = MaterialTheme.typography.bodySmall)
+
+            // "Ver treino" só existe para quem está em vínculo vigente, e fica **acima** das
+            // transições de estado: é a ação do dia a dia — conferir o que a pessoa está treinando —
+            // enquanto pausar e encerrar são decisões raras. Juntá-las na mesma fileira poria
+            // "Encerrar" ao lado do botão que se toca toda semana.
+            if (link.status == LinkStatus.ACTIVE || link.status == LinkStatus.PAUSED) {
+                AppTextButton(text = stringResource(R.string.trainer_students_workout), onClick = onOpenWorkout)
+            }
 
             StudentRowActions(status = link.status, enabled = !updating, onStatusChange = onStatusChange)
         }
@@ -120,8 +129,18 @@ private fun StudentRowPreview() {
             ) {
                 // Os dois estados com ações diferentes, um sob o outro: é assim que a lista aparece
                 // para quem tem um pedido novo e alunos antigos.
-                StudentRow(link = previewLink(LinkStatus.REQUESTED), updating = false, onStatusChange = {})
-                StudentRow(link = previewLink(LinkStatus.ACTIVE), updating = false, onStatusChange = {})
+                StudentRow(
+                    link = previewLink(LinkStatus.REQUESTED),
+                    updating = false,
+                    onOpenWorkout = {},
+                    onStatusChange = {},
+                )
+                StudentRow(
+                    link = previewLink(LinkStatus.ACTIVE),
+                    updating = false,
+                    onOpenWorkout = {},
+                    onStatusChange = {},
+                )
             }
         }
     }

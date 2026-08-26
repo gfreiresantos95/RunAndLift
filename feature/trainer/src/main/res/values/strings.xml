@@ -289,6 +289,7 @@
     <string name="trainer_students_accept">Aceitar</string>
     <string name="trainer_students_decline">Recusar</string>
     <string name="trainer_students_cancel">Cancelar convite</string>
+    <string name="trainer_students_workout">Ver treino</string>
     <string name="trainer_students_pause">Pausar</string>
     <string name="trainer_students_resume">Retomar</string>
     <string name="trainer_students_end">Encerrar</string>
@@ -440,16 +441,42 @@
     <string name="trainer_prescription_load">%1$s kg</string>
     <string name="trainer_prescription_rest">%1$d s</string>
 
+    <!-- O treino que um aluno recebeu, visto pelo treinador. É a leitura do que a atribuição
+         gravou: sem ela, prescrever era uma escrita que ninguém conseguia reler. -->
+    <string name="trainer_student_workout_title">Treino do aluno</string>
+    <string name="trainer_student_workout_loading">Carregando o treino deste aluno</string>
+    <string name="trainer_student_workout_exercise">%1$d. %2$s</string>
+    <string name="trainer_student_workout_empty_title">Nenhum treino atribuído</string>
+    <string name="trainer_student_workout_empty">Este aluno ainda não recebeu um programa seu.
+        Monte ou abra um na aba Treinos e use "Atribuir a um aluno".</string>
+    <string name="trainer_student_workout_ended">Este treino foi encerrado. O aluno não o vê mais na
+        aba de treinos dele.</string>
+    <!-- Falha nunca é desenhada como "sem treino": a frase errada faz o treinador prescrever de novo
+         o que já prescreveu, e reatribuir substitui a cópia que o aluno está usando. -->
+    <string name="trainer_student_workout_failed">Não deu para carregar o treino deste aluno agora.
+        Confira sua conexão antes de atribuir outro — reatribuir substitui o que ele já tem.</string>
+    <string name="trainer_student_workout_retry">Tentar de novo</string>
+    <string name="trainer_student_workout_change">Trocar o treino deste aluno</string>
+
     <string name="trainer_catalog_title">Escolher exercício</string>
     <string name="trainer_catalog_search">Buscar exercício</string>
     <string name="trainer_catalog_search_support">Por nome, músculo ou equipamento.</string>
     <string name="trainer_catalog_loading">Carregando o catálogo</string>
+    <!-- Anunciado pelo leitor de tela a cada mudança de busca ou de chip. Curto de propósito: é
+         falado muitas vezes seguidas por quem está refinando. -->
+    <string name="trainer_catalog_filtering">Atualizando a lista</string>
     <string name="trainer_catalog_filter_category">Tipo</string>
     <string name="trainer_catalog_filter_muscle">Músculo</string>
     <string name="trainer_catalog_filter_equipment">Equipamento</string>
     <string name="trainer_catalog_filter_level">Nível</string>
+    <!-- A linha fechada de filtro. Com a contagem quando há chip marcado: esconder as fileiras sem
+         dizer quantos filtros estão valendo faria alguém achar o catálogo pobre em vez de abrir e
+         desmarcar. -->
+    <string name="trainer_catalog_filters">Filtros</string>
+    <string name="trainer_catalog_filters_active">Filtros (%1$d)</string>
     <string name="trainer_catalog_clear_filters">Limpar filtros</string>
-    <string name="trainer_catalog_detail">Ver execução</string>
+    <!-- Responde à pergunta de quem não reconhece o nome, em vez de descrever a tela de destino. -->
+    <string name="trainer_catalog_detail">Saiba como fazer</string>
     <plurals name="trainer_catalog_count">
         <item quantity="one">%1$d exercício</item>
         <item quantity="other">%1$d exercícios</item>

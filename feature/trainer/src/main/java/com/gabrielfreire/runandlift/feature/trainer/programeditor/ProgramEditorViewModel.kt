@@ -95,12 +95,18 @@ internal class ProgramEditorViewModel(
      *
      * Id que não está no catálogo local não faz nada. Acontece se o catálogo for republicado entre
      * a escolha e a volta — raro, e a resposta certa é não acrescentar um exercício fantasma.
+     *
+     * @param onAdded chamado com a posição em que o exercício ficou, e **só** quando ele entrou de
+     *   verdade. É por aqui que a tela abre a prescrição logo em seguida: escolher um exercício sem
+     *   dizer séries, repetições, carga e descanso deixava no dia uma linha com números que ninguém
+     *   prescreveu, e descobrir isso exigia tocar de novo em cada um. A busca é assíncrona, então a
+     *   resposta vem por retorno de chamada e não por retorno de função.
      */
-    fun addExerciseFromCatalog(dayIndex: Int, exerciseId: String) {
+    fun addExerciseFromCatalog(dayIndex: Int, exerciseId: String, onAdded: (Int) -> Unit) {
         viewModelScope.launch {
             val exercise = exerciseRepository.observeById(exerciseId).first() ?: return@launch
 
-            draft.onAddExercise(dayIndex = dayIndex, exercise = exercise)
+            draft.onAddExercise(dayIndex = dayIndex, exercise = exercise)?.let(onAdded)
         }
     }
 

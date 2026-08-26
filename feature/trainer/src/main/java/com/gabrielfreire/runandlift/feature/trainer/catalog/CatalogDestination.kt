@@ -37,10 +37,12 @@ internal fun CatalogDestination(
             onToggleMuscle = viewModel::onToggleMuscle,
             onToggleEquipment = viewModel::onToggleEquipment,
             onToggleLevel = viewModel::onToggleLevel,
+            onToggleFilters = viewModel::onToggleFilters,
             onClearFilters = viewModel::onClearFilters,
             onSelect = { exercise -> onSelect(exercise.id) },
             onOpenDetail = { exercise -> onOpenDetail(exercise.id) },
-            onRetry = viewModel::onRetry,
+            // "Tentar de novo" é o nome da ação na tela; do lado do ViewModel isso é sincronizar.
+            onRetry = viewModel::sync,
         ),
         onBack = onBack,
     )

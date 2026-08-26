@@ -16,6 +16,7 @@ import com.gabrielfreire.runandlift.feature.student.R
 import com.gabrielfreire.runandlift.feature.student.navigation.StudentTab
 import com.gabrielfreire.runandlift.feature.student.navigation.previewTabs
 import com.gabrielfreire.runandlift.feature.student.profile.MissingStudentData
+import java.time.LocalDate
 
 /**
  * Início do aluno: o nome do app na barra superior e, logo abaixo, quem está usando o app.
@@ -55,12 +56,11 @@ internal fun StudentHomeScreen(
                 greeting = state.displayName
                     ?.let { stringResource(R.string.student_home_greeting, it) }
                     ?: stringResource(R.string.student_home_greeting_anonymous),
-                subtitle = state.trainer
-                    ?.let { stringResource(R.string.student_home_trainer, it.name, it.cref) }
-                    ?: stringResource(R.string.student_home_role),
+                subtitle = state.trainer?.subtitle() ?: stringResource(R.string.student_home_role),
                 monogram = state.monogram,
                 support = state.trainer
-                    ?.let { stringResource(R.string.student_home_trainer_since, it.sinceLabel) },
+                    ?.sinceLabel
+                    ?.let { stringResource(R.string.student_home_trainer_since, it) },
                 framed = false,
             )
 
@@ -74,6 +74,38 @@ internal fun StudentHomeScreen(
         }
     }
 }
+
+/**
+ * A linha do treinador: o nome, e o registro quando ele veio.
+ *
+ * **Sem o registro a linha continua existindo**, com o nome sozinho. O CREF vem de um segundo
+ * documento (`trainerProfiles/{uid}`), e uma leitura que não respondeu não pode apagar da tela a
+ * pessoa que acompanha este aluno — nem produzir "Treinador: Marcos · CREF null", que é o que sai de
+ * um formato único preenchido com o que houver.
+ *
+ * Nome vazio acontece: quem entrou pelo Google pode não ter um gravado, e nesse caso a linha diz o
+ * papel de quem está logado, que é a verdade disponível.
+ */
+@Composable
+private fun LinkedTrainer.subtitle(): String = when {
+    name.isBlank() -> stringResource(R.string.student_home_role)
+    cref.isNullOrBlank() -> stringResource(R.string.student_home_trainer_name, name)
+    else -> stringResource(R.string.student_home_trainer, name, cref)
+}
+
+/**
+ * O treinador do preview.
+ *
+ * Propriedade nomeada, e não um literal dentro do `@Preview`: é o que `StudentDashboard.SAMPLE` já
+ * fazia do lado do painel, e é o que mantém o exemplo **fora** do estado — enquanto ele era o valor
+ * padrão de `StudentHomeUiState.trainer`, a home dizia a todo mundo que o treinador se chamava
+ * Marcos Vieira, inclusive a quem não tinha treinador nenhum.
+ */
+private val PREVIEW_TRAINER = LinkedTrainer(
+    name = "Marcos Vieira",
+    cref = "012345-G/SP",
+    since = LocalDate.of(2026, 3, 9),
+)
 
 /**
  * Com nome, que é o caso de quem criou a conta pelo formulário. O estado sem nome está no preview
@@ -96,6 +128,7 @@ private fun StudentHomeScreenPreview() {
                 // Com pendência, que é o estado real de quem pulou passos no onboarding — e o
                 // único em que o aviso aparece.
                 missing = MissingStudentData(measures = true, injuries = true),
+                trainer = PREVIEW_TRAINER,
             ),
             tabs = previewTabs(StudentTab.HOME),
             onOpenProfile = {},

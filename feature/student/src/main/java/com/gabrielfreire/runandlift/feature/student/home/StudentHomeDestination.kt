@@ -38,6 +38,8 @@ internal fun StudentHomeDestination(
                     authRepository = dependencies.authRepository,
                     userRepository = dependencies.userRepository,
                     studentRepository = dependencies.studentRepository,
+                    linkRepository = dependencies.linkRepository,
+                    trainerRepository = dependencies.trainerRepository,
                 )
             }
         },

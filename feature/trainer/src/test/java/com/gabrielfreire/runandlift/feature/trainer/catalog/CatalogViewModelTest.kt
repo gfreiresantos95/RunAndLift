@@ -7,6 +7,7 @@ import com.gabrielfreire.runandlift.feature.trainer.fake.FakeExerciseRepository
 import com.gabrielfreire.runandlift.feature.trainer.fake.FakeExerciseRepository.Companion.exercise
 import com.gabrielfreire.runandlift.feature.trainer.fake.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -112,7 +113,7 @@ class CatalogViewModelTest {
         advanceUntilIdle()
 
         repository.syncResult = CatalogSyncResult.Updated(version = 2, exerciseCount = 3)
-        viewModel.onRetry()
+        viewModel.sync()
         advanceUntilIdle()
 
         assertEquals(2, repository.syncCount)
@@ -188,5 +189,147 @@ class CatalogViewModelTest {
 
         assertEquals(listOf("Abdômen", "Dorsal", "Peitoral"), viewModel.uiState.value.muscleOptions)
         assertEquals(listOf("Barra", "Halter"), viewModel.uiState.value.equipmentOptions)
+    }
+
+    @Test
+    fun `os chips nao encolhem quando a busca fecha a lista`() = runTest {
+        // Enquanto as opções saíam do resultado da busca, procurar "prancha" apagava os chips de
+        // "Dorsal" e "Peitoral" — a pessoa via as opções de filtro sumirem enquanto procurava.
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("prancha")
+        advanceUntilIdle()
+
+        assertEquals(listOf("prancha"), viewModel.uiState.value.exercises.map { it.id })
+        assertEquals(listOf("Abdômen", "Dorsal", "Peitoral"), viewModel.uiState.value.muscleOptions)
+    }
+
+    @Test
+    fun `as fileiras de filtro nascem fechadas e abrem no toque`() = runTest {
+        // Fechadas por padrão porque quatro fileiras de chip empurravam a lista — que é o que a
+        // pessoa veio ver — para fora da primeira tela.
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.filtersExpanded)
+
+        viewModel.onToggleFilters()
+
+        assertTrue(viewModel.uiState.value.filtersExpanded)
+
+        viewModel.onToggleFilters()
+
+        assertFalse(viewModel.uiState.value.filtersExpanded)
+    }
+
+    @Test
+    fun `marcar um chip acende o indicador e o segura por uma janela minima`() = runTest {
+        // O filtro roda em memória e termina antes do quadro seguinte. Sem a janela, a lista apenas
+        // encolhia — e encolher sem aviso se lê como defeito, não como resposta ao toque.
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onToggleMuscle("Dorsal")
+
+        assertTrue("o indicador tem de estar aceso no mesmo instante do toque", viewModel.uiState.value.recomputing)
+        assertEquals(
+            "a lista já é a filtrada: o que se segura é a resposta, não o trabalho",
+            listOf("remada"),
+            viewModel.uiState.value.exercises.map { it.id },
+        )
+
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.recomputing)
+    }
+
+    @Test
+    fun `chips seguidos reiniciam a janela em vez de somarem tres esperas`() = runTest {
+        // Sem cancelar a anterior, a primeira a terminar apagaria o indicador com as outras duas
+        // ainda valendo — e ele piscaria no meio de quem está marcando três chips seguidos.
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onToggleMuscle("Dorsal")
+        advanceTimeBy(delayTimeMillis = HALF_WINDOW_MS)
+        viewModel.onToggleEquipment("Barra")
+        advanceTimeBy(delayTimeMillis = HALF_WINDOW_MS)
+
+        assertTrue(
+            "a janela conta a partir do último toque, e o último foi agora há pouco",
+            viewModel.uiState.value.recomputing,
+        )
+
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.recomputing)
+    }
+
+    @Test
+    fun `digitar tambem acende o indicador, porque a lista na tela e a da busca anterior`() = runTest {
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("remada")
+
+        assertTrue(viewModel.uiState.value.recomputing)
+
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.recomputing)
+        assertEquals(listOf("remada"), viewModel.uiState.value.exercises.map { it.id })
+    }
+
+    @Test
+    fun `limpar os filtros tambem responde, e nao so devolve a lista inteira`() = runTest {
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onToggleMuscle("Dorsal")
+        advanceUntilIdle()
+
+        viewModel.onClearFilters()
+
+        assertTrue(viewModel.uiState.value.recomputing)
+    }
+
+    @Test
+    fun `abrir e fechar as fileiras nao acende indicador nenhum`() = runTest {
+        // Abrir o filtro não refaz a lista. Um indicador aqui seria o app dizendo que está
+        // trabalhando quando não está — e é assim que um indicador deixa de significar algo.
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onToggleFilters()
+
+        assertFalse(viewModel.uiState.value.recomputing)
+    }
+
+    @Test
+    fun `a contagem de filtros diz o que as fileiras fechadas escondem`() = runTest {
+        val viewModel = CatalogViewModel(FakeExerciseRepository(exercises = catalogo))
+        advanceUntilIdle()
+
+        viewModel.onToggleMuscle("Dorsal")
+        viewModel.onToggleLevel(TrainingLevel.ADVANCED)
+
+        assertEquals(2, viewModel.uiState.value.activeFilterCount)
+
+        viewModel.onClearFilters()
+
+        assertEquals(0, viewModel.uiState.value.activeFilterCount)
+    }
+
+    private companion object {
+
+        /**
+         * Metade da janela de resposta do ViewModel.
+         *
+         * Serve para pousar **dentro** dela: avançar meia janela duas vezes, com um toque no meio,
+         * é o único jeito de distinguir "a janela recomeçou do último toque" de "as duas esperas
+         * estão correndo juntas" — que é exatamente o defeito que o cancelamento evita.
+         */
+        const val HALF_WINDOW_MS = 150L
     }
 }

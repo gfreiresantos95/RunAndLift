@@ -605,6 +605,43 @@ describe('prescrição', () => {
     );
   });
 
+  it('o treinador consulta o que prescreveu para um aluno pelos dois filtros', async () => {
+    // É a consulta da tela que mostra ao treinador o treino de um aluno. Ela existe em vez de um
+    // `get()` no caminho `{trainerId}_{studentId}` — que o id permitiria — porque a regra
+    // desreferencia `resource.data`, e regra que erra ao avaliar **nega**: pedir o documento de um
+    // aluno que ainda não recebeu nada voltaria como permissão negada em vez de "não existe", e o
+    // caso mais comum, o do aluno recém-aceito, viraria falha de leitura na tela.
+    await seed(async (db) => {
+      await db
+        .doc('assignments/a7')
+        .set({ trainerId: TRAINER, studentId: STUDENT, programId: 'p1', days: [] });
+    });
+
+    const trainer = testEnv.authenticatedContext(TRAINER).firestore();
+
+    await assertSucceeds(
+      trainer
+        .collection('assignments')
+        .where('trainerId', '==', TRAINER)
+        .where('studentId', '==', STUDENT)
+        .get(),
+    );
+    // A consulta responde vazio, e não erro, para o aluno que nunca recebeu nada — que é a razão
+    // de ela existir.
+    await assertSucceeds(
+      trainer
+        .collection('assignments')
+        .where('trainerId', '==', TRAINER)
+        .where('studentId', '==', OTHER_STUDENT)
+        .get(),
+    );
+    // Sem o filtro do treinador, a consulta pediria a prescrição que outro profissional escreveu
+    // para a mesma pessoa.
+    await assertFails(
+      trainer.collection('assignments').where('studentId', '==', STUDENT).get(),
+    );
+  });
+
   it('a listagem de programas por dono é permitida, e a sem filtro não', async () => {
     const trainer = testEnv.authenticatedContext(TRAINER).firestore();
 

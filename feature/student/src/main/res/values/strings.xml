@@ -21,6 +21,9 @@
     <!-- O CREF vem escrito por extenso porque "012345-G/SP" sozinho não se lê como um registro
          profissional — e é justamente por ser conferível no CONFEF que ele está na tela. -->
     <string name="student_home_trainer">Treinador: %1$s · CREF %2$s</string>
+    <!-- Sem o registro: ele vem de um segundo documento, e uma leitura que não respondeu não pode
+         apagar da tela quem acompanha esta pessoa. -->
+    <string name="student_home_trainer_name">Treinador: %1$s</string>
     <string name="student_home_trainer_since">Aluno desde %1$s</string>
 
     <!-- Aviso de perfil incompleto. Diz quantas faltam para a pessoa decidir se agora é hora. -->

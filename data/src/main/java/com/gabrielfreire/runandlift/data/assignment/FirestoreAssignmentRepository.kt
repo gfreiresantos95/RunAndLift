@@ -49,6 +49,17 @@ internal class FirestoreAssignmentRepository(
             .firstOrNull { it.isActive }
     }
 
+    override suspend fun assignmentOf(trainerId: String, studentId: String): Assignment? = withContext(dispatchers.io) {
+        collection
+            .whereEqualTo(AssignmentDocument.FIELD_TRAINER_ID, trainerId)
+            .whereEqualTo(AssignmentDocument.FIELD_STUDENT_ID, studentId)
+            .limit(SINGLE)
+            .get()
+            .await()
+            .documents
+            .firstNotNullOfOrNull { AssignmentDocument.assignment(it.plainData()) }
+    }
+
     /**
      * Grava por caminho exato, e não por id sorteado.
      *
@@ -90,4 +101,16 @@ internal class FirestoreAssignmentRepository(
     private fun DocumentSnapshot.plainData(): Map<String, Any?>? = data?.plus(
         AssignmentDocument.FIELD_UPDATED_AT to getTimestamp(AssignmentDocument.FIELD_UPDATED_AT)?.toDate()?.time,
     )
+
+    private companion object {
+
+        /**
+         * O teto de [assignmentOf].
+         *
+         * Um, e não [AssignmentRepository.LIMIT]: o id do documento é `{trainerId}_{studentId}`,
+         * então por construção não existe um segundo para o mesmo par. O teto é o que impede a
+         * consulta de cobrar por uma lista no dia em que essa construção mudar.
+         */
+        const val SINGLE = 1L
+    }
 }

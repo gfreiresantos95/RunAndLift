@@ -26,6 +26,7 @@ internal fun StudentsDestination(
     navController: NavHostController,
     dependencies: TrainerDependencies,
     onOpenInvite: () -> Unit,
+    onOpenWorkout: (String) -> Unit,
     viewModel: StudentsViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
@@ -49,6 +50,7 @@ internal fun StudentsDestination(
         tabs = trainerTabBar(navController = navController, current = TrainerTab.STUDENTS),
         actions = StudentsActions(
             onOpenInvite = onOpenInvite,
+            onOpenWorkout = { link -> onOpenWorkout(link.studentId) },
             onStatusChange = viewModel::onStatusChange,
             onRetry = viewModel::refresh,
         ),
