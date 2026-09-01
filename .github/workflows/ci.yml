@@ -28,7 +28,7 @@ jobs:
       # A JDK 21 tem que bater com o toolchainVersion de gradle/gradle-daemon-jvm.properties.
       # Se as duas divergirem, o Gradle baixa outra JDK e o cache do setup deixa de valer.
       - name: Configurar JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -60,7 +60,7 @@ jobs:
       - name: Comentar cobertura no PR
         id: cobertura
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: madrapps/jacoco-report@dc464cf1e7d917b8a8e073ab95f8c08484957839
+        uses: madrapps/jacoco-report@fde89a4ee1cc9d105c8badbfa87f6a735b025716
         with:
           paths: ${{ github.workspace }}/build/reports/kover/report.xml
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -135,7 +135,7 @@ jobs:
           cache-dependency-path: firestore/package-lock.json
 
       - name: Configurar JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
